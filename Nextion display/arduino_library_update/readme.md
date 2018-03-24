@@ -1,0 +1,1 @@
+These three files should be coplied to the ITEADLIB_Arduino_Nextion folder in your "documents\arduino" folder. They replace 3 files in the Arduino library.
