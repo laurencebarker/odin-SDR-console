@@ -133,7 +133,8 @@ void ConfigIOPins(void)
 {
   pinMode(LED_BUILTIN, OUTPUT);
 
-  pinMode(52, OUTPUT);                      // temp for debug
+//  pinMode(52, OUTPUT);                      // temp for debug
+  pinMode(52, INPUT_PULLUP);                            // ext PTT input
 
   pinMode(VPININDICATOR1, OUTPUT);                      // LED indicator
   pinMode(VPININDICATOR2, OUTPUT);                      // LED indicator

@@ -19,11 +19,18 @@
 #include "cathandler.h"
 #include "encoders.h"
 
+#define VDISPLAYMINANGLE 34                              // range 34 to 146 degrees
+#define VMETERUPDATETICKS 10                  // 100ms update
+
 EDisplayPage GDisplayPage;                    // global set to current display page number
 EControlTypes GControlType;                   // type of control being edited
 unsigned int GControlNumber;                  // number of control being edited
 unsigned int GActionNumber;                   // displayed action of control
 unsigned int G2ndActionNumber;                // displayed action of control
+int GMeterUpdateTicks;                        // ticks until we update the S meter
+
+
+
 //
 // variables to hold what's currently on the display
 // the display is only updated if the new value is different
@@ -1387,7 +1394,37 @@ void DisplayTick(void)
 // handle touch display events
 //  
   nexLoop(nex_listen_list);
+
+//
+// update the S meter and power meter
+// each has a periodic decay
+//
+  if (--GMeterUpdateTicks < 0)
+  {
+    GMeterUpdateTicks = VMETERUPDATETICKS;              // reload timer
+    if(GDisplayPage == eFrontPage)                      // redraw main page, if displayed
+    {
+      if (DisplayTXState)                               // if TX
+      {
+        if (DisplayCurrentPowerReading > VDISPLAYMINANGLE)
+        {
+          DisplayCurrentPowerReading--;
+          p0z0.setValue(DisplayCurrentPowerReading);
+        }
+      }
+      else
+      {
+        if (DisplayCurrentSReading > VDISPLAYMINANGLE)
+        {
+          DisplayCurrentSReading--;
+          p0z0.setValue(DisplayCurrentSReading);
+        }
+      }
+    }
+  }
 }
+
+
 
 
 #define TXTBUFSIZE 10
@@ -1547,7 +1584,7 @@ void DisplayShowSMeter(unsigned int Reading)
 {
   unsigned int Angle;                                   // new pointer angle
   Angle = (Reading << 1);
-  Angle = (Angle / 5)+34;                               // 4N/5+34
+  Angle = (Angle / 5) + VDISPLAYMINANGLE;               // 4N/5+34
   if (DisplayCurrentSReading != Angle)                  // if different from current settings
     if(GDisplayPage == eFrontPage)                      // redraw main page, if displayed
       if (DisplayTXState == false)                      // if RX
@@ -1565,7 +1602,7 @@ void DisplayShowSMeter(unsigned int Reading)
 void DisplayShowTXPower(unsigned int Reading)
 {
   unsigned int Angle;                                   // new pointer angle
-  Angle = (Reading + Reading/10) + 34;
+  Angle = (Reading + Reading/10) + VDISPLAYMINANGLE;
   if (DisplayCurrentPowerReading != Angle)              // if different from current settings
     if(GDisplayPage == eFrontPage)                      // redraw main page, if displayed
       if (DisplayTXState)                               // if TX

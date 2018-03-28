@@ -14,32 +14,32 @@
 #define VPINVFOENCODERA 2
 #define VPINVFOENCODERB 3
 
-#define VPINENCODER1A 4           // encoder 2A
-#define VPINENCODER1B 5
+#define VPINENCODER1A 5           // encoder 2A
+#define VPINENCODER1B 4
 #define VPINENCODER1SW 6
 
-#define VPINENCODER2A 7           // encoder 2B on PCB
-#define VPINENCODER2B 8
+#define VPINENCODER2A 8           // encoder 2B on PCB
+#define VPINENCODER2B 7
 #define VPINENCODER2SW 9          // SW on PCB
 
-#define VPINENCODER3A 10          // encoder 3A
-#define VPINENCODER3B 11
+#define VPINENCODER3A 11          // encoder 3A
+#define VPINENCODER3B 10
 #define VPINENCODER3SW 12
 
-#define VPINENCODER4A 14          // encoder 3B
-#define VPINENCODER4B 15
+#define VPINENCODER4A 15          // encoder 3B
+#define VPINENCODER4B 14
 #define VPINENCODER4SW 16
 
-#define VPINENCODER5A 17          // encoder 4A
-#define VPINENCODER5B 22
+#define VPINENCODER5A 22          // encoder 4A
+#define VPINENCODER5B 17
 #define VPINENCODER5SW 23
 
-#define VPINENCODER6A 24          // encoder 4B
-#define VPINENCODER6B 25
+#define VPINENCODER6A 25          // encoder 4B
+#define VPINENCODER6B 24
 #define VPINENCODER6SW 26
 
-#define VPINENCODER7A 27          //encoder 5
-#define VPINENCODER7B 28
+#define VPINENCODER7A 28          //encoder 5
+#define VPINENCODER7B 27
 #define VPINENCODER7SW 29
 
 #define VPINBUTTON1 30

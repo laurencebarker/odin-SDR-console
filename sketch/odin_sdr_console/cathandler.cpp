@@ -57,7 +57,7 @@ int GCatCWTone;                                             // current CW sideto
 int GCatCWSpeed;                                            // current CW speed
 
 int GVFOStepSize;                                           // current VFO step, in Hz
-
+int GDisplayThrottle;                                       // !=0 foir a few ticks after a display frequency update
 
 //
 // console requested settings
@@ -74,7 +74,8 @@ bool GFilterReset;                                  // true if we need to initia
 
 //
 #define GPERIODICREFRESHDELAY 20                    // 10ms ticks; initially 200ms/step for testing
-#define GPERIODICSEQUENCELENGTH 9                   // length of refresh sequence
+#define GPERIODICSEQUENCELENGTH 9                   // length of refresh sequence 
+#define VDISPLAYTHROTTLETICKS 10                    // no freq update from VFO encoder until 10 ticks after the last
 int GPeriodicRefreshTimer;
 int GeriodicRefreshState;
 
@@ -509,6 +510,9 @@ void CheckTimeouts(void)
       CATRequestCWSpeed();
   if(GCWSpeedRecent != 0)                    // just decrement if non zero
     GCWSpeedRecent--;
+
+  if(GDisplayThrottle != 0)                 // display update throttle
+    GDisplayThrottle--;
 }
 
 
@@ -955,7 +959,11 @@ void CATHandleVFOEncoder(int Clicks)
   if (Clicks != 0)
   {
     GCatFrequency_Hz += GVFOStepSize * Clicks;
-    CatDisplayFreq(GCatFrequency_Hz);
+    if (GDisplayThrottle == 0)
+    {
+      CatDisplayFreq(GCatFrequency_Hz);
+      GDisplayThrottle = VDISPLAYTHROTTLETICKS;
+    }
     if (Clicks < 0)
     {
       if (GConsoleVFOA == true)                           // down N clicks

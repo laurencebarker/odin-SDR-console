@@ -100,23 +100,23 @@ void InitEncoders(void)
 // 
 void EncoderFastTick(void)
 {
-  switch(EncoderGroup++)
-  {
-    case 0:
+//  switch(EncoderGroup++)
+//  {
+//    case 0:
       EncoderList[0].Ptr->service();
       EncoderList[1].Ptr->service();
-      break;
-    case 1:
+//      break;
+//    case 1:
       EncoderList[2].Ptr->service();
       EncoderList[3].Ptr->service();
-      break;
-    case 2:
+//      break;
+//    case 2:
       EncoderList[4].Ptr->service();
       EncoderList[5].Ptr->service();
       EncoderList[6].Ptr->service();
       EncoderGroup=0;
-      break;
-  }
+//      break;
+//  }
 }
 
 
