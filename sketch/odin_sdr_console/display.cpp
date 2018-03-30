@@ -726,7 +726,8 @@ void DisplaySetMeterBackground(void)
 {
   char Cmd1Buffer[20];
   char Cmd2Buffer[20];
-
+  int Angle;
+  
   if(GDisplayPage == eFrontPage)                // redraw main page, if displayed
   {
     if (DisplayTXState && DisplayTuneState)
@@ -741,8 +742,15 @@ void DisplaySetMeterBackground(void)
     {
       strcpy(Cmd2Buffer, "z0.picc=1");
     }
-    sendCommand(Cmd1Buffer);
     sendCommand(Cmd2Buffer);
+//
+// now set the meter angle as it will be different
+//
+    if (DisplayTXState)
+      Angle = DisplayCurrentPowerReading;
+    else
+      Angle = DisplayCurrentSReading;
+    p0z0.setValue(Angle);
   }
 }
 
@@ -1399,29 +1407,29 @@ void DisplayTick(void)
 // update the S meter and power meter
 // each has a periodic decay
 //
-  if (--GMeterUpdateTicks < 0)
-  {
-    GMeterUpdateTicks = VMETERUPDATETICKS;              // reload timer
-    if(GDisplayPage == eFrontPage)                      // redraw main page, if displayed
-    {
-      if (DisplayTXState)                               // if TX
-      {
-        if (DisplayCurrentPowerReading > VDISPLAYMINANGLE)
-        {
-          DisplayCurrentPowerReading--;
-          p0z0.setValue(DisplayCurrentPowerReading);
-        }
-      }
-      else
-      {
-        if (DisplayCurrentSReading > VDISPLAYMINANGLE)
-        {
-          DisplayCurrentSReading--;
-          p0z0.setValue(DisplayCurrentSReading);
-        }
-      }
-    }
-  }
+//  if (--GMeterUpdateTicks < 0)
+//  {
+//    GMeterUpdateTicks = VMETERUPDATETICKS;              // reload timer
+//    if(GDisplayPage == eFrontPage)                      // redraw main page, if displayed
+//    {
+//      if (DisplayTXState)                               // if TX
+//      {
+//        if (DisplayCurrentPowerReading > VDISPLAYMINANGLE)
+//        {
+//          DisplayCurrentPowerReading--;
+//          p0z0.setValue(DisplayCurrentPowerReading);
+//        }
+//      }
+//     else
+//      {
+//        if (DisplayCurrentSReading > VDISPLAYMINANGLE)
+//        {
+//          DisplayCurrentSReading--;
+//          p0z0.setValue(DisplayCurrentSReading);
+//        }
+//     }
+//    }
+//  }
 }
 
 
@@ -1593,6 +1601,7 @@ void DisplayShowSMeter(unsigned int Reading)
 }
 
 
+
 //
 // there is a unit conversion in here ONLY APPROXIMATED
 // parameter passed = number from CAT (Watts)
@@ -1688,7 +1697,7 @@ void DisplayShowMode(EMode Mode)
 // if the mode page is open: clear currently active button then
 // set new button and clicked button variable
 //
-    else if (GDisplayPage = eModePage)
+    else if (GDisplayPage == eModePage)
     {
       p5vamode.getValue(&ModeValue);
       switch(ModeValue)                         // first clear the set button
