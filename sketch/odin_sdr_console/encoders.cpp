@@ -24,7 +24,7 @@
 
 //
 // note switch and encoder numbering:
-// in the software switches are numbered 0-22, and encoders 0-6. The VFO encoder is treated separately.
+// in the software switches are numbered 0-20, and encoders 0-7. The VFO encoder is treated separately.
 // these correspond to the control of Kjell's PCB as follows:
 //
 // encoder numbering:
@@ -36,7 +36,8 @@
 //    3B      3
 //    4A      4
 //    4B      5
-//    5       6
+//    5A      6
+//    5B      7
 
 
 //
@@ -58,6 +59,7 @@ NoClickEncoder encoder4(VPINENCODER4A, VPINENCODER4B, STEPS, true);
 NoClickEncoder encoder5(VPINENCODER5A, VPINENCODER5B, STEPS, true);
 NoClickEncoder encoder6(VPINENCODER6A, VPINENCODER6B, STEPS, true);
 NoClickEncoder encoder7(VPINENCODER7A, VPINENCODER7B, STEPS, true);
+NoClickEncoder encoder8(VPINENCODER8A, VPINENCODER8B, STEPS, true);
 
 long old_ct;
 
@@ -90,6 +92,7 @@ void InitEncoders(void)
   EncoderList[4].Ptr = &encoder5;
   EncoderList[5].Ptr = &encoder6;
   EncoderList[6].Ptr = &encoder7;
+  EncoderList[7].Ptr = &encoder8;
 }
 
 
@@ -97,26 +100,18 @@ void InitEncoders(void)
 
 //
 // encoder 1ms tick
+// these are all now serviced at this rate, with a total time used of around 35 microseconds
 // 
 void EncoderFastTick(void)
 {
-//  switch(EncoderGroup++)
-//  {
-//    case 0:
-      EncoderList[0].Ptr->service();
-      EncoderList[1].Ptr->service();
-//      break;
-//    case 1:
-      EncoderList[2].Ptr->service();
-      EncoderList[3].Ptr->service();
-//      break;
-//    case 2:
-      EncoderList[4].Ptr->service();
-      EncoderList[5].Ptr->service();
-      EncoderList[6].Ptr->service();
-      EncoderGroup=0;
-//      break;
-//  }
+  EncoderList[0].Ptr->service();
+  EncoderList[1].Ptr->service();
+  EncoderList[2].Ptr->service();
+  EncoderList[3].Ptr->service();
+  EncoderList[4].Ptr->service();
+  EncoderList[5].Ptr->service();
+  EncoderList[6].Ptr->service();
+  EncoderList[7].Ptr->service();
 }
 
 
@@ -188,7 +183,7 @@ long ct = (VFOEncoder.read())>>2;
     switch (GDisplayPage)                                   // display dependent handling:
     {
       case eIOTestPage:
-        DisplayEncoderHandler(7, ct);
+        DisplayEncoderHandler(8, ct);
         break;
       case eFrontPage:
       case eAboutPage:
@@ -214,26 +209,42 @@ long ct = (VFOEncoder.read())>>2;
 // (for dual function encoders)
 // check button number is in range to be an encoder button! (user programming error if not)
 //
+// the button number to encoder number matching is as follows:
+// (the encoder 2-5 are the schematic references)
+//    encoder 2 push     ButtonNum=17    belongs to encoder 1, encodernum=0
+//    encoder 3 push     ButtonNum=18    belongs to encoder 3, encodernum=2
+//    encoder 4 push     ButtonNum=19    belongs to encoder 5, encodernum=4
+//    encoder 5 push     ButtonNum=20    belongs to encoder 7, encodernum=6
+//
+
+#define VBUTTONNUMENC0 17              // button for s/w encoder 0
+#define VBUTTONNUMENC2 18              // button for s/w encoder 2
+#define VBUTTONNUMENC4 19              // button for s/w encoder 4
+#define VBUTTONNUMENC6 20              // button for s/w encoder 6
+
 void EncoderHandleButton(unsigned int ButtonNum, bool IsPress)
 {
   EEncoderActions Action;
+  int EncoderNumber;
   
-  if (ButtonNum < VMAXENCODERS)                 // only process if it could correspond to an encoder
-                                                // (user config error if not!)
+  if (ButtonNum >= VBUTTONNUMENC0)                  // only process if it could correspond to an encoder
+                                                    // (user config error if not!)
   {
+    EncoderNumber = (ButtonNum - VBUTTONNUMENC0)<<1;        // 0,2,4 or 6
+    
     if (GEncoderOperation == eDualFnClick)                  // dual fn; press toggles which function
     {
       if (IsPress)
-        Is2ndAction[ButtonNum] = !Is2ndAction[ButtonNum];
+        Is2ndAction[EncoderNumber] = !Is2ndAction[EncoderNumber];
     }
     else if (GEncoderOperation == eDualFnPress)             // dual fn; 2nd function while pressed
-      Is2ndAction[ButtonNum] = IsPress;
+      Is2ndAction[EncoderNumber] = IsPress;
 //
 // now send the new encoder action to the display, UNLESS it is multi;
 //
-    Action = GetEncoderAction(ButtonNum, Is2ndAction[ButtonNum]);
+    Action = GetEncoderAction(EncoderNumber, Is2ndAction[EncoderNumber]);
     if (Action != eENMulti)
-      DisplaySetEncoderAction(ButtonNum, Action, false);    
+      DisplaySetEncoderAction(EncoderNumber, Action, false);    
   }
 }
 

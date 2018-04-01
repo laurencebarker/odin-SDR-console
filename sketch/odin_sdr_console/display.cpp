@@ -109,30 +109,32 @@ NexDSButton p1bt3 = NexDSButton(2, 9, "bt3");         // LED 4 button
 NexDSButton p1bt4 = NexDSButton(2, 10, "bt4");        // LED 5 button
 NexDSButton p1bt5 = NexDSButton(2, 11, "bt5");        // LED 6 button
 NexDSButton p1bt6 = NexDSButton(2, 12, "bt6");        // LED 7 button
-NexText p1tEnc1 = NexText(2, 14, "tenc1");            // encoder 1 display
-NexText p1tEnc2 = NexText(2, 15, "tenc2");            // encoder 2 display
-NexText p1tEnc3 = NexText(2, 16, "tenc3");            // encoder 3 display
-NexText p1tEnc4 = NexText(2, 17, "tenc4");            // encoder 4 display
-NexText p1tEnc5 = NexText(2, 18, "tenc5");            // encoder 5 display
-NexText p1tEnc6 = NexText(2, 19, "tenc6");            // encoder 6 display
-NexText p1tEnc7 = NexText(2, 20, "tenc7");            // encoder 7 display
-NexText p1tEnc8 = NexText(2, 21, "tenc8");            // encoder 8 display
-NexText p1tpb8 = NexText(2, 23, "tpb8");              // pushbutton 8 display
-NexText p1tpb9 = NexText(2, 24, "tpb9");              // pushbutton 9 display
-NexText p1tpb10 = NexText(2, 25, "tpb10");            // pushbutton 10 display
-NexText p1tpb11 = NexText(2, 26, "tpb11");            // pushbutton 11 display
-NexText p1tpb12 = NexText(2, 27, "tpb12");            // pushbutton 12 display
-NexText p1tpb13 = NexText(2, 28, "tpb13");            // pushbutton 13 display
-NexText p1tpb14 = NexText(2, 29, "tpb14");            // pushbutton 14 display
-NexText p1tpb15 = NexText(2, 30, "tpb15");            // pushbutton 15 display
-NexText p1tpb16 = NexText(2, 31, "tpb16");            // pushbutton 16 display
-NexText p1tpb17 = NexText(2, 32, "tpb17");            // pushbutton 17 display
-NexText p1tpb18 = NexText(2, 33, "tpb18");            // pushbutton 18 display
-NexText p1tpb19 = NexText(2, 34, "tpb19");            // pushbutton 19 display
-NexText p1tpb20 = NexText(2, 35, "tpb20");            // pushbutton 20 display
-NexText p1tpb21 = NexText(2, 36, "tpb21");            // pushbutton 21 display
-NexText p1tpb22 = NexText(2, 37, "tpb22");            // pushbutton 22 display
-NexText p1tpb23 = NexText(2, 38, "tpb23");            // pushbutton 23 display
+NexText p1tEnc1 = NexText(2, 13, "tenc1");            // encoder 1 display
+NexText p1tEnc2 = NexText(2, 14, "tenc2");            // encoder 2 display
+NexText p1tEnc3 = NexText(2, 15, "tenc3");            // encoder 3 display
+NexText p1tEnc4 = NexText(2, 16, "tenc4");            // encoder 4 display
+NexText p1tEnc5 = NexText(2, 17, "tenc5");            // encoder 5 display
+NexText p1tEnc6 = NexText(2, 18, "tenc6");            // encoder 6 display
+NexText p1tEnc7 = NexText(2, 19, "tenc7");            // encoder 7 display
+NexText p1tEnc8 = NexText(2, 20, "tenc8");            // encoder 8 display
+NexText p1tEnc9 = NexText(2, 38, "tenc9");            // vfo encoder display
+NexText p1tpb8 = NexText(2, 22, "tpb8");              // pushbutton SW1 display
+NexText p1tpb9 = NexText(2, 23, "tpb9");              // pushbutton SW2 display
+NexText p1tpb10 = NexText(2, 24, "tpb10");            // pushbutton SW3 display
+NexText p1tpb11 = NexText(2, 25, "tpb11");            // pushbutton SW4 display
+NexText p1tpb12 = NexText(2, 26, "tpb12");            // pushbutton SW5 display
+NexText p1tpb13 = NexText(2, 27, "tpb13");            // pushbutton SW6 display
+NexText p1tpb14 = NexText(2, 28, "tpb14");            // pushbutton SW7 display
+NexText p1tpb15 = NexText(2, 29, "tpb15");            // pushbutton SW8 display
+NexText p1tpb16 = NexText(2, 30, "tpb16");            // pushbutton SW9 display
+NexText p1tpb17 = NexText(2, 31, "tpb17");            // pushbutton SW10 display
+NexText p1tpb18 = NexText(2, 32, "tpb18");            // pushbutton SW11 display
+NexText p1tpb19 = NexText(2, 33, "tpb19");            // pushbutton SW12 display
+NexText p1tpb20 = NexText(2, 34, "tpb20");            // pushbutton SW13 display
+NexText p1tpb21 = NexText(2, 35, "tpb21");            // pushbutton SW14  display
+NexText p1tpb22 = NexText(2, 36, "tpb22");            // pushbutton SW15 display
+NexText p1tpb23 = NexText(2, 37, "tpb23");            // pushbutton SW16 display
+NexText p1tpb24 = NexText(2, 39, "tpb24");            // pushbutton SW17 display
 
 //
 // page 2 objects:
@@ -486,33 +488,102 @@ char* ButtonActionStrings[] =
 
 //
 // list of encoder text box controls for the I/O test page
+// indexed by the button number (0 to 20; 17 pushbuttons + 4 encoder clicks)
 //
 const char * BtnObjectNames[] = 
 {
-  "tpb8",
+  "tpb8",             // button 1
   "tpb9",
-  "tpb10",
+  "tpb10",            // button 3
   "tpb11",
-  "tpb12",
+  "tpb12",            // button 5
   "tpb13",
-  "tpb14",
+  "tpb14",            // button 7
   "tpb15",
-  "tpb16",
+  "tpb16",            // button 9
   "tpb17",
-  "tpb18",
+  "tpb18",            // button 11
   "tpb19",
-  "tpb20",
+  "tpb20",            // button 13
   "tpb21",
-  "tpb22",
+  "tpb22",            // button 15
   "tpb23",
-  "tenc2",
-  "tenc3",
-  "tenc4",
-  "tenc5",
-  "tenc6",
-  "tenc7",
-  "tenc8"
+  "tpb24",            // button 17
+  "tenc1",            // encoder 2
+  "tenc3",            // encoder 3
+  "tenc5",            // encoder 4
+  "tenc7"             // encoder 5
 };
+
+
+//
+// functions to redraw test boxes on main page (page 0)
+// VFO status: 10ch to show "SPLIT LOCK" (with spaces if not active)
+//
+void RedrawVFOStatusBox(void)
+{
+  char String[30];
+  memset(String, 0, sizeof(String));
+
+  if (DisplayCurrentSplitState)
+    strcpy(String, "SPLIT");
+  else
+    strcpy(String, "     ");
+
+  if (DisplayCurrentLockState)
+    strcat(String, " LOCK");
+  else
+    strcat(String, "     ");
+
+  if(GDisplayPage == eFrontPage)
+    p0t9.setText(String);  
+}
+
+
+//
+// RX status: 20ch to show "30dB NB2 NR2 SNB ANF" (with spaces if not active)
+//
+void RedrawRXStatusBox(void)
+{
+  char String[30];
+  memset(String, 0, sizeof(String));
+
+  switch(DisplayCurrentAtten)
+  {
+    case e0dB:  strcpy(String, " 0dB"); break;
+    case e10dB: strcpy(String, "10dB"); break;
+    case e20dB: strcpy(String, "20dB"); break;
+    case e30dB: strcpy(String, "30dB"); break;
+  }
+
+  switch(DisplayCurrentNBState)
+  {
+    case eNBOff: strcat(String, "    "); break;
+    case eNB1:   strcat(String, " NB "); break;
+    case eNB2:   strcat(String, " NB2"); break;
+  }
+
+  switch(DisplayCurrentNRState)
+  {
+    case eNROff: strcat(String, "    "); break;
+    case eNR1:   strcat(String, " NR "); break;
+    case eNR2:   strcat(String, " NR2"); break;
+  }
+
+  if(DisplayCurrentSNBState)
+    strcat(String, " SNB");
+  else
+    strcat(String, "    ");
+
+  if(DisplayCurrentANFState)
+    strcat(String, " ANF");
+  else
+    strcat(String, "    ");
+
+  if(GDisplayPage == eFrontPage)
+    p0t11.setText(String);  
+}
+
 
 
 //
@@ -610,7 +681,8 @@ char* IOTestEncoderStrings[]=
   "Enc 3B",
   "Enc 4A",
   "Enc 4B",
-  "Enc 5"
+  "Enc 5A",
+  "Enc 5B"
 };
 
 
@@ -635,12 +707,10 @@ char* IOTestButtonStrings[] =
   "SW14",
   "SW15",
   "SW16",
-  "SW_E2",
   "SW17",
+  "SW_E2",
   "SW_E3",
-  "SW18",
   "SW_E4",
-  "SW19",
   "SW_E5"
 };
 
@@ -777,20 +847,13 @@ void page0mainPushCallback(void *ptr)             // called when page 0 loads (m
   p0t2.setText(DisplayCurrentFrequency);
   p0t8.setText(ModeStrings[DisplayCurrentMode]);
 
-  if (DisplayCurrentLockState)
-    p0t9.setText("LOCK");  
-  else
-    p0t9.setText("");
+  RedrawVFOStatusBox();
+  RedrawRXStatusBox();
 
   if (DisplayRITState)
     p0t10.setText("ON");  
   else
     p0t10.setText("");
-
-  if (DisplayCurrentSplitState)
-    p0t11.setText("SPLIT");  
-  else
-    p0t11.setText("");
 
   p0z0.setValue(DisplayCurrentSReading);
 
@@ -1440,7 +1503,7 @@ void DisplayTick(void)
 
 //
 // display encoder handler
-// encoder number 0-6 (normal) 7 (VFO)
+// encoder number 0-7 (normal) 8 (VFO)
 //
 void DisplayEncoderHandler(unsigned int Encoder, int Count)
 {
@@ -1451,14 +1514,15 @@ void DisplayEncoderHandler(unsigned int Encoder, int Count)
      sprintf(TxtBuffer, "%d", Count);
      switch(Encoder)
      {
-       case 0: p1tEnc2.setText(TxtBuffer); break;
-       case 1: p1tEnc3.setText(TxtBuffer); break;
-       case 2: p1tEnc4.setText(TxtBuffer); break;
-       case 3: p1tEnc5.setText(TxtBuffer); break;
-       case 4: p1tEnc6.setText(TxtBuffer); break;
-       case 5: p1tEnc7.setText(TxtBuffer); break;
-       case 6: p1tEnc8.setText(TxtBuffer); break;
-       case 7: p1tEnc1.setText(TxtBuffer); break;
+       case 0: p1tEnc1.setText(TxtBuffer); break;
+       case 1: p1tEnc2.setText(TxtBuffer); break;
+       case 2: p1tEnc3.setText(TxtBuffer); break;
+       case 3: p1tEnc4.setText(TxtBuffer); break;
+       case 4: p1tEnc5.setText(TxtBuffer); break;
+       case 5: p1tEnc6.setText(TxtBuffer); break;
+       case 6: p1tEnc7.setText(TxtBuffer); break;
+       case 7: p1tEnc8.setText(TxtBuffer); break;
+       case 8: p1tEnc9.setText(TxtBuffer); break;
      }
   }
 }
@@ -1467,7 +1531,7 @@ void DisplayEncoderHandler(unsigned int Encoder, int Count)
 
 //
 // display button handler, 
-// button = 0-22
+// button = 0-20
 // when in I/O test page, light up a text box by changing its background colour
 // 
 //
@@ -1554,15 +1618,9 @@ void DisplayShowLockState(bool IsLock)
 {
   if (DisplayCurrentLockState != IsLock)                // if different from current settings
   {
-    if(GDisplayPage == eFrontPage)                      // redraw main page, if displayed
-    {
-      if (IsLock)
-        p0t9.setText("LOCK");  
-      else
-        p0t9.setText("");
-    }
+    DisplayCurrentLockState = IsLock;                     // save new settings
+    RedrawVFOStatusBox();
   }
-  DisplayCurrentLockState = IsLock;                     // save new settings
 }
 
 
@@ -1570,15 +1628,9 @@ void DisplayShowSplit(bool IsSplit)
 {
   if (DisplayCurrentSplitState != IsSplit)              // if different from current settings
   {
-    if(GDisplayPage == eFrontPage)                      // redraw main page, if displayed
-    {
-      if (IsSplit)
-        p0t11.setText("SPLIT");  
-      else
-        p0t11.setText("");
-    }
+    DisplayCurrentSplitState = IsSplit;                   // save new settings
+    RedrawVFOStatusBox();
   }
-  DisplayCurrentSplitState = IsSplit;                   // save new settings
 }
 
 
@@ -1747,6 +1799,8 @@ void DisplayShowNRState(ENRState State)
   if(DisplayCurrentNRState != State)                        // if data different from current
   {
     DisplayCurrentNRState = State;                          // set new data
+    RedrawRXStatusBox();                                    // update page0 text if main page visible
+
     if (GDisplayPage == eNRPage)                            // if noise screen showing
     {
       p6vanr.getValue(&NRValue);                                // read current button, then clear it
@@ -1756,8 +1810,6 @@ void DisplayShowNRState(ENRState State)
         case 1: p6bt3.setValue(0); break;
         case 2: p6bt4.setValue(0); break;
       }
-      
-      
       switch(DisplayCurrentNRState)                             // set new NR state
       {
         case 0: p6bt2.setValue(1); break;
@@ -1779,6 +1831,7 @@ void DisplayShowNBState(ENBState State)
   if(DisplayCurrentNBState != State)                        // if data different from current
   {
     DisplayCurrentNBState = State;                          // set new data
+    RedrawRXStatusBox();                                    // update page0 text if main page visible
     if (GDisplayPage == eNRPage)                            // if noise screen showing
     {
       p6vanb.getValue(&NBValue);                                // read current button, thne clear it
@@ -1802,14 +1855,18 @@ void DisplayShowNBState(ENBState State)
 }
 
 //
-// currently this will NOT update the display if the "noise" page is already open
+// show SNB
 //
 void DisplayShowSNBState(bool SNBState)
 {
-  DisplayCurrentSNBState = SNBState;
-  if (GDisplayPage == eNRPage)                            // if noise screen showing
+  if(DisplayCurrentSNBState != SNBState)
   {
-    p6bt0.setValue((unsigned int)DisplayCurrentSNBState);     // set SNB initial state  
+    DisplayCurrentSNBState = SNBState;
+    RedrawRXStatusBox();                                    // update page0 text if main page visible
+    if (GDisplayPage == eNRPage)                            // if noise screen showing
+    {
+      p6bt0.setValue((unsigned int)DisplayCurrentSNBState);     // set SNB initial state  
+    }
   }
 }
 
@@ -1818,11 +1875,15 @@ void DisplayShowSNBState(bool SNBState)
 //
 void DisplayShowANFState(bool ANFState)
 {
-  DisplayCurrentANFState = ANFState;
+  if(DisplayCurrentANFState != ANFState)
+  {
+    DisplayCurrentANFState = ANFState;
+    RedrawRXStatusBox();                                    // update page0 text if main page visible
     if (GDisplayPage == eNRPage)                            // if noise screen showing
     {
       p6bt1.setValue((unsigned int)DisplayCurrentANFState);     // ANF initial state
     }
+  }
 }
 
 
@@ -1886,6 +1947,7 @@ void DisplayShowAtten(EAtten Attenuation)
   if(DisplayCurrentAtten != Attenuation)                  // update if changed
   {
     DisplayCurrentAtten = Attenuation;
+    RedrawRXStatusBox();                                    // update page0 text if main page visible
     if(GDisplayPage == eRFPage)                           // update controls if on the screen
     {
       p7vaatten.getValue(&AttenValue);                    // read the current pressed control

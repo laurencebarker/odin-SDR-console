@@ -20,7 +20,6 @@
 
 #define VPINENCODER2A 8           // encoder 2B on PCB
 #define VPINENCODER2B 7
-#define VPINENCODER2SW 9          // SW on PCB
 
 #define VPINENCODER3A 11          // encoder 3A
 #define VPINENCODER3B 10
@@ -28,7 +27,6 @@
 
 #define VPINENCODER4A 15          // encoder 3B
 #define VPINENCODER4B 14
-#define VPINENCODER4SW 16
 
 #define VPINENCODER5A 22          // encoder 4A
 #define VPINENCODER5B 17
@@ -36,11 +34,13 @@
 
 #define VPINENCODER6A 25          // encoder 4B
 #define VPINENCODER6B 24
-#define VPINENCODER6SW 26
 
-#define VPINENCODER7A 28          //encoder 5
+#define VPINENCODER7A 28          //encoder 5A
 #define VPINENCODER7B 27
 #define VPINENCODER7SW 29
+
+#define VPINENCODER8A 16          //encoder 5B
+#define VPINENCODER8B 26
 
 #define VPINBUTTON1 30
 #define VPINBUTTON2 31
@@ -58,6 +58,7 @@
 #define VPINBUTTON14 43
 #define VPINBUTTON15 44
 #define VPINBUTTON16 45
+#define VPINBUTTON17 9          // SW on PCB
 
 #define VPININDICATOR1 46
 #define VPININDICATOR2 47

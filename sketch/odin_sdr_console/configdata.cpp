@@ -29,7 +29,8 @@ DueFlashStorage dueFlashStorage;                 // instance of flash reader
 //    3B      3
 //    4A      4
 //    4B      5
-//    5       6
+//    5A      6
+//    5B      7
 //
 // switch numbering:
 //    PCB   software
@@ -49,13 +50,11 @@ DueFlashStorage dueFlashStorage;                 // instance of flash reader
 //    SW14               13
 //    SW15               14
 //    SW16               15
-//    encoder 2 push     16
-//    SW17               17
+//    SW17               16
+//    encoder 2 push     17
 //    encoder 3 push     18
-//    SW18               19
-//    encoder 4 push     20
-//    SW19               21
-//    encoder 5 push     22
+//    encoder 4 push     19
+//    encoder 5 push     20
 //
 
 
@@ -72,7 +71,8 @@ const EEncoderActions GFactoryEncoderActions[] =
   eENFilterLow,
   eENDrive,
   eENMicGain,
-  eENMulti  
+  eENMulti,
+  eENDrive  
 };
 
 //
@@ -86,7 +86,8 @@ const EEncoderActions GFactoryEncoder2ndActions[] =
   eENFilterLow,
   eENDrive,
   eENMicGain,
-  eENMulti  
+  eENMulti,
+  eENDrive  
 };
 //
 // array of factory indicator settings. User can reconfigure from this.
@@ -126,12 +127,10 @@ const EButtonActions GFactoryButtonActions[] =
   ePBStartStop,                       // SW14
   ePBBandUp,                          // SW15
   ePBModeUp,                          // SW16
+  ePBAtten,                           // SW17
   ePBAFMute,                          // encoder 2 click
-  ePBNRStep,                          // SW17
   ePBFilterReset,                     // encoder 3 click
-  ePBNBStep,                          // SW18
   ePBNone,                            // encoder 4 click
-  ePBAtten,                           // SW19
   ePBEncoderClick                     // encoder 5 click
 };
 

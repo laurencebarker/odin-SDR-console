@@ -12,8 +12,8 @@
 #define __TYPES_H
 
 #define VMAXINDICATORS 7
-#define VMAXENCODERS 7              // configurable, not including VFO
-#define VMAXBUTTONS 23
+#define VMAXENCODERS 8              // configurable, not including VFO
+#define VMAXBUTTONS 21
 
 //
 // this type enumerates the Nextion display pages:

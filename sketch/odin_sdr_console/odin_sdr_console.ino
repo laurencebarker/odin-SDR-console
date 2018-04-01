@@ -161,7 +161,6 @@ void ConfigIOPins(void)
 
   pinMode(VPINENCODER2A, INPUT_PULLUP);                 // normal encoder
   pinMode(VPINENCODER2B, INPUT_PULLUP);                 // normal encoder
-  pinMode(VPINENCODER2SW, INPUT_PULLUP);                // normal encoder
 
   pinMode(VPINENCODER3A, INPUT_PULLUP);                 // normal encoder
   pinMode(VPINENCODER3B, INPUT_PULLUP);                 // normal encoder
@@ -169,22 +168,20 @@ void ConfigIOPins(void)
 
   pinMode(VPINENCODER4A, INPUT_PULLUP);                 // normal encoder
   pinMode(VPINENCODER4B, INPUT_PULLUP);                 // normal encoder
-  pinMode(VPINENCODER4SW, INPUT_PULLUP);                // normal encoder
 
-  //pinMode(VPINENCODER5A, INPUT_PULLUP);                 // normal encoder
-  //pinMode(VPINENCODER5B, INPUT_PULLUP);                 // normal encoder
-  //pinMode(VPINENCODER5SW, INPUT_PULLUP);                // normal encoder
-  pinMode(17, INPUT_PULLUP);                 // normal encoder
-  pinMode(22, INPUT_PULLUP);                 // normal encoder
-  pinMode(23, INPUT_PULLUP);                // normal encoder
-
+  pinMode(VPINENCODER5A, INPUT_PULLUP);                 // normal encoder
+  pinMode(VPINENCODER5B, INPUT_PULLUP);                 // normal encoder
+  pinMode(VPINENCODER5SW, INPUT_PULLUP);                // normal encoder
+  
   pinMode(VPINENCODER6A, INPUT_PULLUP);                 // normal encoder
   pinMode(VPINENCODER6B, INPUT_PULLUP);                 // normal encoder
-  pinMode(VPINENCODER6SW, INPUT_PULLUP);                // normal encoder
 
   pinMode(VPINENCODER7A, INPUT_PULLUP);                 // normal encoder
   pinMode(VPINENCODER7B, INPUT_PULLUP);                 // normal encoder
   pinMode(VPINENCODER7SW, INPUT_PULLUP);                // normal encoder
+
+  pinMode(VPINENCODER8A, INPUT_PULLUP);                 // normal encoder
+  pinMode(VPINENCODER8B, INPUT_PULLUP);                 // normal encoder
 
   pinMode(VPINBUTTON1, INPUT_PULLUP);                   // normal pushbutton
   pinMode(VPINBUTTON2, INPUT_PULLUP);                   // normal pushbutton
@@ -203,6 +200,7 @@ void ConfigIOPins(void)
   pinMode(VPINBUTTON14, INPUT_PULLUP);                  // normal pushbutton
   pinMode(VPINBUTTON15, INPUT_PULLUP);                  // normal pushbutton
   pinMode(VPINBUTTON16, INPUT_PULLUP);                  // normal pushbutton
+  pinMode(VPINBUTTON17, INPUT_PULLUP);                  // normal pushbutton
 
 }
 

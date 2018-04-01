@@ -40,13 +40,11 @@
 //    SW14               13
 //    SW15               14
 //    SW16               15
-//    encoder 2 push     16
-//    SW17               17
+//    SW17               16
+//    encoder 2 push     17
 //    encoder 3 push     18
-//    SW18               19
-//    encoder 4 push     20
-//    SW19               21
-//    encoder 5 push     22
+//    encoder 4 push     19
+//    encoder 5 push     20
 //
 
 
@@ -76,12 +74,10 @@ byte GButtonPinNumbers[VMAXBUTTONS] =
   VPINBUTTON14,
   VPINBUTTON15,
   VPINBUTTON16,
+  VPINBUTTON17,
   VPINENCODER1SW,
-  VPINENCODER2SW,
   VPINENCODER3SW,
-  VPINENCODER4SW,
   VPINENCODER5SW,
-  VPINENCODER6SW,
   VPINENCODER7SW
 };
 
