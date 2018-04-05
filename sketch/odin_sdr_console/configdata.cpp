@@ -127,10 +127,10 @@ const EButtonActions GFactoryButtonActions[] =
   ePBStartStop,                       // SW14
   ePBBandUp,                          // SW15
   ePBModeUp,                          // SW16
-  ePBAtten,                           // SW17
+  ePBNRStep,                          // SW17
   ePBAFMute,                          // encoder 2 click
   ePBFilterReset,                     // encoder 3 click
-  ePBNone,                            // encoder 4 click
+  ePBVoxOnOff,                        // encoder 4 click
   ePBEncoderClick                     // encoder 5 click
 };
 

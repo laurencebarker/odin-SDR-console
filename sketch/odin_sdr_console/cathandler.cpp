@@ -71,6 +71,7 @@ bool GConsoleVFOA = true;                                   // true if we want V
 bool GToggleRadioOnOff;                             // true if we need to toggle radio on/off message
 bool GToggleMute;                                   // true if we need to toggle bool
 bool GFilterReset;                                  // true if we need to initiate a filter reset
+bool GToggleVoxOnOff;                               // true to initiate toggle VOX on/off
 
 //
 #define GPERIODICREFRESHDELAY 20                    // 10ms ticks; initially 200ms/step for testing
@@ -815,6 +816,17 @@ void CATHandlePushbutton(unsigned int Button, EButtonActions Action, bool IsPres
         DisplayShowAtten(GCatStateAtten);
       }
       break;
+
+    case ePBVoxOnOff:                             // toggle VOX on/off
+      if (IsPressed)
+      {
+        GToggleVoxOnOff = true;
+        CATRequestVoxOnOff();
+      }
+      break;
+
+    case ePBDiversityFastSlow:                    // fast/slow controls
+      break;
   }
 }
 
@@ -964,6 +976,7 @@ void CATHandleVFOEncoder(int Clicks)
       CatDisplayFreq(GCatFrequency_Hz);
       GDisplayThrottle = VDISPLAYTHROTTLETICKS;
     }
+    GLiveRequestFrequency = false;                        // cancel any CAT frequency update
     if (Clicks < 0)
     {
       if (GConsoleVFOA == true)                           // down N clicks
@@ -993,6 +1006,7 @@ void CATEncoderVFOABTune(int Clicks, bool IsA)
 //
 // first send the tune messages:
 //  
+  GLiveRequestFrequency = false;                        // cancel any CAT frequency update
   if (Clicks < 0)
   {
     if (IsA == true)                           // down N clicks
@@ -1074,6 +1088,25 @@ int GBandCATLookup[] =
   2,      // e2
   999     // eWWV
 };
+
+
+
+///////////////////////   VOX ON/OFF   //////////////////////////
+//
+// request VOX on/off state
+// we don't use timeout as user can simply press again
+//
+void CATRequestVoxOnOff(void)
+{
+  MakeCATMessageNoParam(eZZVE);
+}
+//
+// send MUTE request to CAT
+//
+void CATSetVoxOnOff(bool IsOn)
+{
+  MakeCATMessageBool(eZZVE, IsOn);
+}
 
 
 
@@ -2146,6 +2179,18 @@ void HandleCATCommandNumParam(ECATCommands MatchedCAT, int ParsedParam)
 
     case eZZAC:
       GVFOStepSize = GStepLookup[ParsedParam];
+
+    case eZZDC:                                                       // diversity RX2 gain
+      break;
+
+    case eZZDD:                                                       // diversity phase
+      break;
+
+    case eZZDG:                                                       // diversity RX1 gain
+      break;
+
+    case eZZDH:                                                       // diversity receiver source
+      break;
   }
 }
 
@@ -2159,6 +2204,11 @@ void HandleCATCommandBoolParam(ECATCommands MatchedCAT, bool ParsedParam)
   switch(MatchedCAT)
   {
     case eZZVE:                          // VOX on/off
+      if (GToggleVoxOnOff)
+      {
+        CATSetVoxOnOff(!ParsedParam);
+        GToggleVoxOnOff = false;
+      }
       break;
       
     case eZZTX:                          // MOX state (NO HANDLER - never "get" - polled using ZZXV)
@@ -2210,6 +2260,12 @@ void HandleCATCommandBoolParam(ECATCommands MatchedCAT, bool ParsedParam)
       break;
       
     case eZZSV:                          // RX2 squelch on/off  (NO HANDLER - never "get" - polled using ZZXO)
+      break;
+
+    case eZZDB:                          // diversity reference source 
+      break;
+
+    case eZZDE:                          // diversity enable
       break;
   }      
 }

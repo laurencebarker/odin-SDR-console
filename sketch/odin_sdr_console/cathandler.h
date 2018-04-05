@@ -47,6 +47,20 @@ void CATSetCTuneOnOff(bool State);
 void CATSetVFOLock(bool State);
 
 
+
+//
+// request VOX on/off state
+// we don't use timeout as user can simply press again
+//
+void CATRequestVoxOnOff(void);
+
+//
+// send VOX on/off request to CAT
+//
+void CATSetVoxOnOff(bool IsMute);
+
+
+
 //
 // request AF MUTE state
 //

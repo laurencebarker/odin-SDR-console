@@ -122,8 +122,10 @@ typedef enum
   ePBStartStop,
   ePBSquelch,
   ePBAtten,
+  ePBVoxOnOff,
+  ePBDiversityFastSlow
 } EButtonActions;
-#define VNUMBUTTONACTIONS 28
+#define VNUMBUTTONACTIONS 29
 
 //
 // this enum defines legal baud rates for serial

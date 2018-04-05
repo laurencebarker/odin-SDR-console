@@ -1,6 +1,3 @@
-#include <efc.h>
-#include <flash_efc.h>
-
 /////////////////////////////////////////////////////////////////////////
 //
 // Odin SDR Console sketch by Laurence Barker G8NJJ
@@ -11,7 +8,8 @@
 // "main" file with setup() and loop()
 /////////////////////////////////////////////////////////////////////////
 //
-
+#include <efc.h>
+#include <flash_efc.h>
 #include <Arduino.h>
 #include "types.h"
 #include "configdata.h"

@@ -95,6 +95,14 @@ enum ECATCommands
   eZZXO,                          // combined RX2 status
   eZZXV,                          // combined VFO status
   eZZAC,                          // get VFO tuning step
+
+  eZZDB,                          // diversity reference source
+  eZZDC,                          // diversity RX2 gain
+  eZZDD,                          // diversity phase
+  eZZDE,                          // diversity enable
+  eZZDG,                          // diversity RX1 gain
+  eZZDH,                          // diversity receiver source
+  
   eNoCommand                      // this is an exception condition
 };
 

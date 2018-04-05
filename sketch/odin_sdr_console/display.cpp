@@ -482,7 +482,9 @@ char* ButtonActionStrings[] =
   "VFO Lock",
   "Radio Start / Stop",
   "Squelch on/off",
-  "Atten step"
+  "Atten step",
+  "VOX on/off",
+  "Diversity fast/slow"
 };
 
 
