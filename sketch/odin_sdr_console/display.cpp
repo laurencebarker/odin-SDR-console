@@ -231,7 +231,12 @@ NexDSButton p8bt3 = NexDSButton(9, 13, "bt3");        // "bottom" button
 NexDSButton p8bt6 = NexDSButton(9, 14, "bt6");        // "side" button
 NexVariable p8vaenc = NexVariable(9, 11, "vaenc");    // encoder state variable
 NexVariable p8vabaud = NexVariable(9, 10, "vabaud");  // baud rate variable
-
+NexButton p8b1 = NexButton(9, 20, "b1");              // encoder divisor minus
+NexButton p8b2 = NexButton(9, 19, "b2");              // encoder divisor plus
+NexButton p8b3 = NexButton(9, 21, "b3");              // VFO encoder divisor minus
+NexButton p8b4 = NexButton(9, 22, "b4");              // VFO encoder divisor plus
+NexText p8t4 = NexText(9, 15, "t4");                  // encoder divisor 
+NexText p8t7 = NexText(9, 18, "t7");                  // VFO encoder divisor 
 
 //
 // page 9 "configure" objects
@@ -289,6 +294,10 @@ NexTouch *nex_listen_list[] =
   &p8bt3,                                     // encoder string bottom button
   &p8bt4,                                     // click button
   &p8bt6,                                     // encoder string side button
+  &p8b1,                                      // encoder divisor -
+  &p8b2,                                      // encoder divisor +
+  &p8b3,                                      // VFO encoder divisor -
+  &p8b4,                                      // VFO encoder divisor +
   &p9b1,                                      // configure page #-
   &p9b2,                                      // configure page #+
   &p9b3,                                      // configure page fn-
@@ -412,6 +421,8 @@ char* EncoderActionStrings[] =
   "CW Sidetone",
   "CW Speed",
   "Squelch level",
+  "Diversity Gain",
+  "Diversity Phase",
   "Multifunction"                      // multifunction
 };
 
@@ -432,6 +443,8 @@ char* MultiEncoderActionStrings[] =
   "M:CW Tone",
   "M:CW Speed",
   "M:Squelch",
+  "M: Div'ty Gain",
+  "M: Div'ty Phase",
   "M:Multi"                      // multifunction
 };
   
@@ -974,6 +987,7 @@ void page7PushCallback(void *ptr)             // called when page 7 loads (RF pa
 //
 void page8PushCallback(void *ptr)             // called when page 8 loads
 {
+  char NumStr[5];                             // short string
   GDisplayPage = eSettingsPage;
 
   switch(GUSBBaudRate)
@@ -993,6 +1007,14 @@ void page8PushCallback(void *ptr)             // called when page 8 loads
 //
   p8bt3.setValue((uint32_t)GBottomEncoderStrings);
   p8bt6.setValue((uint32_t)GSideEncoderStrings);
+
+//
+// set the encoder divisor strings
+//
+  itoa(GEncoderDivisor, NumStr, 10);
+  p8t4.setText(NumStr);
+  itoa(GVFOEncoderDivisor, NumStr, 10);
+  p8t7.setText(NumStr);
 }
 
 //
@@ -1253,6 +1275,65 @@ void p8bt6PushCallback(void *ptr)             // side encoder string button
   GSideEncoderStrings = (bool) SideStringValue;
 }
 
+void p8b1PushCallback(void* ptr)              // encoder minus button
+{
+  char DivisorStr[10];
+  int Divisor;
+  
+  memset(DivisorStr, 0, sizeof(DivisorStr));
+  p8t4.getText(DivisorStr, sizeof(DivisorStr));
+  Divisor=atoi(DivisorStr);
+  if (Divisor > 1)
+    Divisor--;
+  itoa(Divisor, DivisorStr, 10);
+  p8t4.setText(DivisorStr);
+  GEncoderDivisor = Divisor;
+}
+
+void p8b2PushCallback(void* ptr)              // encoder plus button
+{
+  char DivisorStr[10];
+  int Divisor;
+  
+  memset(DivisorStr, 0, sizeof(DivisorStr));
+  p8t4.getText(DivisorStr, sizeof(DivisorStr));
+  Divisor=atoi(DivisorStr);
+  if (Divisor < 8)
+    Divisor++;
+  itoa(Divisor, DivisorStr, 10);
+  p8t4.setText(DivisorStr);
+  GEncoderDivisor = Divisor;
+}
+
+void p8b3PushCallback(void* ptr)              // VFO encoder minus button
+{
+  char DivisorStr[10];
+  int Divisor;
+  
+  memset(DivisorStr, 0, sizeof(DivisorStr));
+  p8t7.getText(DivisorStr, sizeof(DivisorStr));
+  Divisor=atoi(DivisorStr);
+  if (Divisor > 1)
+    Divisor--;
+  itoa(Divisor, DivisorStr, 10);
+  p8t7.setText(DivisorStr);
+  GVFOEncoderDivisor = Divisor;
+}
+
+void p8b4PushCallback(void* ptr)              // VFO encoder plus button
+{
+  char DivisorStr[10];
+  int Divisor;
+  
+  memset(DivisorStr, 0, sizeof(DivisorStr));
+  p8t7.getText(DivisorStr, sizeof(DivisorStr));
+  Divisor=atoi(DivisorStr);
+  if (Divisor < 8)
+    Divisor++;
+  itoa(Divisor, DivisorStr, 10);
+  p8t7.setText(DivisorStr);
+  GVFOEncoderDivisor = Divisor;
+}
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1410,6 +1491,11 @@ void DisplayInit(void)
   p8bt4.attachPush(p8bt4PushCallback);
   p8bt3.attachPush(p8bt3PushCallback);
   p8bt6.attachPush(p8bt6PushCallback);
+  p8b1.attachPush(p8b1PushCallback);
+  p8b2.attachPush(p8b2PushCallback);
+  p8b3.attachPush(p8b3PushCallback);
+  p8b4.attachPush(p8b4PushCallback);
+
   p9b1.attachPush(p9b1PushCallback);
   p9b2.attachPush(p9b2PushCallback);
   p9b3.attachPush(p9b3PushCallback);

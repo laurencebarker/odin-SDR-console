@@ -149,6 +149,8 @@ EIndicatorActions GIndicatorActions[VMAXINDICATORS];
 EButtonActions GButtonActions[VMAXBUTTONS];
 bool GBottomEncoderStrings;                           // true to have legends at the display bottom
 bool GSideEncoderStrings;                             // true to display legends at the side
+byte GEncoderDivisor;                                // number of edge events per declared click
+byte GVFOEncoderDivisor;                             // number of edge events per declared click
 
 
 
@@ -176,6 +178,10 @@ void CopySettingsToFlash(void)
   Setting = (byte) GBottomEncoderStrings;
   dueFlashStorage.write(Addr++, Setting);
   Setting = (byte) GSideEncoderStrings;
+  dueFlashStorage.write(Addr++, Setting);
+  Setting = (byte) GEncoderDivisor;
+  dueFlashStorage.write(Addr++, Setting);
+  Setting = (byte) GVFOEncoderDivisor;
   dueFlashStorage.write(Addr++, Setting);
 // write encoders  
   for (Cntr=0; Cntr < VMAXENCODERS;   Cntr++)
@@ -214,6 +220,9 @@ void InitialiseFlash(void)
   GEncoderOperation = eDualFnClick;
   GBottomEncoderStrings = true;
   GSideEncoderStrings = true;
+  GEncoderDivisor = 2;
+  GVFOEncoderDivisor = 4;
+
   
 // initialise encoders
   for(Cntr=0; Cntr < VMAXENCODERS; Cntr++)
@@ -257,7 +266,8 @@ void LoadSettingsFromFlash(void)
   GEncoderOperation = (EDualFnEncoders)dueFlashStorage.read(Addr++);
   GBottomEncoderStrings = (bool)dueFlashStorage.read(Addr++);
   GSideEncoderStrings = (bool)dueFlashStorage.read(Addr++);
-  
+  GEncoderDivisor = (byte)dueFlashStorage.read(Addr++);
+  GVFOEncoderDivisor = (byte)dueFlashStorage.read(Addr++);
 // read encoders  
   for (Cntr=0; Cntr < VMAXENCODERS;   Cntr++)
   {

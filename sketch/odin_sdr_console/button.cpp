@@ -5,7 +5,7 @@
 // this sketch provides a knob and switch interface through USB and CAT
 //
 // button.c
-// this file holds the code to debounce pushbutton inputs
+// this file holds the code to debounce pushbutton inputs and the external MOX input
 /////////////////////////////////////////////////////////////////////////
 
 #include "types.h"
@@ -19,7 +19,7 @@
 
 //
 // note switch and encoder numbering:
-// in the software switches are numbered 0-22, and encoders 0-6. The VFO encoder is treated separately.
+// in the software switches are numbered 0-20, and encoders 0-7. The VFO encoder is treated separately.
 // these correspond to the control of Kjell's PCB as follows:
 //
 // switch numbering:
@@ -46,17 +46,18 @@
 //    encoder 4 push     19
 //    encoder 5 push     20
 //
+// switch 21 is the external MOX input
 
 
 
-bool GButtonPressed[VMAXBUTTONS];                 // true when button debounced as pressed
+bool GButtonPressed[VMAXBUTTONS+1];                 // true when button debounced as pressed
 
 //
 // I/O pins for each button
 // 1-16 are pushbuttons 1-16; 17-23 are the 7 "normal" encoder clicks
 // (and on Kjell's PCB, 3 of those are used for normal pushbuttons)
 //
-byte GButtonPinNumbers[VMAXBUTTONS] =
+byte GButtonPinNumbers[VMAXBUTTONS+1] =
 {
   VPINBUTTON1,
   VPINBUTTON2,
@@ -78,7 +79,8 @@ byte GButtonPinNumbers[VMAXBUTTONS] =
   VPINENCODER1SW,
   VPINENCODER3SW,
   VPINENCODER5SW,
-  VPINENCODER7SW
+  VPINENCODER7SW,
+  VPINEXTMOXIN
 };
 
 
@@ -86,7 +88,7 @@ byte GButtonPinNumbers[VMAXBUTTONS] =
 // array of debounce states
 // these are simply the last 8 samples of the pin, starting in the LSB
 //
-byte GInputDebounce[VMAXBUTTONS];
+byte GInputDebounce[VMAXBUTTONS+1];
 
 
 //
@@ -97,7 +99,7 @@ void GButtonInitialise(void)
 {
   int Cntr;
 
-  for (Cntr=0; Cntr < VMAXBUTTONS; Cntr++)
+  for (Cntr=0; Cntr < VMAXBUTTONS+1; Cntr++)
     GInputDebounce[Cntr] = 0xFF;
 }
 
@@ -111,27 +113,34 @@ void ButtonPressed(int ButtonNum)
   EButtonActions AssignedAction;                          // programmed function for this button
   
   GButtonPressed[ButtonNum] = true;
-  AssignedAction = GetButtonAction(ButtonNum);
-  switch (GDisplayPage)                                   // display dependent handling:
+  if (ButtonNum != VMAXBUTTONS)                           // normal pushbutton event
   {
-    case eIOTestPage:
-      DisplayButtonHandler(ButtonNum, true); 
-      break;
-    case eFrontPage:
-    case eAboutPage:
-    case eFreqEntryPage:
-    case eBandPage:
-    case eModePage:
-    case eNRPage:
-    case eRFPage:
-      if (AssignedAction == ePBEncoderClick)
-        EncoderHandleButton(ButtonNum, true);
-      else if (AssignedAction != ePBNone)
-        CATHandlePushbutton(ButtonNum, AssignedAction, true); 
-      break;
-    case eSettingsPage:                                 // no action when on these pages
-    case eConfigurePage:
-      break;
+    AssignedAction = GetButtonAction(ButtonNum);
+    switch (GDisplayPage)                                   // display dependent handling:
+    {
+      case eIOTestPage:
+        DisplayButtonHandler(ButtonNum, true); 
+        break;
+      case eFrontPage:
+      case eAboutPage:
+      case eFreqEntryPage:
+      case eBandPage:
+      case eModePage:
+      case eNRPage:
+      case eRFPage:
+        if (AssignedAction == ePBEncoderClick)
+          EncoderHandleButton(ButtonNum, true);
+        else if (AssignedAction != ePBNone)
+          CATHandlePushbutton(ButtonNum, AssignedAction, true); 
+        break;
+      case eSettingsPage:                                 // no action when on these pages
+      case eConfigurePage:
+        break;
+    }
+  }
+  else                                                    // Ext MOX input
+  {
+    CATExtMox(true);
   }
 }
 
@@ -146,27 +155,34 @@ void ButtonReleased(int ButtonNum)
   EButtonActions AssignedAction;                          // programmed function for this button
   
   GButtonPressed[ButtonNum] = false;
-  AssignedAction = GetButtonAction(ButtonNum);
-  switch (GDisplayPage)                                   // display dependent handling:
+  if (ButtonNum != VMAXBUTTONS)                           // normal pushbutton event
   {
-    case eIOTestPage:
-      DisplayButtonHandler(ButtonNum, false); 
-      break;
-    case eFrontPage:
-    case eAboutPage:
-    case eFreqEntryPage:
-    case eBandPage:
-    case eModePage:
-    case eNRPage:
-    case eRFPage:
-      if (AssignedAction == ePBEncoderClick)
-        EncoderHandleButton(ButtonNum, false);
-      else if (AssignedAction != ePBNone)
-        CATHandlePushbutton(ButtonNum, AssignedAction, false); 
-      break;
-    case eSettingsPage:                                 // no action when on these pages
-    case eConfigurePage:
-      break;
+    AssignedAction = GetButtonAction(ButtonNum);
+    switch (GDisplayPage)                                   // display dependent handling:
+    {
+      case eIOTestPage:
+        DisplayButtonHandler(ButtonNum, false); 
+        break;
+      case eFrontPage:
+      case eAboutPage:
+      case eFreqEntryPage:
+      case eBandPage:
+      case eModePage:
+      case eNRPage:
+      case eRFPage:
+        if (AssignedAction == ePBEncoderClick)
+          EncoderHandleButton(ButtonNum, false);
+        else if (AssignedAction != ePBNone)
+          CATHandlePushbutton(ButtonNum, AssignedAction, false); 
+        break;
+      case eSettingsPage:                                 // no action when on these pages
+      case eConfigurePage:
+        break;
+    }
+  }
+  else
+  {
+    CATExtMox(false);
   }
 }
 
@@ -184,7 +200,7 @@ void ButtonTick(void)
   int Cntr;
   byte Input;                                   // becomes the new bit sequence for an input
   
-  for(Cntr=0; Cntr < VMAXBUTTONS; Cntr++)
+  for(Cntr=0; Cntr < VMAXBUTTONS+1; Cntr++)
   {
     Input = GInputDebounce[Cntr] << 1;          // mocve it left
     if (digitalRead(GButtonPinNumbers[Cntr]) == HIGH)

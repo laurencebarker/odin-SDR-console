@@ -63,9 +63,11 @@ typedef enum
   eENCWSidetone,
   eENCWSpeed,
   eENSquelch,
+  eENDiversityGain,
+  eENDiversityPhase,
   eENMulti                      // multifunction
 } EEncoderActions;
-#define VNUMENCODERACTIONS 16
+#define VNUMENCODERACTIONS 18
 
 //
 // this enum type lists all the functions that can be assigned to LED indicators

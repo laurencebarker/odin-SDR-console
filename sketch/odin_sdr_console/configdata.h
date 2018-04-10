@@ -20,8 +20,12 @@
 //
 extern EBaudRates GUSBBaudRate;
 extern EDualFnEncoders GEncoderOperation;                   // global for all encoders
-extern bool GBottomEncoderStrings;                           // true to have legends at the display bottom
-extern bool GSideEncoderStrings;                             // true to display legends at the side
+
+extern bool GBottomEncoderStrings;                          // true to have legends at the display bottom
+extern bool GSideEncoderStrings;                            // true to display legends at the side
+
+extern byte GEncoderDivisor;                                // number of edge events per declared click
+extern byte GVFOEncoderDivisor;                             // number of edge events per declared click
 
 //
 // function to copy all config settings to flash

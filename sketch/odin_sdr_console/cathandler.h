@@ -47,6 +47,11 @@ void CATSetCTuneOnOff(bool State);
 void CATSetVFOLock(bool State);
 
 
+//
+// set ext mox effect
+// true if ext mox input active
+//
+void CATExtMox(bool IsActiveMOX);
 
 //
 // request VOX on/off state

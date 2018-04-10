@@ -43,8 +43,6 @@
 //
 // global variables
 //
-//int16_t oldEncPos, encPos;
-#define STEPS 4
 byte EncoderGroup;                                  // sets which ones are updated every ms
 EEncoderActions GMultiAction;                       // assigned action for "multifunction"
 
@@ -52,14 +50,6 @@ EEncoderActions GMultiAction;                       // assigned action for "mult
 // 8 encoders: one VFO (fast) encoder and 7 "normal" ones 
 //
 Encoder VFOEncoder(VPINVFOENCODERA, VPINVFOENCODERB);
-NoClickEncoder encoder1(VPINENCODER1A, VPINENCODER1B, STEPS, true);
-NoClickEncoder encoder2(VPINENCODER2A, VPINENCODER2B, STEPS, true);
-NoClickEncoder encoder3(VPINENCODER3A, VPINENCODER3B, STEPS, true);
-NoClickEncoder encoder4(VPINENCODER4A, VPINENCODER4B, STEPS, true);
-NoClickEncoder encoder5(VPINENCODER5A, VPINENCODER5B, STEPS, true);
-NoClickEncoder encoder6(VPINENCODER6A, VPINENCODER6B, STEPS, true);
-NoClickEncoder encoder7(VPINENCODER7A, VPINENCODER7B, STEPS, true);
-NoClickEncoder encoder8(VPINENCODER8A, VPINENCODER8B, STEPS, true);
 
 long old_ct;
 
@@ -81,18 +71,18 @@ bool Is2ndAction[VMAXENCODERS];
   
 //
 // initialise - set up pins & construct data
+// these are constructed now because otherwise the configdata settings wouldn't be available yet.
 //
 void InitEncoders(void)
 {
-//  vfoencoder.begin();
-  EncoderList[0].Ptr = &encoder1;
-  EncoderList[1].Ptr = &encoder2;
-  EncoderList[2].Ptr = &encoder3;
-  EncoderList[3].Ptr = &encoder4;
-  EncoderList[4].Ptr = &encoder5;
-  EncoderList[5].Ptr = &encoder6;
-  EncoderList[6].Ptr = &encoder7;
-  EncoderList[7].Ptr = &encoder8;
+  EncoderList[0].Ptr = new NoClickEncoder(VPINENCODER1A, VPINENCODER1B, GEncoderDivisor, true);
+  EncoderList[1].Ptr = new NoClickEncoder(VPINENCODER2A, VPINENCODER2B, GEncoderDivisor, true);
+  EncoderList[2].Ptr = new NoClickEncoder(VPINENCODER3A, VPINENCODER3B, GEncoderDivisor, true);
+  EncoderList[3].Ptr = new NoClickEncoder(VPINENCODER4A, VPINENCODER4B, GEncoderDivisor, true);
+  EncoderList[4].Ptr = new NoClickEncoder(VPINENCODER5A, VPINENCODER5B, GEncoderDivisor, true);
+  EncoderList[5].Ptr = new NoClickEncoder(VPINENCODER6A, VPINENCODER6B, GEncoderDivisor, true);
+  EncoderList[6].Ptr = new NoClickEncoder(VPINENCODER7A, VPINENCODER7B, GEncoderDivisor, true);
+  EncoderList[7].Ptr = new NoClickEncoder(VPINENCODER8A, VPINENCODER8B, GEncoderDivisor, true);
 }
 
 
@@ -173,9 +163,9 @@ void EncoderSlowTick(void)
   }
 
 //
-//read the VFO encoder; divide by 4 to get 600ppr
+//read the VFO encoder; divide by N to get the desired step count
 //
-long ct = (VFOEncoder.read())>>2;
+long ct = (VFOEncoder.read())/GVFOEncoderDivisor;
   if (ct != old_ct)
   {
     //format the output for printing 

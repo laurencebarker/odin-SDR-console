@@ -65,6 +65,7 @@ int GDisplayThrottle;                                       // !=0 foir a few ti
 bool GConsoleTX = false;                                    // true if console has requested TX
 bool GConsoleTune = false;                                  // true if console has requested Tune
 bool GConsoleVFOA = true;                                   // true if we want VFO A
+bool GConsoleExtTX = false;                                 // true if externally triggered TX
 
 //
 // requests to change CAT state
@@ -517,6 +518,21 @@ void CheckTimeouts(void)
 }
 
 
+//
+// set ext mox effect
+// true if ext mox input active
+//
+void CATExtMox(bool IsActiveMOX)
+{
+  GConsoleExtTX = IsActiveMOX;
+  if (GConsoleTX || GConsoleExtTX)                            // then send CAT message
+    MakeCATMessageNumeric(eZZTX, 1);
+  else
+    MakeCATMessageNumeric(eZZTX, 0);
+  
+}
+
+
 
 //
 // periodic tick
@@ -579,7 +595,7 @@ void CATHandlePushbutton(unsigned int Button, EButtonActions Action, bool IsPres
       {
         GConsoleTX = ! GConsoleTX;
         GConsoleTune = false;                                       // tune is ties to TX; in this case we don't want tune
-        if (GConsoleTX)                                             // then send CAT message
+        if (GConsoleTX || GConsoleExtTX)                            // then send CAT message
           MakeCATMessageNumeric(eZZTX, 1);
         else
           MakeCATMessageNumeric(eZZTX, 0);
@@ -957,7 +973,13 @@ void CATHandleEncoder(unsigned int Encoder, int Clicks, EEncoderActions Assigned
         SendSquelchLevelClicks();
       else
         CATRequestSquelchLevel();
-      break;    
+      break;
+
+    case eENDiversityGain:
+      break;
+      
+    case eENDiversityPhase:
+      break;
   }
 }
 
