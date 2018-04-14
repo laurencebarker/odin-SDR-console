@@ -55,6 +55,9 @@ int GCatVoxGain;                                            // current TX vox ga
 int GCatVoxDelay;                                           // current TX vox delay
 int GCatCWTone;                                             // current CW sidetone
 int GCatCWSpeed;                                            // current CW speed
+long GCatDiversityPhase;                                    // current diversity phase (-18000 to 18000, meaning -180 to 180 degrees)
+int GCatDiversityGain;                                      // current diversity gain (0 to 5000, meaning 0.000 to 5.000)
+bool GCatDiversityRefSource;                                // current reference (true: RX1; false: RX2)
 
 int GVFOStepSize;                                           // current VFO step, in Hz
 int GDisplayThrottle;                                       // !=0 foir a few ticks after a display frequency update
@@ -152,9 +155,18 @@ int GCWSpeedTimeout;
 int GCWSpeedRecent;
 int GCWSpeedClicks;
 
+// diversity
+int GDiversityPhaseTimeout;
+int GDiversityPhaseRecent;
+int GDiversityPhaseClicks;
+int GDiversityGainTimeout;
+int GDiversityGainRecent;
+int GDiversityGainClicks;
+int GDiversitySourceTimeout;
+bool GDiversityStepFast = true;                    // true for fast steps
 
-// lookup VFO steo size from CAT msg parameter, in hz
-// this table must matych the CAT definitions!
+// lookup VFO step size from CAT msg parameter, in hz
+// this table must match the CAT definition for ZZAC!
 int GStepLookup[] = 
 {
   1, 10, 25, 50, 
@@ -513,6 +525,24 @@ void CheckTimeouts(void)
   if(GCWSpeedRecent != 0)                    // just decrement if non zero
     GCWSpeedRecent--;
 
+// Diversity Gsain
+  if(GDiversityGainTimeout != 0)                   // decrement diversity gain timeout if non zero
+    if (--GDiversityGainTimeout == 0)              // if it times out, re-request
+      CATRequestDiversityGain();
+  if(GDiversityGainRecent != 0)                    // just decrement if non zero
+    GDiversityGainRecent--;
+
+// diversity phase
+  if(GDiversityPhaseTimeout != 0)                   // decrement diversity phase timeout if non zero
+    if (--GDiversityPhaseTimeout == 0)              // if it times out, re-request
+      CATRequestDiversityPhase();
+  if(GDiversityPhaseRecent != 0)                    // just decrement if non zero
+    GDiversityPhaseRecent--;
+
+  if(GDiversitySourceTimeout != 0)                   // decrement diversity ref source timeout if non zero
+    if (--GDiversitySourceTimeout == 0)              // if it times out, re-request
+      CATRequestDiversityRefSource();
+
   if(GDisplayThrottle != 0)                 // display update throttle
     GDisplayThrottle--;
 }
@@ -842,6 +872,8 @@ void CATHandlePushbutton(unsigned int Button, EButtonActions Action, bool IsPres
       break;
 
     case ePBDiversityFastSlow:                    // fast/slow controls
+      if (IsPressed)                                          // toggle the requested TX/RX state
+        GDiversityStepFast = !GDiversityStepFast;             // toggle the local variable
       break;
   }
 }
@@ -976,9 +1008,19 @@ void CATHandleEncoder(unsigned int Encoder, int Clicks, EEncoderActions Assigned
       break;
 
     case eENDiversityGain:
+      GDiversityGainClicks += Clicks;          // set how many "unactioned" steps
+      if(GDiversityGainRecent != 0)            // if recent current threshold exists, use it
+        SendDiversityGainClicks();
+      else
+        CATRequestDiversityRefSource();
       break;
       
     case eENDiversityPhase:
+      GDiversityPhaseClicks += Clicks;          // set how many "unactioned" steps
+      if(GDiversityPhaseRecent != 0)            // if recent current threshold exists, use it
+        SendDiversityPhaseClicks();
+      else
+        CATRequestDiversityPhase();
       break;
   }
 }
@@ -1431,7 +1473,7 @@ void SendAGCThresholdClicks(void)
 
 
 
-#define VFILTERCLICKSTEP 25                                     // Hz per step
+#define VFILTERCLICKSTEP 50                                     // Hz per step
 
 /////////////////////////////// FILTER LOW ///////////////////////////////////////
 //
@@ -1852,6 +1894,128 @@ void SendCWSpeedClicks(void)
 
 
 
+//////////////////////////////  DIVERSITY  ////////////////////////////////////////
+
+#define VFASTGAINSTEP 25              // 0.025
+#define VSLOWGAINSTEP 1               // 0.001
+#define VFASTPHASESTEP 1000           // 10 degrees
+#define VSLOWPHASESTEP 25             // 0.25 degrees
+
+//
+// helper to return the diversity gain increment, given a number of steps
+// the increment is 0.025 if fast, 0.001 if slow
+//
+int GetDiversityGainIncrement(int Clicks)
+{
+  int Step;                               // step size
+  
+  if (GDiversityStepFast)
+    Step = VFASTGAINSTEP;
+  else
+    Step = VSLOWGAINSTEP;
+  
+  return (Step*Clicks);
+}
+
+//
+// helper to return the diversity phase increment, given a number of steps
+// the increment is 10 degrees if fast, 0.25 if slow
+//
+long GetDiversityPhaseIncrement(int Clicks)
+{
+  int Step;                               // step size
+  
+  if (GDiversityStepFast)
+    Step = VFASTPHASESTEP;
+  else
+    Step = VSLOWPHASESTEP;
+  
+  return (Step*Clicks);
+}
+
+//
+// request reference Source
+//
+void CATRequestDiversityRefSource(void)
+{
+  if(GDiversitySourceTimeout == 0)
+  {
+    MakeCATMessageNoParam(eZZDB);
+    GDiversitySourceTimeout = VGETTIMEOUT;
+  }
+}
+
+
+//
+// gain request 
+// if no recent data: sends a request message and sets a timeout
+//
+void CATRequestDiversityGain(void)
+{
+  if(GDiversityGainTimeout == 0)
+  {
+    if (GCatDiversityRefSource)                 // if RX1 is the source, request RX
+      MakeCATMessageNoParam(eZZDC);
+    else
+      MakeCATMessageNoParam(eZZDG);
+    GDiversityGainTimeout = VGETTIMEOUT;
+  }
+}
+
+
+//
+// diversity gain
+// deal with an encoder turn: a CAT message has arrived so now we need to update the param and send back to CAT
+// update & clip; send CAT; clear stored clicks; send to display
+//
+void SendDiversityGainClicks(void)
+{
+  GCatDiversityGain += GetDiversityGainIncrement(GDiversityGainClicks);      // update
+  GCatDiversityGain = ClipParameter(GCatDiversityGain, eZZDG);            // clip to limits
+  GDiversityGainClicks = 0;                                            // clear the stored clicks
+  if (GCatDiversityRefSource)                                  // send the right message: if RX1, set RX2
+    MakeCATMessageNumeric(eZZDC, GCatDiversityGain);
+  else
+    MakeCATMessageNumeric(eZZDG, GCatDiversityGain);
+  GDiversityGainRecent = VRECENTTHRESHOLD;                              // set "recent"
+}
+
+
+
+//
+// phase request 
+// if no recent data: sends a request message and sets a timeout
+//
+void CATRequestDiversityPhase(void)
+{
+  if(GDiversityPhaseTimeout == 0)
+  {
+    MakeCATMessageNoParam(eZZDD);
+    GDiversityPhaseTimeout = VGETTIMEOUT;
+  }
+}
+
+
+//
+// diversity phase
+// deal with an encoder turn: a CAT message has arrived so now we need to update the param and send back to CAT
+// update & wrap; send CAT; clear stored clicks; send to display
+//
+void SendDiversityPhaseClicks(void)
+{
+  GCatDiversityPhase -= GetDiversityPhaseIncrement(GDiversityPhaseClicks);      // update
+// now wraparound at 180 degrees
+  if (GCatDiversityPhase > 18000)
+    GCatDiversityPhase -= 36000;
+  else if (GCatDiversityPhase < -18000)
+    GCatDiversityPhase += 36000;
+  GDiversityPhaseClicks = 0;                                            // clear the stored clicks
+  MakeCATMessageNumeric(eZZDD, GCatDiversityPhase);
+  GDiversityPhaseRecent = VRECENTTHRESHOLD;                              // set "recent"
+}
+
+
+
 
 /////////////////////////////// ATTENUATION ///////////////////////////////////////
 
@@ -2201,14 +2365,23 @@ void HandleCATCommandNumParam(ECATCommands MatchedCAT, int ParsedParam)
 
     case eZZAC:
       GVFOStepSize = GStepLookup[ParsedParam];
+      break;
 
     case eZZDC:                                                       // diversity RX2 gain
+    case eZZDG:                                                       // diversity RX1 gain
+      GDiversityGainTimeout = 0;                                                   // clear timeout
+      GCatDiversityGain = ParsedParam;                                             // store locally
+      GDiversityGainRecent = VRECENTTHRESHOLD;                                     // set recent
+      if (GDiversityGainClicks != 0)                                               // we want to send a new update with encoder clicks
+        SendDiversityGainClicks();
       break;
 
     case eZZDD:                                                       // diversity phase
-      break;
-
-    case eZZDG:                                                       // diversity RX1 gain
+      GDiversityPhaseTimeout = 0;                                                   // clear timeout
+      GCatDiversityPhase = ParsedParam;                                             // store locally
+      GDiversityPhaseRecent = VRECENTTHRESHOLD;                                     // set recent
+      if (GDiversityPhaseClicks != 0)                                               // we want to send a new update with encoder clicks
+        SendDiversityPhaseClicks();
       break;
 
     case eZZDH:                                                       // diversity receiver source
@@ -2285,6 +2458,9 @@ void HandleCATCommandBoolParam(ECATCommands MatchedCAT, bool ParsedParam)
       break;
 
     case eZZDB:                          // diversity reference source 
+      GCatDiversityRefSource = ParsedParam;
+      GDiversitySourceTimeout = 0;
+      CATRequestDiversityGain();
       break;
 
     case eZZDE:                          // diversity enable

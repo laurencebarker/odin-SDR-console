@@ -185,6 +185,25 @@ void CATRequestCWSpeed(void);
 void SendCWSpeedClicks(void);
 
 //
+// request Diversity gain;
+// diversity gain encoder clicks
+//
+void CATRequestDiversityGain(void);
+void SendDiversityGainClicks(void);
+
+//
+// request Diversity phase;
+// diversity phase encoder clicks
+//
+void CATRequestDiversityPhase(void);
+void SendDiversityPhaseClicks(void);
+
+//
+// request Diversity reference source
+//
+void CATRequestDiversityRefSource(void);
+
+//
 // encoder assigned to VFO tune
 // similar to above, but can be A/B
 // simply request N steps up or down

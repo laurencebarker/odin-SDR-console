@@ -69,8 +69,8 @@ const EEncoderActions GFactoryEncoderActions[] =
   eENAGCLevel,
   eENFilterHigh,
   eENFilterLow,
-  eENDrive,
-  eENMicGain,
+  eENDiversityGain,
+  eENDiversityPhase,
   eENMulti,
   eENDrive  
 };
@@ -84,8 +84,8 @@ const EEncoderActions GFactoryEncoder2ndActions[] =
   eENAGCLevel,
   eENFilterHigh,
   eENFilterLow,
-  eENDrive,
-  eENMicGain,
+  eENDiversityGain,
+  eENDiversityPhase,
   eENMulti,
   eENDrive  
 };
@@ -130,7 +130,7 @@ const EButtonActions GFactoryButtonActions[] =
   ePBNRStep,                          // SW17
   ePBAFMute,                          // encoder 2 click
   ePBFilterReset,                     // encoder 3 click
-  ePBVoxOnOff,                        // encoder 4 click
+  ePBDiversityFastSlow,               // encoder 4 click
   ePBEncoderClick                     // encoder 5 click
 };
 

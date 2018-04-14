@@ -6,8 +6,8 @@
 //
 // encoder.c
 // this file holds the code to manage the rotary encoders
-// it looks like it needs two technologies:
-// interrupt driven code for optical VFO encoder (apparenrtly largely bounce free)
+// it needs two technologies:
+// interrupt driven code for optical VFO encoder (bounce free)
 // polled code for very bouncy mechanicsl encoders for other controls
 /////////////////////////////////////////////////////////////////////////
 
