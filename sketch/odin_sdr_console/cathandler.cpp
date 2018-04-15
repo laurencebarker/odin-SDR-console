@@ -60,7 +60,7 @@ int GCatDiversityGain;                                      // current diversity
 bool GCatDiversityRefSource;                                // current reference (true: RX1; false: RX2)
 
 int GVFOStepSize;                                           // current VFO step, in Hz
-int GDisplayThrottle;                                       // !=0 foir a few ticks after a display frequency update
+int GDisplayThrottle;                                       // !=0 for a few ticks after a display frequency update
 
 //
 // console requested settings
@@ -83,6 +83,7 @@ bool GToggleVoxOnOff;                               // true to initiate toggle V
 #define VDISPLAYTHROTTLETICKS 10                    // no freq update from VFO encoder until 10 ticks after the last
 int GPeriodicRefreshTimer;
 int GeriodicRefreshState;
+int GPeriodicRefreshSubState;
 
 //
 // these variables are true if there is a "live, unactioned" request for periodic update
@@ -223,6 +224,50 @@ int GFilterResetHighValues[] =
 void InitCATHandler(void)
 {
   
+}
+
+
+//
+// get the low, high erdges of "ideal" filter settings
+// returns a frequency in Hz
+//
+int GetOptimumIFFilterLow(void)
+{
+  int FilterPBLow;                              // passband limits looked up
+
+  FilterPBLow = GFilterResetLowValues[(int)GCatStateMode];
+//
+// for CW: use the low/high as freq either cide of CW sidetone  
+//
+  if (GCatStateMode == eCWL)
+  {
+    FilterPBLow = FilterPBLow - GCatCWTone;
+  }
+  else if (GCatStateMode == eCWU)
+  {
+    FilterPBLow = FilterPBLow + GCatCWTone;
+  }
+  return FilterPBLow;
+}
+
+
+int GetOptimumIFFilterHigh(void)
+{
+  int FilterPBHigh;                              // passband limits looked up
+
+  FilterPBHigh = GFilterResetHighValues[(int)GCatStateMode];
+//
+// for CW: use the low/high as freq either cide of CW sidetone  
+//
+  if (GCatStateMode == eCWL)
+  {
+    FilterPBHigh = FilterPBHigh - GCatCWTone;
+  }
+  else if (GCatStateMode == eCWU)
+  {
+    FilterPBHigh = FilterPBHigh + GCatCWTone;
+  }
+  return FilterPBHigh;
 }
 
 
@@ -422,8 +467,28 @@ void PeriodicRefresh(void)
         GLiveRequestMode = true;
         break;
 
-      case 8:
-        MakeCATMessageNoParam(eZZAC);                         // get VFO step size
+      case 8:                                                 // if this state we sequence between infrequently needed values
+        if (++GPeriodicRefreshSubState > 2)
+          GPeriodicRefreshSubState = 0;
+        switch(GPeriodicRefreshSubState)
+        {
+          case 0:                                             // VFO step size
+            MakeCATMessageNoParam(eZZAC);                     // get VFO step size
+            break;
+            
+          case 1:                                             // filter low cut
+            if (GConsoleVFOA)
+              MakeCATMessageNoParam(eZZFL);                   // request A filter
+            else
+              MakeCATMessageNoParam(eZZFS);                   // request B filter
+            break;
+          case 2:                                             // filter high cut
+            if (GConsoleVFOA)
+              MakeCATMessageNoParam(eZZFH);                   // request A filter
+            else
+              MakeCATMessageNoParam(eZZFR);                   // request B filter
+            break;
+        }
         break;
     }
   }
@@ -927,20 +992,50 @@ void CATHandleEncoder(unsigned int Encoder, int Clicks, EEncoderActions Assigned
         CATRequestAGCThreshold();
       break;    
 
+//
+// IF filter high: behaviour different in LSB-like spectrum reversed modes 
+// (drive the opposite filter edge, in th eopposite direction)
+//
     case eENFilterHigh:
-      GFilterHighClicks += Clicks;          // set how many "unactioned" steps
-      if(GFilterHighRecent != 0)            // if recent current threshold exists, use it
-        SendFilterHighClicks();
-      else
-        CATRequestFilterHigh();
+      if((GCatStateMode == eLSB) || (GCatStateMode == eCWL) || (GCatStateMode == eDIGL))     // if reversed spectrum
+      {
+        GFilterLowClicks -= Clicks;          // set how many "unactioned" steps
+        if(GFilterLowRecent != 0)            // if recent current threshold exists, use it
+          SendFilterLowClicks();
+        else
+          CATRequestFilterLow();
+      }
+      else                                                                                  // none reversed spectrum
+      {
+        GFilterHighClicks += Clicks;          // set how many "unactioned" steps
+        if(GFilterHighRecent != 0)            // if recent current threshold exists, use it
+          SendFilterHighClicks();
+        else
+          CATRequestFilterHigh();
+      }
       break;    
 
+//
+// IF filter low: behaviour different in LSB-like spectrum reversed modes 
+// (drive the opposite filter edge, in th eopposite direction)
+//
     case eENFilterLow:
-      GFilterLowClicks += Clicks;          // set how many "unactioned" steps
-      if(GFilterLowRecent != 0)            // if recent current threshold exists, use it
-        SendFilterLowClicks();
+      if((GCatStateMode == eLSB) || (GCatStateMode == eCWL) || (GCatStateMode == eDIGL))     // if reversed spectrum
+      {
+        GFilterHighClicks -= Clicks;          // set how many "unactioned" steps
+        if(GFilterHighRecent != 0)            // if recent current threshold exists, use it
+          SendFilterHighClicks();
+        else
+          CATRequestFilterHigh();
+      }
       else
-        CATRequestFilterLow();
+      {
+        GFilterLowClicks += Clicks;          // set how many "unactioned" steps
+        if(GFilterLowRecent != 0)            // if recent current threshold exists, use it
+          SendFilterLowClicks();
+        else
+          CATRequestFilterLow();
+      }
       break;    
 
     case eENDrive:
@@ -1508,6 +1603,8 @@ void SendFilterLowClicks(void)
   else
     MakeCATMessageNumeric(eZZFS, GCatFilterLow);
   GFilterLowRecent = VRECENTTHRESHOLD;                            // set "recent"
+  DisplayShowFilterLow(GCatFilterLow);                            // send to display
+
 }
 
 
@@ -1545,6 +1642,7 @@ void SendFilterHighClicks(void)
   else
     MakeCATMessageNumeric(eZZFR, GCatFilterHigh);
   GFilterHighRecent = VRECENTTHRESHOLD;                             // set "recent"
+  DisplayShowFilterHigh(GCatFilterHigh);                             // send to display
 }
 
 
@@ -2183,6 +2281,8 @@ void HandleCATCommandNumParam(ECATCommands MatchedCAT, int ParsedParam)
         GFilterLowRecent = VRECENTTHRESHOLD;                                      // set recent
         if (GFilterLowClicks != 0)                                                // we want to send a new update with encoder clicks
           SendFilterLowClicks();
+        else
+          DisplayShowFilterLow(GCatFilterLow);                                    // if there are clicks, the filterlowclicks code sends to display
       }
       break;
       
@@ -2196,6 +2296,8 @@ void HandleCATCommandNumParam(ECATCommands MatchedCAT, int ParsedParam)
         GFilterHighRecent = VRECENTTHRESHOLD;                                     // set recent
         if (GFilterHighClicks != 0)                                               // we want to send a new update with encoder clicks
           SendFilterHighClicks();
+        else
+          DisplayShowFilterHigh(GCatFilterHigh);                                  // if there are clicks, the filterlowclicks code sends to display
       }
       break;
       

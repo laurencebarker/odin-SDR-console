@@ -13,6 +13,7 @@
 #include "types.h"
 #include "tiger.h"
 
+
 //
 // initialise CAT handler
 //
@@ -242,6 +243,13 @@ void HandleCATCommandStringParam(ECATCommands MatchedCAT, char* ParsedParam);
 void HandleCATCommandNumParam(ECATCommands MatchedCAT, int ParsedParam);
 void HandleCATCommandBoolParam(ECATCommands MatchedCAT, bool ParsedParam);
 void HandleCATCommandNoParam(ECATCommands MatchedCAT);
+
+//
+// get the low, high erdges of "ideal" filter settings
+// returns a frequency in Hz
+//
+int GetOptimumIFFilterLow(void);
+int GetOptimumIFFilterHigh(void);
 
 
 #endif //not defined

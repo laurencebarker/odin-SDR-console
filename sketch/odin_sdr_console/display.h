@@ -87,6 +87,9 @@ void DisplayShowAGCThreshold(int Threshold);
 void DisplayShowLockState(bool IsLock);
 void DisplayShowSplit(bool IsSplit);
 void DisplayShowAtten(EAtten Attenuation);
+void DisplayShowFilterLow(int Freq);
+void DisplayShowFilterHigh(int Freq);
+
 
 //
 // set display of encoder actions. Currently we have placeholders to show 0,2,4 & 6

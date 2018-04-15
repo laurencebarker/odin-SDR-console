@@ -19,6 +19,16 @@
 #include "cathandler.h"
 #include "encoders.h"
 
+//
+// define colours for  Nextion display
+//
+#define NEXBLACK 0L
+#define NEXWHITE 65535L
+#define NEXRED 63488L
+#define NEXGREEN 2016L
+#define NEXBLUE 31L
+
+
 #define VDISPLAYMINANGLE 34                              // range 34 to 146 degrees
 #define VMETERUPDATETICKS 10                  // 100ms update
 
@@ -28,6 +38,16 @@ unsigned int GControlNumber;                  // number of control being edited
 unsigned int GActionNumber;                   // displayed action of control
 unsigned int G2ndActionNumber;                // displayed action of control
 int GMeterUpdateTicks;                        // ticks until we update the S meter
+bool GValidFilterLow = false;                 // true if we have a valid filter value
+bool GValidFilterHigh = false;                // true if we have a valid filter value
+
+//
+// settings for the "filter width" display area
+// (4.3" display will have different settings)
+#define VDISP32FILTX 280
+#define VDISP32FILTY 122
+#define VDISP32FILTW 120
+#define VDISP32FILTH 15
 
 
 
@@ -63,7 +83,8 @@ bool Enc1IsMulti;                                           // true if display 1
 bool Enc2IsMulti;                                           // true if display 2 is multi
 bool Enc3IsMulti;                                           // true if display 3 is multi
 bool Enc4IsMulti;                                           // true if display 4 is multi
-
+int DisplayCurrentFilterLow;                                // LF edge of filter passband  
+int DisplayCurrentFilterHigh;                               // HF edge of filter passband  
 
 
 
@@ -97,6 +118,7 @@ NexText p0t9 = NexText(1, 17, "t9");                  // LOCK
 NexText p0t10 = NexText(1, 18, "t10");                // RIT "on" text
 NexText p0t11 = NexText(1, 19, "t11");                // SPLIT
 NexGauge p0z0 = NexGauge(1, 14, "z0");                // gauge
+NexText p0t13 = NexText(1, 21, "t13");                // RX/TX/TUNE indicator
 
 
 //
@@ -502,6 +524,67 @@ char* ButtonActionStrings[] =
 
 
 //
+// I/O test LED strings
+//
+char* IOTestLEDStrings[]=
+{
+  "LED1",
+  "LED2",
+  "LED3",
+  "LED4",
+  "LED5",
+  "LED6",
+  "LED7"
+};
+
+
+//
+// I/O test encoder strings
+//
+char* IOTestEncoderStrings[]=
+{
+  "Enc 2A",
+  "Enc 2B",
+  "Enc 3A",
+  "Enc 3B",
+  "Enc 4A",
+  "Enc 4B",
+  "Enc 5A",
+  "Enc 5B"
+};
+
+
+//
+// I/O test pushbutton strings
+//
+char* IOTestButtonStrings[] =
+{
+  "SW1",
+  "SW2",
+  "SW3",
+  "SW4",
+  "SW5",
+  "SW6",
+  "SW7",
+  "SW8",
+  "SW9",
+  "SW10",
+  "SW11",
+  "SW12",
+  "SW13",
+  "SW14",
+  "SW15",
+  "SW16",
+  "SW17",
+  "SW_E2",
+  "SW_E3",
+  "SW_E4",
+  "SW_E5"
+};
+
+
+
+//
 // list of encoder text box controls for the I/O test page
 // indexed by the button number (0 to 20; 17 pushbuttons + 4 encoder clicks)
 //
@@ -530,6 +613,95 @@ const char * BtnObjectNames[] =
   "tenc7"             // encoder 5
 };
 
+
+//
+// draw a bar on the screen
+// this has X,Y,W,H co-ordinates and a colour
+// it uses the display's native "fill" command (see the Nextion command set)
+// and uses the Arduino library sendCommand to issue it to the display
+// note the fill command is "fill X,Y,W,H,Col" with NO spaces!
+//
+void DrawDisplayBar (unsigned int X, unsigned int Y, unsigned int W, unsigned int H, unsigned int Colour)
+{
+  char CmdBuffer[30], Cmd[10];
+  strcpy(CmdBuffer, "fill ");                   // "fill "
+  itoa(X, Cmd, 10);
+  strcat(CmdBuffer,Cmd);
+  strcat(CmdBuffer,",");                        // "fill X,"
+  itoa(Y, Cmd, 10);
+  strcat(CmdBuffer,Cmd);
+  strcat(CmdBuffer,",");                        // "fill X,Y,"
+  itoa(W, Cmd, 10);
+  strcat(CmdBuffer,Cmd);
+  strcat(CmdBuffer,",");                        // "fill X,Y,W,"
+  itoa(H, Cmd, 10);
+  strcat(CmdBuffer,Cmd);
+  strcat(CmdBuffer, ",");                       // "fill X,Y,W,H,"
+  itoa(Colour, Cmd, 10);
+  strcat(CmdBuffer,Cmd);                        // "fill X,Y,W,H,colour"
+  sendCommand(CmdBuffer);
+}
+
+//
+// function to redraw the IF filter passband
+// only draw if the correct (main) page shown!
+// the action needed is to dwaw a white rectangle (to erase)
+// then a black bar
+//
+void RedrawFilterPassband(void)
+{
+  long IdealLow, IdealHigh, IdealWidth, IdealCentre;      // ideal filter passband 
+  long DisplayWidth, DisplayLow, DisplayHigh;             // display range (LHS pixel, centre pixel, RHS pixel)
+  int LeftPix, RightPix, WidthPix;                        // low and high pixels for actual filter settings
+  long PixelWidth;
+  int StartPix;                                           // left hand side of bar
+//
+// first of all find the frequency range corresponding to the displayed passband (centred on the pixel range)
+//
+  PixelWidth = VDISP32FILTW;
+  IdealLow = GetOptimumIFFilterLow();             // get mode dependent low and high values
+  IdealHigh = GetOptimumIFFilterHigh();
+  IdealWidth = abs(IdealHigh - IdealLow);
+  IdealCentre = (IdealHigh + IdealLow)/2;              // centre of display area
+  DisplayWidth = 2* IdealWidth;
+  DisplayLow = IdealCentre - IdealWidth;
+  DisplayHigh = IdealCentre + IdealWidth;
+
+
+//
+// calculate edges of the pixel region to draw
+// note that reversed spectrum calculated differently!
+//
+
+  LeftPix = (int) ((PixelWidth * (DisplayCurrentFilterLow-DisplayLow))/DisplayWidth);
+  RightPix = (int) ((PixelWidth * (DisplayCurrentFilterHigh-DisplayLow))/DisplayWidth);
+// clip to the display area
+  LeftPix = constrain(LeftPix, 0, PixelWidth-1);
+  RightPix = constrain(RightPix, 0, PixelWidth-1);
+  
+  if((DisplayCurrentMode == eLSB) || (DisplayCurrentMode == eCWL) || (DisplayCurrentMode == eDIGL))     // if reversed spectrum
+  {
+    LeftPix = PixelWidth - LeftPix;                           // reversed if an LSB mode
+    RightPix = PixelWidth - RightPix;                         // reversed if an LSB mode
+    StartPix = RightPix;                                       // draw from left to right pixel
+    WidthPix = LeftPix-RightPix+1;  
+  }
+  else
+  {
+    StartPix = LeftPix;                                       // draw from left to right pixel
+    WidthPix = RightPix-LeftPix+1;  
+  }
+  StartPix += VDISP32FILTX;
+//
+// now erase the drawing area;
+// then redraw if valid low and high filter settings
+// 
+  if ((GDisplayPage == eFrontPage) && (GValidFilterHigh) && (GValidFilterLow))
+  {
+    DrawDisplayBar(VDISP32FILTX, VDISP32FILTY, VDISP32FILTW, VDISP32FILTH, NEXWHITE);     // erase old bar
+    DrawDisplayBar(StartPix, VDISP32FILTY, WidthPix, VDISP32FILTH, NEXGREEN);     // draw new bar
+  }
+}
 
 //
 // functions to redraw test boxes on main page (page 0)
@@ -600,6 +772,19 @@ void RedrawRXStatusBox(void)
 }
 
 
+void RedrawRIT(bool IsRIT)
+{
+  if (IsRIT)
+  {
+    p0t10.Set_font_color_pco(NEXRED);
+    p0t10.setText("ON");  
+  }
+  else
+  {
+    p0t10.Set_font_color_pco(NEXBLACK);
+    p0t10.setText("OFF");
+  }
+}
 
 //
 // "helper" function to find the max number of controls of the type being edited
@@ -668,66 +853,6 @@ void Page9GetActions(void)
       break;
   }
 }
-
-
-//
-// I/O test LED strings
-//
-char* IOTestLEDStrings[]=
-{
-  "LED1",
-  "LED2",
-  "LED3",
-  "LED4",
-  "LED5",
-  "LED6",
-  "LED7"
-};
-
-
-//
-// I/O test encoder strings
-//
-char* IOTestEncoderStrings[]=
-{
-  "Enc 2A",
-  "Enc 2B",
-  "Enc 3A",
-  "Enc 3B",
-  "Enc 4A",
-  "Enc 4B",
-  "Enc 5A",
-  "Enc 5B"
-};
-
-
-//
-// I/O test pushbutton strings
-//
-char* IOTestButtonStrings[] =
-{
-  "SW1",
-  "SW2",
-  "SW3",
-  "SW4",
-  "SW5",
-  "SW6",
-  "SW7",
-  "SW8",
-  "SW9",
-  "SW10",
-  "SW11",
-  "SW12",
-  "SW13",
-  "SW14",
-  "SW15",
-  "SW16",
-  "SW17",
-  "SW_E2",
-  "SW_E3",
-  "SW_E4",
-  "SW_E5"
-};
 
 
 
@@ -809,25 +934,14 @@ void RedrawEncoderString4(void)
 //
 void DisplaySetMeterBackground(void)
 {
-  char Cmd1Buffer[20];
-  char Cmd2Buffer[20];
   int Angle;
   
   if(GDisplayPage == eFrontPage)                // redraw main page, if displayed
   {
-    if (DisplayTXState && DisplayTuneState)
-    {
-      strcpy(Cmd2Buffer, "z0.picc=3");
-    }
-    else if (DisplayTXState && !DisplayTuneState)
-    {
-      strcpy(Cmd2Buffer, "z0.picc=2");
-    }
+    if (DisplayTXState)
+      p0z0.Set_background_crop_picc(2);
     else
-    {
-      strcpy(Cmd2Buffer, "z0.picc=1");
-    }
-    sendCommand(Cmd2Buffer);
+      p0z0.Set_background_crop_picc(1);
 //
 // now set the meter angle as it will be different
 //
@@ -864,11 +978,7 @@ void page0mainPushCallback(void *ptr)             // called when page 0 loads (m
 
   RedrawVFOStatusBox();
   RedrawRXStatusBox();
-
-  if (DisplayRITState)
-    p0t10.setText("ON");  
-  else
-    p0t10.setText("");
+  RedrawRIT(DisplayRITState);
 
   p0z0.setValue(DisplayCurrentSReading);
 
@@ -1681,6 +1791,24 @@ void DisplayShowTXState(bool IsTX, bool IsTune)
     DisplayTXState = IsTX;                                // save new settings
     DisplayTuneState = IsTune;                            // save new settings
     DisplaySetMeterBackground();
+    if (IsTune)
+    {
+      p0t13.setText("TUNE");
+      p0t13.Set_background_color_bco(NEXRED);
+      p0t13.Set_font_color_pco(NEXWHITE);
+    }
+    else if (IsTX)
+    {
+      p0t13.setText("TX");
+      p0t13.Set_background_color_bco(NEXRED);
+      p0t13.Set_font_color_pco(NEXWHITE);
+    }
+    else
+    {
+      p0t13.setText("RX");
+      p0t13.Set_background_color_bco(NEXGREEN);
+      p0t13.Set_font_color_pco(NEXBLACK);
+    }
   }
 }
 
@@ -1689,15 +1817,10 @@ void DisplayShowRITState(bool IsRIT)
 {
   if (DisplayRITState != IsRIT)                // if different from current settings
   {
+    DisplayRITState = IsRIT;                     // save new settings
     if(GDisplayPage == eFrontPage)                      // redraw main page, if displayed
-    {
-      if (IsRIT)
-        p0t10.setText("ON");
-      else
-        p0t10.setText("");
-    }
+      RedrawRIT(DisplayRITState);
   }
-  DisplayRITState = IsRIT;                     // save new settings
 }
 
 
@@ -1829,7 +1952,10 @@ void DisplayShowMode(EMode Mode)
 
   if (DisplayCurrentMode != Mode)
   {
-    DisplayCurrentMode = Mode;                         // copy new to A
+    DisplayCurrentMode = Mode;                          // copy new to A
+    GValidFilterLow = false;                            // invalidate the filter values
+    GValidFilterHigh = false;                           // invalidate the filter values
+    RedrawFilterPassband();
     if(GDisplayPage == eFrontPage)                      // redraw main page, if displayed
       p0t8.setText(ModeStrings[DisplayCurrentMode]);
 
@@ -2059,6 +2185,38 @@ void DisplayShowAtten(EAtten Attenuation)
   }
 }
 
+
+
+//
+// set filter low value.
+// if we have a new value, redraw the passband
+//
+void DisplayShowFilterLow(int Freq)
+{
+  GValidFilterLow = true;
+  if (Freq != DisplayCurrentFilterLow)
+  {
+    DisplayCurrentFilterLow = Freq;
+    RedrawFilterPassband();
+  }
+}
+
+
+
+
+//
+// set filter high value
+// if we have a new value, redraw the passband
+//
+void DisplayShowFilterHigh(int Freq)
+{
+  GValidFilterHigh = true;
+  if (Freq != DisplayCurrentFilterHigh)
+  {
+    DisplayCurrentFilterHigh = Freq;
+    RedrawFilterPassband();
+  }
+}
 
 
 
