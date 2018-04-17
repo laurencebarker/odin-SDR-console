@@ -75,20 +75,7 @@ const EEncoderActions GFactoryEncoderActions[] =
   eENDrive  
 };
 
-//
-// array of factory encoder settings. User can reconfigure from this.
-//
-const EEncoderActions GFactoryEncoder2ndActions[] =
-{
-  eENAFGain,
-  eENAGCLevel,
-  eENFilterHigh,
-  eENFilterLow,
-  eENDiversityGain,
-  eENDiversityPhase,
-  eENMulti,
-  eENDrive  
-};
+
 //
 // array of factory indicator settings. User can reconfigure from this.
 //
@@ -188,8 +175,6 @@ void CopySettingsToFlash(void)
   {
     Setting = (byte)GEncoderMainActions[Cntr];
     dueFlashStorage.write(Addr++, Setting);
-    Setting = (byte)GEncoder2ndActions[Cntr];
-    dueFlashStorage.write(Addr++, Setting);
   }
 // write indicators  
   for (Cntr=0; Cntr < VMAXINDICATORS;   Cntr++)
@@ -226,10 +211,7 @@ void InitialiseFlash(void)
   
 // initialise encoders
   for(Cntr=0; Cntr < VMAXENCODERS; Cntr++)
-  {
     GEncoderMainActions[Cntr] = GFactoryEncoderActions[Cntr];
-    GEncoder2ndActions[Cntr] = GFactoryEncoder2ndActions[Cntr];
-  }
 // initialise indicators
   for(Cntr=0; Cntr < VMAXINDICATORS; Cntr++)
     GIndicatorActions[Cntr] = GFactoryIndicatorActions[Cntr];
@@ -270,10 +252,7 @@ void LoadSettingsFromFlash(void)
   GVFOEncoderDivisor = (byte)dueFlashStorage.read(Addr++);
 // read encoders  
   for (Cntr=0; Cntr < VMAXENCODERS;   Cntr++)
-  {
     GEncoderMainActions[Cntr] = (EEncoderActions)dueFlashStorage.read(Addr++);
-    GEncoder2ndActions[Cntr] = (EEncoderActions)dueFlashStorage.read(Addr++);
-  }
 // read indicators  
   for (Cntr=0; Cntr < VMAXINDICATORS;   Cntr++)
     GIndicatorActions[Cntr] = (EIndicatorActions)dueFlashStorage.read(Addr++);
@@ -285,21 +264,24 @@ void LoadSettingsFromFlash(void)
 
 //
 // functions to retrieve assigned button, indicator and encoder actions
-// for encoder: if either is multi, then set it to multifunction
+// for encoder: 
 //
 EEncoderActions GetEncoderAction(unsigned int Encoder, bool Is2ndFunction)
 {
   EEncoderActions Action1;
-  EEncoderActions Action2;
   EEncoderActions Result;
 
   Action1 = GEncoderMainActions[Encoder];           //  main
-  Action2 = GEncoder2ndActions[Encoder];            // 2nd
   
-  if ((Action1 == eENMulti) || (Action2 == eENMulti))  
+  if (Action1 == eENMulti)
     Result = eENMulti;
   else if (Is2ndFunction)
-    Result = Action2;
+  {
+    if (Encoder < (VMAXENCODERS-1))                    // if not last encoder
+      Result = GEncoderMainActions[Encoder+1];        //  2nd function is assigned to the next encoder number
+    else
+      Result = Action1;
+  }
   else
     Result = Action1;
   
@@ -323,12 +305,9 @@ EButtonActions GetButtonAction(unsigned int Button)
 // functions to store assigned button, indicator and encoder actions
 // this is a precursor to doing a "save to flash"
 //
-void SetEncoderAction(unsigned int Encoder, EEncoderActions Setting, bool Is2ndFunction)
+void SetEncoderAction(unsigned int Encoder, EEncoderActions Setting)
 {
-  if (Is2ndFunction)
-    GEncoder2ndActions[Encoder] = Setting;
-  else
-    GEncoderMainActions[Encoder] = Setting;
+  GEncoderMainActions[Encoder] = Setting;
 }
 
 void SetIndicatorAction(unsigned int Indicator, EIndicatorActions Setting)
@@ -340,7 +319,4 @@ void SetButtonAction(unsigned int Button, EButtonActions Setting)
 {
   GButtonActions[Button] = Setting;
 }
-
-
-
 

@@ -263,16 +263,13 @@ NexText p8t7 = NexText(9, 18, "t7");                  // VFO encoder divisor
 //
 // page 9 "configure" objects
 //
-NexText p9t6 = NexText(10, 16, "t6");                  // indicator/encoder/button number
-NexText p9t4 = NexText(10, 9, "t4");                   // function
-NexText p9t5 = NexText(10, 12, "t5");                  // 2nd function 
-NexButton p9b1 = NexButton(10, 5, "b1");               // device number minus
-NexButton p9b2 = NexButton(10, 6, "b2");               // device number plus
-NexButton p9b3 = NexButton(10, 7, "b3");               // function minus
-NexButton p9b4 = NexButton(10, 8, "b4");               // function plus
-NexButton p9b5 = NexButton(10, 10, "b5");              // 2nd function minus
-NexButton p9b6 = NexButton(10, 11, "b6");              // 2nd function plus
-NexButton p9b7 = NexButton(10, 14, "b7");              // Accept/Set
+NexText p9t6 = NexText(10, 12, "t6");                  // indicator/encoder/button number
+NexText p9t4 = NexText(10, 8, "t4");                   // function
+NexButton p9b1 = NexButton(10, 4, "b1");               // device number minus
+NexButton p9b2 = NexButton(10, 5, "b2");               // device number plus
+NexButton p9b3 = NexButton(10, 6, "b3");               // function minus
+NexButton p9b4 = NexButton(10, 7, "b4");               // function plus
+NexButton p9b7 = NexButton(10, 10, "b7");              // Accept/Set
 
 //
 // declare touch event objects to the touch event list
@@ -324,8 +321,6 @@ NexTouch *nex_listen_list[] =
   &p9b2,                                      // configure page #+
   &p9b3,                                      // configure page fn-
   &p9b4,                                      // configure page fn+
-  &p9b5,                                      // configure page 2fn-
-  &p9b6,                                      // configure page 2fn+
   &p9b7,                                      // configure page Set/Accept
   NULL                                        // terminates the list
 };
@@ -843,7 +838,6 @@ void Page9GetActions(void)
   {
     case eEncoders:
       GActionNumber = (unsigned int) GetEncoderAction(GControlNumber, false);      // get current programmed main & 2nd actions
-      G2ndActionNumber = (unsigned int) GetEncoderAction(GControlNumber, true);
       break;
     case ePushbuttons:
       GActionNumber = (unsigned int) GetButtonAction(GControlNumber);
@@ -866,7 +860,6 @@ void Page9SetControls(void)
     case eEncoders:
       p9t6.setText(IOTestEncoderStrings[GControlNumber]);              // show what control were editing
       p9t4.setText(EncoderActionStrings[GActionNumber]);             // show in text boxes
-      p9t5.setText(EncoderActionStrings[G2ndActionNumber]);
       break;
     case ePushbuttons:
       p9t6.setText(IOTestButtonStrings[GControlNumber]);              // show what control were editing
@@ -1503,29 +1496,6 @@ void p9b4PushCallback(void *ptr)             // function +
   Page9SetControls();                           // update the text boxes
 }
 
-//
-// 2nd Action -:
-// decrement action number & redisplay
-//
-void p9b5PushCallback(void *ptr)             // 2nd function -
-{
-  if (G2ndActionNumber > 0)
-    G2ndActionNumber--;
-  Page9SetControls();                           // update the text boxes
-}
-
-//
-// 2nd Action +:
-// increment action number & redisplay
-//
-void p9b6PushCallback(void *ptr)             // 2nd function +
-{
-  unsigned int MaxActionNum;
-  MaxActionNum = Page9GetMaxActionCount();          // find out the max number we are allowed
-  if (G2ndActionNumber < MaxActionNum)
-    G2ndActionNumber++;
-  Page9SetControls();                           // update the text boxes
-}
 
 //
 // save the currently displayed setting back to the stored configuration data
@@ -1536,8 +1506,7 @@ void p9b7PushCallback(void *ptr)             // Set/Accept
   switch(GControlType)                        // now find the initial actions
   {
     case eEncoders:
-      SetEncoderAction(GControlNumber, (EEncoderActions)GActionNumber, false);      // set current programmed main & 2nd actions
-      SetEncoderAction(GControlNumber, (EEncoderActions)G2ndActionNumber, true);
+      SetEncoderAction(GControlNumber, (EEncoderActions)GActionNumber);      // set current programmed main & 2nd actions
       break;
     case ePushbuttons:
       SetButtonAction(GControlNumber, (EButtonActions)GActionNumber);
@@ -1548,9 +1517,6 @@ void p9b7PushCallback(void *ptr)             // Set/Accept
   }
 
 }
-void SetEncoderAction(unsigned int Encoder, EEncoderActions Setting, bool Is2ndFunction);
-void SetIndicatorAction(unsigned int Indicator, EIndicatorActions Setting);
-void SetButtonAction(unsigned int Button, EButtonActions Setting);
 
 
 
@@ -1610,8 +1576,6 @@ void DisplayInit(void)
   p9b2.attachPush(p9b2PushCallback);
   p9b3.attachPush(p9b3PushCallback);
   p9b4.attachPush(p9b4PushCallback);
-  p9b5.attachPush(p9b5PushCallback);
-  p9b6.attachPush(p9b6PushCallback);
   p9b7.attachPush(p9b7PushCallback);
 //
 // get the initial encoder actions

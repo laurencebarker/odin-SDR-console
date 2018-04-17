@@ -58,7 +58,7 @@ EButtonActions GetButtonAction(unsigned int Button);
 // functions to store assigned button, indicator and encoder actions
 // this is a precursor to doing a "save to flash"
 //
-void SetEncoderAction(unsigned int Encoder, EEncoderActions Setting, bool Is2ndFunction);
+void SetEncoderAction(unsigned int Encoder, EEncoderActions Setting);
 void SetIndicatorAction(unsigned int Indicator, EIndicatorActions Setting);
 void SetButtonAction(unsigned int Button, EButtonActions Setting);
 

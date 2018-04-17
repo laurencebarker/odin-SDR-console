@@ -217,7 +217,7 @@ void EncoderHandleButton(unsigned int ButtonNum, bool IsPress)
   EEncoderActions Action;
   int EncoderNumber;
   
-  if (ButtonNum >= VBUTTONNUMENC0)                  // only process if it could correspond to an encoder
+  if ((ButtonNum >= VBUTTONNUMENC0) && (ButtonNum <= VBUTTONNUMENC6))                 // only process if it could correspond to an encoder
                                                     // (user config error if not!)
   {
     EncoderNumber = (ButtonNum - VBUTTONNUMENC0)<<1;        // 0,2,4 or 6
