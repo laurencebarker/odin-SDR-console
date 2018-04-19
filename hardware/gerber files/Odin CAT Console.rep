@@ -1,0 +1,82 @@
+
+***  EXCELLON DRILL FILE GENERATION  ***
+
+Drill file for drawing: Odin CAT Console.ipf
+
+
+***  Drill file settings
+
+Coord format   : NN.DDDDD
+Units          : INCHES
+                 (Absolute)
+Leading zero's : OFF
+Expanded mode  : OFF
+Start string   : %
+End string     : M00
+Output format  : ISO (ASCII)
+
+
+***  Drill files / layer pairs
+
+     File            Layers          Via's
+     .d0  :        TOP .. BOTTOM     (194)
+
+
+***  Drill diameter table. File: Odin CAT Console.ipf.d0
+
+     Tool       Diam      Holes
+       1     19.69 Mil     194
+       2     35.00 Mil      97
+       3     39.17 Mil       8
+       4     40.00 Mil       8
+       5     43.33 Mil      90
+       6     46.67 Mil      68
+       7     59.17 Mil      34
+       8     90.00 Mil       4
+       9     98.33 Mil       3
+      10    106.67 Mil      14
+      11    115.00 Mil       3
+      12    138.33 Mil      16
+      13    374.02 Mil       1
+
+
+***  EXCELLON DRILL FILE GENERATION  ***
+
+Drill file for drawing: Odin CAT Console.ipf
+
+
+***  Drill file settings
+
+Coord format   : NN.DDDDD
+Units          : INCHES
+                 (Absolute)
+Leading zero's : OFF
+Expanded mode  : OFF
+Start string   : %
+End string     : M00
+Output format  : ISO (ASCII)
+
+
+***  Drill files / layer pairs
+
+     File            Layers          Via's
+     .d0  :        TOP .. BOTTOM     (194)
+
+
+***  Drill diameter table. File: Odin CAT Console.ipf.d0
+
+     Tool       Diam      Holes
+       1     19.69 Mil     194
+       2     35.00 Mil      97
+       3     39.17 Mil       8
+       4     40.00 Mil       8
+       5     43.33 Mil      90
+       6     46.67 Mil      68
+       7     59.17 Mil      34
+       8     90.00 Mil       4
+       9     98.33 Mil       3
+      10    106.67 Mil      14
+      11    115.00 Mil       3
+      12    138.33 Mil      16
+      13    374.02 Mil       1
+
