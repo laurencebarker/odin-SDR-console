@@ -49,9 +49,9 @@ bool GIs4_3_Display = false;                  // true if we have the larger disp
 #define VDISP32FILTY 122
 #define VDISP32FILTW 120
 #define VDISP32FILTH 15
-#define VDISP43FILTX 328
-#define VDISP43FILTY 154
-#define VDISP43FILTW 152
+#define VDISP43FILTX 312
+#define VDISP43FILTY 170
+#define VDISP43FILTW 168
 #define VDISP43FILTH 15
 
 
