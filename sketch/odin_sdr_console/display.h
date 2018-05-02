@@ -64,7 +64,11 @@ void DisplayEncoderHandler(unsigned int Encoder, int Count);
 //
 void DisplayButtonHandler(unsigned int Button, bool IsPressed);
 
-
+//
+// display external MOS input hasndler
+// when in I/O test psage, light indicator if pressed
+//
+void DisplayExtMoxHandler(bool IsPressed);
 
 /////////////////////////////////////////////////////////////////////////////////////
 //

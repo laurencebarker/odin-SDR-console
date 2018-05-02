@@ -140,7 +140,10 @@ void ButtonPressed(int ButtonNum)
   }
   else                                                    // Ext MOX input
   {
-    CATExtMox(true);
+    if (GDisplayPage == eIOTestPage)
+      DisplayExtMoxHandler(true);
+    else
+      CATExtMox(true);
   }
 }
 
@@ -182,7 +185,10 @@ void ButtonReleased(int ButtonNum)
   }
   else
   {
-    CATExtMox(false);
+    if (GDisplayPage == eIOTestPage)
+      DisplayExtMoxHandler(false);
+    else
+      CATExtMox(false);
   }
 }
 

@@ -40,6 +40,7 @@ unsigned int G2ndActionNumber;                // displayed action of control
 int GMeterUpdateTicks;                        // ticks until we update the S meter
 bool GValidFilterLow = false;                 // true if we have a valid filter value
 bool GValidFilterHigh = false;                // true if we have a valid filter value
+bool GIs4_3_Display = false;                  // true if we have the larger display
 
 //
 // settings for the "filter width" display area
@@ -48,6 +49,10 @@ bool GValidFilterHigh = false;                // true if we have a valid filter 
 #define VDISP32FILTY 122
 #define VDISP32FILTW 120
 #define VDISP32FILTH 15
+#define VDISP43FILTX 328
+#define VDISP43FILTY 154
+#define VDISP43FILTW 152
+#define VDISP43FILTH 15
 
 
 
@@ -104,10 +109,14 @@ NexPage page9 = NexPage(10, 0, "page9");       // creates touch event for "confi
 NexPage page0 = NexPage(0, 0, "page0");       // creates touch event for "splash" page
 
 //
+// initial page ("real" page 0) object
+//
+NexVariable p0vasize = NexVariable(0, 5, "vasize");  // screen size
+
+//
 // page 0 objects:
 //
 NexText p0t0 = NexText(1, 1, "t0");                   // VFO A/B
-//NexText p0t1 = NexText(1, 3, "t1");                   // static (says RIT)
 NexText p0t2 = NexText(1, 4, "t2");                   // frequency
 NexText p0t8 = NexText(1, 13, "t8");                  // mode
 NexText p0t4 = NexText(1, 6, "t4");                   // RHS encoder
@@ -119,7 +128,6 @@ NexText p0t10 = NexText(1, 18, "t10");                // RIT "on" text
 NexText p0t11 = NexText(1, 19, "t11");                // SPLIT
 NexGauge p0z0 = NexGauge(1, 14, "z0");                // gauge
 NexText p0t13 = NexText(1, 21, "t13");                // RX/TX/TUNE indicator
-
 
 //
 // declare objects on I/O test page:
@@ -157,6 +165,7 @@ NexText p1tpb21 = NexText(2, 35, "tpb21");            // pushbutton SW14  displa
 NexText p1tpb22 = NexText(2, 36, "tpb22");            // pushbutton SW15 display
 NexText p1tpb23 = NexText(2, 37, "tpb23");            // pushbutton SW16 display
 NexText p1tpb24 = NexText(2, 39, "tpb24");            // pushbutton SW17 display
+NexText p1tpb25 = NexText(2, 40, "tpb25");            // ext PTT display
 
 //
 // page 2 objects:
@@ -165,6 +174,7 @@ NexButton p2b1 = NexButton(3, 6, "p2b1");             // encoder button
 NexButton p2b2 = NexButton(3, 7, "p2b2");             // pushbutton button
 NexButton p2b3 = NexButton(3, 8, "p2b3");             // indicator button
 NexButton p2b5 = NexButton(3, 10, "b5");              // save settings button
+NexText p2t5 = NexText(3, 12, "t5");                  // Arduino s/w string
 
 //
 // page 3 objects:
@@ -650,10 +660,29 @@ void RedrawFilterPassband(void)
   int LeftPix, RightPix, WidthPix;                        // low and high pixels for actual filter settings
   long PixelWidth;
   int StartPix;                                           // left hand side of bar
+  int Filtx, Filty, Filtw, Filth;                         // co-ordinates of display area
+
+//
+// pick up correct coordinates
+//
+  if (GIs4_3_Display == true)
+  {
+    Filtx = VDISP43FILTX;
+    Filty = VDISP43FILTY;
+    Filtw = VDISP43FILTW;
+    Filth = VDISP43FILTH;
+  }
+  else
+  {
+    Filtx = VDISP32FILTX;
+    Filty = VDISP32FILTY;
+    Filtw = VDISP32FILTW;
+    Filth = VDISP32FILTH;
+  }
 //
 // first of all find the frequency range corresponding to the displayed passband (centred on the pixel range)
 //
-  PixelWidth = VDISP32FILTW;
+  PixelWidth = Filtw;
   IdealLow = GetOptimumIFFilterLow();             // get mode dependent low and high values
   IdealHigh = GetOptimumIFFilterHigh();
   IdealWidth = abs(IdealHigh - IdealLow);
@@ -686,15 +715,15 @@ void RedrawFilterPassband(void)
     StartPix = LeftPix;                                       // draw from left to right pixel
     WidthPix = RightPix-LeftPix+1;  
   }
-  StartPix += VDISP32FILTX;
+  StartPix += Filtx;
 //
 // now erase the drawing area;
 // then redraw if valid low and high filter settings
 // 
   if ((GDisplayPage == eFrontPage) && (GValidFilterHigh) && (GValidFilterLow))
   {
-    DrawDisplayBar(VDISP32FILTX, VDISP32FILTY, VDISP32FILTW, VDISP32FILTH, NEXWHITE);     // erase old bar
-    DrawDisplayBar(StartPix, VDISP32FILTY, WidthPix, VDISP32FILTH, NEXGREEN);     // draw new bar
+    DrawDisplayBar(Filtx, Filty, Filtw, Filth, NEXWHITE);     // erase old bar
+    DrawDisplayBar(StartPix, Filty, WidthPix, Filth, NEXGREEN);     // draw new bar
   }
 }
 
@@ -959,8 +988,11 @@ void DisplaySetMeterBackground(void)
 //
 void page0mainPushCallback(void *ptr)             // called when page 0 loads (main page)
 {
+
+// begin by setting screen number then request screen size
   
   GDisplayPage = eFrontPage;
+  
   if (DisplayABState)
     p0t0.setText("A");  
   else
@@ -973,7 +1005,7 @@ void page0mainPushCallback(void *ptr)             // called when page 0 loads (m
   RedrawRXStatusBox();
   RedrawRIT(DisplayRITState);
 
-  p0z0.setValue(DisplayCurrentSReading);
+//  p0z0.setValue(DisplayCurrentSReading);                // this is set by the setmeterbackground() call
 
   if (GBottomEncoderStrings)
   {
@@ -984,7 +1016,8 @@ void page0mainPushCallback(void *ptr)             // called when page 0 loads (m
   if (GSideEncoderStrings)
     RedrawEncoderString4();
 
-  DisplaySetMeterBackground();    
+  DisplaySetMeterBackground();
+  RedrawFilterPassband();    
 }
 
 void page1PushCallback(void *ptr)             // called when page 1 loads (I/O test page)
@@ -996,6 +1029,7 @@ void page1PushCallback(void *ptr)             // called when page 1 loads (I/O t
 void page2PushCallback(void *ptr)             // called when page 2 loads (about page)
 {
   GDisplayPage = eAboutPage;
+  p2t5.setText("Arduino s/w v0.2");
 }
 
 void page3PushCallback(void *ptr)             // called when page 3 loads (frequency entry page)
@@ -1140,7 +1174,6 @@ void page9PushCallback(void *ptr)             // called when page 9 loads
 void page0PushCallback(void *ptr)             // called when page 0 loads (splash page)
 {
   GDisplayPage = eSplashPage;
-  page0main.show();
 }
 
 
@@ -1610,6 +1643,20 @@ void DisplayInit(void)
 
 
 //
+// find out the screen size by reading the "vasize" variable on page 0
+// if we get 0, the display isn't responding yet - wait for an answer
+//
+  uint32_t SizeValue = 0;                       // read back value - int should be set to "32" for 3.2" display
+  delay(100);                                   // let the display initialise
+  while (SizeValue == 0)
+  {
+    p0vasize.getValue(&SizeValue);
+    delay(10);                                  // 10ms wait before trying again
+  }
+  if (SizeValue == 43)
+    GIs4_3_Display = true;
+
+//
 // tell the display to move to the main page from the splash page
 // that will lead to a callback when we redraw the display.
 //
@@ -1627,34 +1674,6 @@ void DisplayTick(void)
 // handle touch display events
 //  
   nexLoop(nex_listen_list);
-
-//
-// update the S meter and power meter
-// each has a periodic decay
-//
-//  if (--GMeterUpdateTicks < 0)
-//  {
-//    GMeterUpdateTicks = VMETERUPDATETICKS;              // reload timer
-//    if(GDisplayPage == eFrontPage)                      // redraw main page, if displayed
-//    {
-//      if (DisplayTXState)                               // if TX
-//      {
-//        if (DisplayCurrentPowerReading > VDISPLAYMINANGLE)
-//        {
-//          DisplayCurrentPowerReading--;
-//          p0z0.setValue(DisplayCurrentPowerReading);
-//        }
-//      }
-//     else
-//      {
-//        if (DisplayCurrentSReading > VDISPLAYMINANGLE)
-//        {
-//          DisplayCurrentSReading--;
-//          p0z0.setValue(DisplayCurrentSReading);
-//        }
-//     }
-//    }
-//  }
 }
 
 
@@ -1723,6 +1742,18 @@ void DisplayButtonHandler(unsigned int Button, bool IsPressed)
   }
 }
 
+
+//
+// display external MOS input hasndler
+// when in I/O test psage, light indicator if pressed
+//
+void DisplayExtMoxHandler(bool IsPressed)
+{
+  if (IsPressed)
+    p1tpb25.Set_background_color_bco(NEXGREEN);
+  else
+    p1tpb25.Set_background_color_bco(NEXWHITE);
+}
 
 
 /////////////////////////////////////////////////////////////////////////////////////
