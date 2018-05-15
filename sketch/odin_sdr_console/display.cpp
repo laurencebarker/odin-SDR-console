@@ -54,7 +54,7 @@ bool GIs4_3_Display = false;                  // true if we have the larger disp
 #define VDISP43FILTW 168
 #define VDISP43FILTH 15
 
-
+#define VDISPLAYLOWERFNTICKS 500                  // 5 seconds
 
 //
 // variables to hold what's currently on the display
@@ -84,6 +84,18 @@ EEncoderActions DisplayCurrentAction1;                      // display 1
 EEncoderActions DisplayCurrentAction2;                      // display 2
 EEncoderActions DisplayCurrentAction3;                      // display 3
 EEncoderActions DisplayCurrentAction4;                      // display 4
+EEncoderActions DisplayCurrentActionLower1;                 // display 1, for lower encoder
+EEncoderActions DisplayCurrentActionLower2;                 // display 2, for lower encoder
+EEncoderActions DisplayCurrentActionLower3;                 // display 3, for lower encoder
+EEncoderActions DisplayCurrentActionLower4;                 // display 4, for lower encoder
+bool Enc1DisplayLower;                                      // true if we should display the lower encoder action
+bool Enc2DisplayLower;                                      // true if we should display the lower encoder action
+bool Enc3DisplayLower;                                      // true if we should display the lower encoder action
+bool Enc4DisplayLower;                                      // true if we should display the lower encoder action
+int Enc1DisplayLowerCntr;                                   // ticks until we revert to display upper encoder function
+int Enc2DisplayLowerCntr;                                   // ticks until we revert to display upper encoder function
+int Enc3DisplayLowerCntr;                                   // ticks until we revert to display upper encoder function
+int Enc4DisplayLowerCntr;                                   // ticks until we revert to display upper encoder function
 bool Enc1IsMulti;                                           // true if display 1 is multi
 bool Enc2IsMulti;                                           // true if display 2 is multi
 bool Enc3IsMulti;                                           // true if display 3 is multi
@@ -910,10 +922,25 @@ void RedrawEncoderString1(void)
 {
   if ( GDisplayPage == eFrontPage)
   {
-    if (Enc1IsMulti)
-      p0t5.setText(MultiEncoderActionStrings[(unsigned int)DisplayCurrentAction1]);
+//
+// first get the colour correct:
+//    
+    if (Enc1DisplayLower)
+      p0t5.Set_font_color_pco(NEXRED);
     else
-      p0t5.setText(EncoderActionStrings[(unsigned int)DisplayCurrentAction1]);
+      p0t5.Set_font_color_pco(NEXBLUE);
+//
+// now display the string
+//
+    if (Enc1DisplayLower)
+      p0t5.setText(EncoderActionStrings[(unsigned int)DisplayCurrentActionLower1]);
+    else
+    {
+      if (Enc1IsMulti)
+        p0t5.setText(MultiEncoderActionStrings[(unsigned int)DisplayCurrentAction1]);
+      else
+        p0t5.setText(EncoderActionStrings[(unsigned int)DisplayCurrentAction1]);
+    }
   }
 }
 
@@ -921,10 +948,25 @@ void RedrawEncoderString2(void)
 {
   if ( GDisplayPage == eFrontPage)
   {
-    if (Enc2IsMulti)
-      p0t6.setText(MultiEncoderActionStrings[(unsigned int)DisplayCurrentAction2]);
+//
+// first get the colour correct:
+//    
+    if (Enc2DisplayLower)
+      p0t6.Set_font_color_pco(NEXRED);
     else
-      p0t6.setText(EncoderActionStrings[(unsigned int)DisplayCurrentAction2]);
+      p0t6.Set_font_color_pco(NEXBLUE);
+//
+// now display the string
+//
+    if (Enc2DisplayLower)
+      p0t6.setText(EncoderActionStrings[(unsigned int)DisplayCurrentActionLower2]);
+    else
+    {
+      if (Enc2IsMulti)
+        p0t6.setText(MultiEncoderActionStrings[(unsigned int)DisplayCurrentAction2]);
+      else
+        p0t6.setText(EncoderActionStrings[(unsigned int)DisplayCurrentAction2]);
+    }
   }
 }
 
@@ -932,10 +974,25 @@ void RedrawEncoderString3(void)
 {
   if ( GDisplayPage == eFrontPage)
   {
-    if (Enc3IsMulti)
-      p0t7.setText(MultiEncoderActionStrings[(unsigned int)DisplayCurrentAction3]);
+//
+// first get the colour correct:
+//    
+    if (Enc3DisplayLower)
+      p0t7.Set_font_color_pco(NEXRED);
     else
-      p0t7.setText(EncoderActionStrings[(unsigned int)DisplayCurrentAction3]);
+      p0t7.Set_font_color_pco(NEXBLUE);
+//
+// now display the string
+//
+    if (Enc3DisplayLower)
+      p0t7.setText(EncoderActionStrings[(unsigned int)DisplayCurrentActionLower3]);
+    else
+    {
+      if (Enc3IsMulti)
+        p0t7.setText(MultiEncoderActionStrings[(unsigned int)DisplayCurrentAction3]);
+      else
+        p0t7.setText(EncoderActionStrings[(unsigned int)DisplayCurrentAction3]);
+    }
   }
 }
 
@@ -943,10 +1000,25 @@ void RedrawEncoderString4(void)
 {
   if ( GDisplayPage == eFrontPage)
   {
-    if (Enc4IsMulti)
-      p0t4.setText(MultiEncoderActionStrings[(unsigned int)DisplayCurrentAction4]);
+//
+// first get the colour correct:
+//    
+    if (Enc4DisplayLower)
+      p0t4.Set_font_color_pco(NEXRED);
     else
-      p0t4.setText(EncoderActionStrings[(unsigned int)DisplayCurrentAction4]);
+      p0t4.Set_font_color_pco(NEXBLUE);
+//
+// now display the string
+//
+    if (Enc4DisplayLower)
+      p0t4.setText(EncoderActionStrings[(unsigned int)DisplayCurrentActionLower4]);
+    else
+    {
+      if (Enc4IsMulti)
+        p0t4.setText(MultiEncoderActionStrings[(unsigned int)DisplayCurrentAction4]);
+      else
+        p0t4.setText(EncoderActionStrings[(unsigned int)DisplayCurrentAction4]);
+    }
   }
 }
 
@@ -1614,6 +1686,7 @@ void DisplayInit(void)
 // get the initial encoder actions
 //
   DisplayCurrentAction1 = GetEncoderAction(0, false);    
+  DisplayCurrentActionLower1 = GetEncoderAction(1, false);    
   if (DisplayCurrentAction1 == eENMulti)
   {
     Enc1IsMulti = true;
@@ -1621,6 +1694,7 @@ void DisplayInit(void)
   }
   
   DisplayCurrentAction2 = GetEncoderAction(2, false);    
+  DisplayCurrentActionLower2 = GetEncoderAction(3, false);    
   if (DisplayCurrentAction2 == eENMulti)
   {
     Enc2IsMulti = true;
@@ -1628,6 +1702,7 @@ void DisplayInit(void)
   }
   
   DisplayCurrentAction3 = GetEncoderAction(4, false);    
+  DisplayCurrentActionLower3 = GetEncoderAction(5, false);    
   if (DisplayCurrentAction3 == eENMulti)
   {
     Enc3IsMulti = true;
@@ -1635,6 +1710,7 @@ void DisplayInit(void)
   }
   
   DisplayCurrentAction4 = GetEncoderAction(6, false);
+  DisplayCurrentActionLower4 = GetEncoderAction(7, false);    
   if (DisplayCurrentAction4 == eENMulti)
   {
     Enc4IsMulti = true;
@@ -1674,6 +1750,59 @@ void DisplayTick(void)
 // handle touch display events
 //  
   nexLoop(nex_listen_list);
+
+//
+// decrement timers for encoder string displays & redraw if they time out
+// if value is 1, then it times out - reset; else just decrement
+//
+  if (Enc1DisplayLowerCntr != 0)                        // test encoder 1
+  {
+    if (Enc1DisplayLowerCntr == 1)                      // about to time out
+    {
+      Enc1DisplayLowerCntr = 0;
+      Enc1DisplayLower = false;
+      RedrawEncoderString1();
+    }
+    else
+      Enc1DisplayLowerCntr--;                           // just decrement if not expired
+  }
+
+  if (Enc2DisplayLowerCntr != 0)                        // test encoder 2
+  {
+    if (Enc2DisplayLowerCntr == 1)                      // about to time out
+    {
+      Enc2DisplayLowerCntr = 0;
+      Enc2DisplayLower = false;
+      RedrawEncoderString2();
+    }
+    else
+      Enc2DisplayLowerCntr--;                           // just decrement if not expired
+  }
+
+  if (Enc3DisplayLowerCntr != 0)                        // test encoder 3
+  {
+    if (Enc3DisplayLowerCntr == 1)                      // about to time out
+    {
+      Enc3DisplayLowerCntr = 0;
+      Enc3DisplayLower = false;
+      RedrawEncoderString3();
+    }
+    else
+      Enc3DisplayLowerCntr--;                           // just decrement if not expired
+  }
+
+  if (Enc4DisplayLowerCntr != 0)                        // test encoder 4
+  {
+    if (Enc4DisplayLowerCntr == 1)                      // about to time out
+    {
+      Enc4DisplayLowerCntr = 0;
+      Enc4DisplayLower = false;
+      RedrawEncoderString4();
+    }
+    else
+      Enc4DisplayLowerCntr--;                           // just decrement if not expired
+  }
+
 }
 
 
@@ -2215,10 +2344,9 @@ void DisplayShowFilterHigh(int Freq)
 
 
 
-
 //
 // set display of encoder actions. Currently we have placeholders to show 0,2,4 & 6
-// this is only called for a multifunction encoder
+// this is only called for a multifunction encoder, or a single shaft encoder when its "dual function" is enabled
 //
 void DisplaySetEncoderAction(unsigned int EncoderNumber, EEncoderActions Action, bool IsMulti)         // set to assigned actions
 {
@@ -2227,14 +2355,8 @@ void DisplaySetEncoderAction(unsigned int EncoderNumber, EEncoderActions Action,
     Enc1IsMulti = IsMulti;
     if (Action != DisplayCurrentAction1)
     {
-      if (GDisplayPage == eFrontPage)
-      {
-        if (IsMulti)
-          p0t5.setText(MultiEncoderActionStrings[(unsigned int)Action]);
-        else
-          p0t5.setText(EncoderActionStrings[(unsigned int)Action]);
-      }
       DisplayCurrentAction1 = Action;
+      RedrawEncoderString1();
     }
   }
   else if (EncoderNumber == 2)                                      // update display position 2
@@ -2242,14 +2364,8 @@ void DisplaySetEncoderAction(unsigned int EncoderNumber, EEncoderActions Action,
     Enc2IsMulti = IsMulti;
     if (Action != DisplayCurrentAction2)
     {
-      if (GDisplayPage == eFrontPage)
-      {
-        if (IsMulti)
-          p0t6.setText(MultiEncoderActionStrings[(unsigned int)Action]);
-        else
-          p0t6.setText(EncoderActionStrings[(unsigned int)Action]);
-      }
       DisplayCurrentAction2 = Action;
+      RedrawEncoderString2();
     }
   }
   else if (EncoderNumber == 4)                                      // update display position 4
@@ -2257,14 +2373,8 @@ void DisplaySetEncoderAction(unsigned int EncoderNumber, EEncoderActions Action,
     Enc3IsMulti = IsMulti;
     if (Action != DisplayCurrentAction3)
     {
-      if (GDisplayPage == eFrontPage)
-      {
-        if (IsMulti)
-          p0t6.setText(MultiEncoderActionStrings[(unsigned int)Action]);
-        else
-          p0t6.setText(EncoderActionStrings[(unsigned int)Action]);
-      }
       DisplayCurrentAction3 = Action;
+      RedrawEncoderString3();
     }
   }
   else if (EncoderNumber == 6)                                      // update display position 6
@@ -2272,15 +2382,93 @@ void DisplaySetEncoderAction(unsigned int EncoderNumber, EEncoderActions Action,
     Enc4IsMulti = IsMulti;
     if (Action != DisplayCurrentAction4)
     {
-      if (GDisplayPage == eFrontPage)
-      {
-        if (IsMulti)
-          p0t4.setText(MultiEncoderActionStrings[(unsigned int)Action]);
-        else
-          p0t4.setText(EncoderActionStrings[(unsigned int)Action]);
-      }
       DisplayCurrentAction4 = Action;
+      RedrawEncoderString4();
     }
+  }
+}
+
+
+
+//
+// note for legend display that an encoder has been turned. Used to determine which encoder should be displayed.
+// for each encoder:
+//   get the current state;
+//   determine the new state;
+//   if new state != current state, redraw
+//
+void DisplayEncoderTurned(unsigned int EncoderNumber)
+{
+  bool StringCurrentDisplayState;                      // true if string should display lower encoder(red); false if top encoder (blue)
+
+  switch(EncoderNumber)
+  {
+    case 0:                                                      // 1st encoder, upper knob.
+      StringCurrentDisplayState = Enc1DisplayLower;
+      Enc1DisplayLower = false;
+      if (Enc1DisplayLower != StringCurrentDisplayState)
+        RedrawEncoderString1();
+      break;
+
+
+    case 1:                                                      // 1st encoder, lower knob.
+      StringCurrentDisplayState = Enc1DisplayLower;
+      Enc1DisplayLower = true;
+      Enc1DisplayLowerCntr = VDISPLAYLOWERFNTICKS;
+      if (Enc1DisplayLower != StringCurrentDisplayState)
+        RedrawEncoderString1();
+      break;
+
+    
+    case 2:                                                      // 2nd encoder, upper knob.
+      StringCurrentDisplayState = Enc2DisplayLower;
+      Enc2DisplayLower = false;
+      if (Enc2DisplayLower != StringCurrentDisplayState)
+        RedrawEncoderString2();
+      break;
+
+    
+    case 3:                                                      // 2nd encoder, lower knob.
+      StringCurrentDisplayState = Enc2DisplayLower;
+      Enc2DisplayLower = true;
+      Enc2DisplayLowerCntr = VDISPLAYLOWERFNTICKS;
+      if (Enc2DisplayLower != StringCurrentDisplayState)
+        RedrawEncoderString2();
+      break;
+
+    
+    case 4:                                                      // 3rd encoder, upper knob.
+      StringCurrentDisplayState = Enc3DisplayLower;
+      Enc3DisplayLower = false;
+      if (Enc3DisplayLower != StringCurrentDisplayState)
+        RedrawEncoderString3();
+      break;
+
+    
+    case 5:                                                      // 3rd encoder, lower knob.
+      StringCurrentDisplayState = Enc3DisplayLower;
+      Enc3DisplayLower = true;
+      Enc3DisplayLowerCntr = VDISPLAYLOWERFNTICKS;
+      if (Enc3DisplayLower != StringCurrentDisplayState)
+        RedrawEncoderString3();
+      break;
+
+    
+    case 6:                                                      // 4th encoder, upper knob.
+      StringCurrentDisplayState = Enc4DisplayLower;
+      Enc4DisplayLower = false;
+      if (Enc4DisplayLower != StringCurrentDisplayState)
+        RedrawEncoderString4();
+      break;
+
+    
+    case 7:                                                      // 4th encoder, lower knob.
+      StringCurrentDisplayState = Enc4DisplayLower;
+      Enc4DisplayLower = true;
+      Enc4DisplayLowerCntr = VDISPLAYLOWERFNTICKS;
+      if (Enc4DisplayLower != StringCurrentDisplayState)
+        RedrawEncoderString4();
+      break;
   }
 }
 

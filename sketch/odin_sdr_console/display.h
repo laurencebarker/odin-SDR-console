@@ -101,4 +101,10 @@ void DisplayShowFilterHigh(int Freq);
 //
 void DisplaySetEncoderAction(unsigned int EncoderNumber, EEncoderActions Action, bool IsMulti);         // set encoder string to current action
 
+//
+// note for legend display that an encoder has been turned. Used to determine which encoder should be displayed.
+//
+void DisplayEncoderTurned(unsigned int EncoderNumber);
+
+
 #endif //#ifndef

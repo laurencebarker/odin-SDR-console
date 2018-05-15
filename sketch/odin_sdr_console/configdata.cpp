@@ -107,8 +107,8 @@ const EButtonActions GFactoryButtonActions[] =
   ePBBtoA,                            // SW7
   ePBSplit,                           // SW8
   ePBRIT,                             // SW9
-  ePBRITPlus,                         // SW10
-  ePBRITMinus,                        // SW11
+  ePBRITMinus,                        // SW10
+  ePBRITPlus,                         // SW11
   ePBBandDown,                        // SW12
   ePBModeDown,                        // SW13
   ePBStartStop,                       // SW14

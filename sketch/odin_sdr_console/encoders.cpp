@@ -150,10 +150,16 @@ void EncoderSlowTick(void)
               DisplaySetEncoderAction(Cntr, GMultiAction, true);
             }
             else
+            {
               CATHandleEncoder(Cntr, Movement, GMultiAction);       // apply the assigned action
+              DisplayEncoderTurned(Cntr);              
+            }
           }
           else
+          {
             CATHandleEncoder(Cntr, Movement, Action);
+            DisplayEncoderTurned(Cntr);
+          }
           break;
         case eSettingsPage:                                 // no action when on these pages
         case eConfigurePage:
@@ -221,7 +227,7 @@ void EncoderHandleButton(unsigned int ButtonNum, bool IsPress)
                                                     // (user config error if not!)
   {
     EncoderNumber = (ButtonNum - VBUTTONNUMENC0)<<1;        // 0,2,4 or 6
-    
+    DisplayEncoderTurned(EncoderNumber);                    // this will reset the legend display to top encoder
     if (GEncoderOperation == eDualFnClick)                  // dual fn; press toggles which function
     {
       if (IsPress)
