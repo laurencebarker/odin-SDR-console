@@ -75,14 +75,45 @@ bool Is2ndAction[VMAXENCODERS];
 //
 void InitEncoders(void)
 {
-  EncoderList[0].Ptr = new NoClickEncoder(VPINENCODER1A, VPINENCODER1B, GEncoderDivisor, true);
-  EncoderList[1].Ptr = new NoClickEncoder(VPINENCODER2A, VPINENCODER2B, GEncoderDivisor, true);
-  EncoderList[2].Ptr = new NoClickEncoder(VPINENCODER3A, VPINENCODER3B, GEncoderDivisor, true);
-  EncoderList[3].Ptr = new NoClickEncoder(VPINENCODER4A, VPINENCODER4B, GEncoderDivisor, true);
-  EncoderList[4].Ptr = new NoClickEncoder(VPINENCODER5A, VPINENCODER5B, GEncoderDivisor, true);
-  EncoderList[5].Ptr = new NoClickEncoder(VPINENCODER6A, VPINENCODER6B, GEncoderDivisor, true);
-  EncoderList[6].Ptr = new NoClickEncoder(VPINENCODER7A, VPINENCODER7B, GEncoderDivisor, true);
-  EncoderList[7].Ptr = new NoClickEncoder(VPINENCODER8A, VPINENCODER8B, GEncoderDivisor, true);
+  if (GetEncoderReversed(0))
+    EncoderList[0].Ptr = new NoClickEncoder(VPINENCODER1B, VPINENCODER1A, GEncoderDivisor, true);
+  else
+    EncoderList[0].Ptr = new NoClickEncoder(VPINENCODER1A, VPINENCODER1B, GEncoderDivisor, true);
+  
+  if (GetEncoderReversed(1))
+    EncoderList[1].Ptr = new NoClickEncoder(VPINENCODER2B, VPINENCODER2A, GEncoderDivisor, true);
+  else
+    EncoderList[1].Ptr = new NoClickEncoder(VPINENCODER2A, VPINENCODER2B, GEncoderDivisor, true);
+
+  if (GetEncoderReversed(2))
+    EncoderList[2].Ptr = new NoClickEncoder(VPINENCODER3B, VPINENCODER3A, GEncoderDivisor, true);
+  else
+    EncoderList[2].Ptr = new NoClickEncoder(VPINENCODER3A, VPINENCODER3B, GEncoderDivisor, true);
+
+  if (GetEncoderReversed(3))
+    EncoderList[3].Ptr = new NoClickEncoder(VPINENCODER4B, VPINENCODER4A, GEncoderDivisor, true);
+  else
+    EncoderList[3].Ptr = new NoClickEncoder(VPINENCODER4A, VPINENCODER4B, GEncoderDivisor, true);
+
+  if (GetEncoderReversed(4))
+    EncoderList[4].Ptr = new NoClickEncoder(VPINENCODER5B, VPINENCODER5A, GEncoderDivisor, true);
+  else
+    EncoderList[4].Ptr = new NoClickEncoder(VPINENCODER5A, VPINENCODER5B, GEncoderDivisor, true);
+
+  if (GetEncoderReversed(5))
+    EncoderList[5].Ptr = new NoClickEncoder(VPINENCODER6B, VPINENCODER6A, GEncoderDivisor, true);
+  else
+    EncoderList[5].Ptr = new NoClickEncoder(VPINENCODER6A, VPINENCODER6B, GEncoderDivisor, true);
+
+  if (GetEncoderReversed(6))
+    EncoderList[6].Ptr = new NoClickEncoder(VPINENCODER7B, VPINENCODER7A, GEncoderDivisor, true);
+  else
+    EncoderList[6].Ptr = new NoClickEncoder(VPINENCODER7A, VPINENCODER7B, GEncoderDivisor, true);
+
+  if (GetEncoderReversed(7))
+    EncoderList[7].Ptr = new NoClickEncoder(VPINENCODER8B, VPINENCODER8A, GEncoderDivisor, true);
+  else
+    EncoderList[7].Ptr = new NoClickEncoder(VPINENCODER8A, VPINENCODER8B, GEncoderDivisor, true);
 }
 
 

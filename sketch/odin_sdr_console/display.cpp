@@ -37,6 +37,7 @@ EControlTypes GControlType;                   // type of control being edited
 unsigned int GControlNumber;                  // number of control being edited
 unsigned int GActionNumber;                   // displayed action of control
 unsigned int G2ndActionNumber;                // displayed action of control
+bool GDirectionSetting;                       // setting for the encoder direction button
 int GMeterUpdateTicks;                        // ticks until we update the S meter
 bool GValidFilterLow = false;                 // true if we have a valid filter value
 bool GValidFilterHigh = false;                // true if we have a valid filter value
@@ -292,6 +293,7 @@ NexButton p9b2 = NexButton(10, 5, "b2");               // device number plus
 NexButton p9b3 = NexButton(10, 6, "b3");               // function minus
 NexButton p9b4 = NexButton(10, 7, "b4");               // function plus
 NexButton p9b7 = NexButton(10, 10, "b7");              // Accept/Set
+NexDSButton p9bt0 = NexDSButton(10, 13, "bt0");        // "direction" button
 
 //
 // declare touch event objects to the touch event list
@@ -344,6 +346,7 @@ NexTouch *nex_listen_list[] =
   &p9b3,                                      // configure page fn-
   &p9b4,                                      // configure page fn+
   &p9b7,                                      // configure page Set/Accept
+  &p9bt0,                                     // "direction"
   NULL                                        // terminates the list
 };
 
@@ -879,6 +882,7 @@ void Page9GetActions(void)
   {
     case eEncoders:
       GActionNumber = (unsigned int) GetEncoderAction(GControlNumber, false);      // get current programmed main & 2nd actions
+      GDirectionSetting = GetEncoderReversed(GControlNumber);
       break;
     case ePushbuttons:
       GActionNumber = (unsigned int) GetButtonAction(GControlNumber);
@@ -901,11 +905,18 @@ void Page9SetControls(void)
     case eEncoders:
       p9t6.setText(IOTestEncoderStrings[GControlNumber]);              // show what control were editing
       p9t4.setText(EncoderActionStrings[GActionNumber]);             // show in text boxes
+      p9bt0.setValue((int)GDirectionSetting);
+      if (GDirectionSetting)
+        p9bt0.setText("reversed");
+      else
+        p9bt0.setText("normal");
       break;
+
     case ePushbuttons:
       p9t6.setText(IOTestButtonStrings[GControlNumber]);              // show what control were editing
       p9t4.setText(ButtonActionStrings[GActionNumber]);             // show in text boxes
       break;
+
     case eIndicators:
       p9t6.setText(IOTestLEDStrings[GControlNumber]);              // show what control were editing
       p9t4.setText(IndicatorActionStrings[GActionNumber]);             // show in text boxes
@@ -1101,7 +1112,7 @@ void page1PushCallback(void *ptr)             // called when page 1 loads (I/O t
 void page2PushCallback(void *ptr)             // called when page 2 loads (about page)
 {
   GDisplayPage = eAboutPage;
-  p2t5.setText("Arduino s/w v0.2");
+  p2t5.setText("Arduino s/w v0.3");
 }
 
 void page3PushCallback(void *ptr)             // called when page 3 loads (frequency entry page)
@@ -1611,6 +1622,7 @@ void p9b7PushCallback(void *ptr)             // Set/Accept
   switch(GControlType)                        // now find the initial actions
   {
     case eEncoders:
+      SetEncoderReversed(GControlNumber, GDirectionSetting);
       SetEncoderAction(GControlNumber, (EEncoderActions)GActionNumber);      // set current programmed main & 2nd actions
       break;
     case ePushbuttons:
@@ -1620,9 +1632,18 @@ void p9b7PushCallback(void *ptr)             // Set/Accept
       SetIndicatorAction(GControlNumber, (EIndicatorActions)GActionNumber);
       break;
   }
-
 }
 
+//
+// push direction button handler:
+//
+void p9bt0PushCallback(void *ptr)               // "direction" press
+{
+  uint32_t DirectionValue;
+  p9bt0.getValue(&DirectionValue);
+  GDirectionSetting = (bool)DirectionValue;
+  Page9SetControls();                           // update the text boxes
+}
 
 
 
@@ -1682,6 +1703,7 @@ void DisplayInit(void)
   p9b3.attachPush(p9b3PushCallback);
   p9b4.attachPush(p9b4PushCallback);
   p9b7.attachPush(p9b7PushCallback);
+  p9bt0.attachPush(p9bt0PushCallback);
 //
 // get the initial encoder actions
 //

@@ -53,14 +53,17 @@ void CheckFlashInitialised(void);
 EEncoderActions GetEncoderAction(unsigned int Encoder, bool Is2ndFunction);
 EIndicatorActions GetIndicatorAction(unsigned int Indicator);
 EButtonActions GetButtonAction(unsigned int Button);
+bool GetEncoderReversed(unsigned int Encoder);
 
 //
 // functions to store assigned button, indicator and encoder actions
 // this is a precursor to doing a "save to flash"
+// also function to save whether an indicator direction is reversed or not
 //
 void SetEncoderAction(unsigned int Encoder, EEncoderActions Setting);
 void SetIndicatorAction(unsigned int Indicator, EIndicatorActions Setting);
 void SetButtonAction(unsigned int Button, EButtonActions Setting);
+void SetEncoderReversed(unsigned int Encoder, bool IsReversed);
 
 
 

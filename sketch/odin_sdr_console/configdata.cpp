@@ -134,6 +134,8 @@ EEncoderActions GEncoderMainActions[VMAXENCODERS];
 EEncoderActions GEncoder2ndActions[VMAXENCODERS];
 EIndicatorActions GIndicatorActions[VMAXINDICATORS];
 EButtonActions GButtonActions[VMAXBUTTONS];
+bool GEncoderReversed[VMAXENCODERS];
+
 bool GBottomEncoderStrings;                           // true to have legends at the display bottom
 bool GSideEncoderStrings;                             // true to display legends at the side
 byte GEncoderDivisor;                                // number of edge events per declared click
@@ -175,6 +177,8 @@ void CopySettingsToFlash(void)
   {
     Setting = (byte)GEncoderMainActions[Cntr];
     dueFlashStorage.write(Addr++, Setting);
+    Setting = (byte)GEncoderReversed[Cntr];
+    dueFlashStorage.write(Addr++, Setting);
   }
 // write indicators  
   for (Cntr=0; Cntr < VMAXINDICATORS;   Cntr++)
@@ -211,7 +215,10 @@ void InitialiseFlash(void)
   
 // initialise encoders
   for(Cntr=0; Cntr < VMAXENCODERS; Cntr++)
+  {
     GEncoderMainActions[Cntr] = GFactoryEncoderActions[Cntr];
+    GEncoderReversed[Cntr] = false;
+  }
 // initialise indicators
   for(Cntr=0; Cntr < VMAXINDICATORS; Cntr++)
     GIndicatorActions[Cntr] = GFactoryIndicatorActions[Cntr];
@@ -252,7 +259,10 @@ void LoadSettingsFromFlash(void)
   GVFOEncoderDivisor = (byte)dueFlashStorage.read(Addr++);
 // read encoders  
   for (Cntr=0; Cntr < VMAXENCODERS;   Cntr++)
+  {
     GEncoderMainActions[Cntr] = (EEncoderActions)dueFlashStorage.read(Addr++);
+    GEncoderReversed[Cntr] = (bool)dueFlashStorage.read(Addr++);
+  }
 // read indicators  
   for (Cntr=0; Cntr < VMAXINDICATORS;   Cntr++)
     GIndicatorActions[Cntr] = (EIndicatorActions)dueFlashStorage.read(Addr++);
@@ -301,6 +311,11 @@ EButtonActions GetButtonAction(unsigned int Button)
 }
 
 
+bool GetEncoderReversed(unsigned int Encoder)
+{
+  return GEncoderReversed[Encoder];
+}
+
 //
 // functions to store assigned button, indicator and encoder actions
 // this is a precursor to doing a "save to flash"
@@ -318,5 +333,11 @@ void SetIndicatorAction(unsigned int Indicator, EIndicatorActions Setting)
 void SetButtonAction(unsigned int Button, EButtonActions Setting)
 {
   GButtonActions[Button] = Setting;
+}
+
+
+void SetEncoderReversed(unsigned int Encoder, bool IsReversed)
+{
+  GEncoderReversed[Encoder] = IsReversed;
 }
 
