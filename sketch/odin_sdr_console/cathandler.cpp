@@ -38,6 +38,7 @@ EAGCSpeed GCatStateAGCSpd = eMedium;                        // RX1/2 AGC speed
 bool GCatStateSquelch = false;                              // RX1/2 squelch
 bool GCatStateSNB = false;                                  // RX1/2 spectral noise blanker
 bool GCatStateANF = false;                                  // RX1/2 notch filter
+bool GCatStateABTX = false;                                 // true if VFO B enabled for TX
 ENRState GCatStateNR = eNROff;                              // RX1/2 NR
 ENBState GCatStateNB = eNBOff;                              // RX1/2 NB
 EMode GCatStateMode;                                        // RX1/2 mode
@@ -78,8 +79,8 @@ bool GFilterReset;                                  // true if we need to initia
 bool GToggleVoxOnOff;                               // true to initiate toggle VOX on/off
 
 //
-#define GPERIODICREFRESHDELAY 20                    // 10ms ticks; initially 200ms/step for testing
-#define GPERIODICSEQUENCELENGTH 9                   // length of refresh sequence 
+#define GPERIODICREFRESHDELAY 10                    // 10ms ticks; initially 100ms/step for testing
+#define GPERIODICSEQUENCELENGTH 10                   // length of refresh sequence 
 #define VDISPLAYTHROTTLETICKS 10                    // no freq update from VFO encoder until 10 ticks after the last
 int GPeriodicRefreshTimer;
 int GeriodicRefreshState;
@@ -467,7 +468,11 @@ void PeriodicRefresh(void)
         GLiveRequestMode = true;
         break;
 
-      case 8:                                                 // if this state we sequence between infrequently needed values
+      case 8:
+        MakeCATMessageNoParam(eZZSW);                       // request A/B VFO enabled for TX
+        break;
+
+      case 9:                                                 // if this state we sequence between infrequently needed values
         if (++GPeriodicRefreshSubState > 2)
           GPeriodicRefreshSubState = 0;
         switch(GPeriodicRefreshSubState)
@@ -614,14 +619,27 @@ void CheckTimeouts(void)
 
 
 //
+// helper to decide if enabled for TX
+//
+bool IsEnabledForTX(void)
+{
+  bool Result = false;
+  if (((GConsoleVFOA == true) && (GCatStateABTX == false))                // VFO=A, and A enabled
+      ||((GConsoleVFOA == false) && (GCatStateABTX == true)))            // VFO=B, and B enabled
+    Result = true;
+    
+  return Result;
+}
+
+//
 // set ext mox effect
 // true if ext mox input active
 //
 void CATExtMox(bool IsActiveMOX)
 {
   GConsoleExtTX = IsActiveMOX;
-  if (GConsoleTX || GConsoleExtTX)                            // then send CAT message
-    MakeCATMessageNumeric(eZZTX, 1);
+  if ((GConsoleTX || GConsoleExtTX) && IsEnabledForTX)
+    MakeCATMessageNumeric(eZZTX, 1);                            // then send CAT message
   else
     MakeCATMessageNumeric(eZZTX, 0);
   
@@ -688,9 +706,19 @@ void CATHandlePushbutton(unsigned int Button, EButtonActions Action, bool IsPres
     case ePBMox:
       if (IsPressed)                                            // toggle the requested TX/RX state
       {
-        GConsoleTX = ! GConsoleTX;
-        GConsoleTune = false;                                       // tune is ties to TX; in this case we don't want tune
-        if (GConsoleTX || GConsoleExtTX)                            // then send CAT message
+        if (GConsoleTX)                                         // if already transmitting, toggle
+        {
+          GConsoleTX = ! GConsoleTX;
+          GConsoleTune = false;                                 // tune is ties to TX; in this case we don't want tune
+        }
+        else if (IsEnabledForTX())                              // if not TXing, but we are enabled to TX, also toggle
+        {
+          GConsoleTX = ! GConsoleTX;
+          GConsoleTune = false;                                 // tune is ties to TX; in this case we don't want tune
+        }
+        
+// now send TX or not TX depending on outcome
+        if (GConsoleTX || GConsoleExtTX)                        // then send CAT message
           MakeCATMessageNumeric(eZZTX, 1);
         else
           MakeCATMessageNumeric(eZZTX, 0);
@@ -2565,6 +2593,10 @@ void HandleCATCommandBoolParam(ECATCommands MatchedCAT, bool ParsedParam)
       CATRequestDiversityGain();
       break;
 
+    case eZZSW:
+      GCatStateABTX = ParsedParam;
+      break;
+      
     case eZZDE:                          // diversity enable
       break;
   }      

@@ -102,6 +102,7 @@ enum ECATCommands
   eZZDE,                          // diversity enable
   eZZDG,                          // diversity RX1 gain
   eZZDH,                          // diversity receiver source
+  eZZSW,                          // VFO A/B enabled for TX
   
   eNoCommand                      // this is an exception condition
 };
