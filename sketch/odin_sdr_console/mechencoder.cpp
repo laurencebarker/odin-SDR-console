@@ -7,7 +7,7 @@
 // Timer-based rotary encoder logic by Peter Dannegger
 // ----------------------------------------------------------------------------
 
-#include "MechEncoder.h"
+#include "mechencoder.h"
 
 // ----------------------------------------------------------------------------
 

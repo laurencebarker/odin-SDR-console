@@ -11,7 +11,7 @@
 // polled code for very bouncy mechanicsl encoders for other controls
 /////////////////////////////////////////////////////////////////////////
 
-#include "MechEncoder.h"
+#include "mechencoder.h"
 #include <Arduino.h>
 #include <Encoder.h>
 #include "types.h"
