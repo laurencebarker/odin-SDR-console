@@ -48,7 +48,8 @@ int GCatAGCThreshold;                                       // current AGC thres
 int GCatFilterLow;                                          // current filter passband low edge
 int GCatFilterHigh;                                         // current filter passband high edge
 int GCatSquelchLevel;                                       // current squelch level
-int GCatChanAFGain;                                         // current A/B channel AF gain
+int GCatRX1AFGain;                                          // current RX1 AF gain
+int GCatRX2AFGain;                                          // current RX2 AF gain
 int GCatMastAFGain;                                         // current master AF gain
 int GCatDriveLevel;                                         // current TX drive level
 int GCatMicGain;                                            // current TX mic gain
@@ -124,9 +125,12 @@ int GSquelchLevelRecent;
 int GSquelchLevelClicks;
 
 // AF gains
-int GChanAFGainTimeout;
-int GChanAFGainRecent;
-int GChanAFGainClicks;
+int GRX1AFGainTimeout;
+int GRX1AFGainRecent;
+int GRX1AFGainClicks;
+int GRX2AFGainTimeout;
+int GRX2AFGainRecent;
+int GRX2AFGainClicks;
 int GMastAFGainTimeout;
 int GMastAFGainRecent;
 int GMastAFGainClicks;
@@ -171,7 +175,7 @@ bool GDiversityStepFast = true;                    // true for fast steps
 // this table must match the CAT definition for ZZAC!
 int GStepLookup[] = 
 {
-  1, 10, 25, 50, 
+  1, 2, 10, 25, 50, 
   100, 250, 500, 1000, 
   2000, 2500, 5000, 6250,
   9000, 10000, 12500, 15000,
@@ -347,6 +351,16 @@ void UpdateIndicators(void)
         if(GConsoleVFOA)
           NewState = true;
         break;
+
+      case eINCompanderEnabled:
+        break;
+        
+      case eINPuresignalEnabled:
+        break;
+        
+      case eINEncoder2nd:
+        break;
+              
       case eINNone:
         break;
     }
@@ -540,11 +554,17 @@ void CheckTimeouts(void)
 
 
 // AF gains
-  if(GChanAFGainTimeout != 0)                   // decrement channel AF gain timeout if non zero
-    if (--GChanAFGainTimeout == 0)              // if it times out, re-request
-      CATRequestChanAFGain();
-  if(GChanAFGainRecent != 0)                    // just decrement if non zero
-    GChanAFGainRecent--;
+  if(GRX1AFGainTimeout != 0)                    // decrement channel AF gain timeout if non zero
+    if (--GRX1AFGainTimeout == 0)               // if it times out, re-request
+      CATRequestRX1AFGain();
+  if(GRX1AFGainRecent != 0)                     // just decrement if non zero
+    GRX1AFGainRecent--;
+
+  if(GRX2AFGainTimeout != 0)                    // decrement channel AF gain timeout if non zero
+    if (--GRX2AFGainTimeout == 0)               // if it times out, re-request
+      CATRequestRX2AFGain();
+  if(GRX2AFGainRecent != 0)                     // just decrement if non zero
+    GRX2AFGainRecent--;
 
   if(GMastAFGainTimeout != 0)                   // decrement master AF gain timeout if non zero
     if (--GMastAFGainTimeout == 0)              // if it times out, re-request
@@ -595,7 +615,7 @@ void CheckTimeouts(void)
   if(GCWSpeedRecent != 0)                    // just decrement if non zero
     GCWSpeedRecent--;
 
-// Diversity Gsain
+// Diversity Gain
   if(GDiversityGainTimeout != 0)                   // decrement diversity gain timeout if non zero
     if (--GDiversityGainTimeout == 0)              // if it times out, re-request
       CATRequestDiversityGain();
@@ -609,6 +629,7 @@ void CheckTimeouts(void)
   if(GDiversityPhaseRecent != 0)                    // just decrement if non zero
     GDiversityPhaseRecent--;
 
+// diversity source
   if(GDiversitySourceTimeout != 0)                   // decrement diversity ref source timeout if non zero
     if (--GDiversitySourceTimeout == 0)              // if it times out, re-request
       CATRequestDiversityRefSource();
@@ -680,9 +701,6 @@ void ToggleAB(void)
   GSquelchLevelTimeout = 0;
   GSquelchLevelRecent = 0;
   GSquelchLevelClicks = 0;
-  GChanAFGainTimeout = 0;
-  GChanAFGainRecent = 0;
-  GChanAFGainClicks = 0;
 }
 
 
@@ -968,6 +986,23 @@ void CATHandlePushbutton(unsigned int Button, EButtonActions Action, bool IsPres
       if (IsPressed)                                          // toggle the requested TX/RX state
         GDiversityStepFast = !GDiversityStepFast;             // toggle the local variable
       break;
+
+    case ePBCompanderEnable:
+      break;
+      
+    case ePBPuresignalEnable:
+      break;
+      
+    case ePBPuresignal2Tone:
+      break;
+      
+    case ePBPuresignalSingleCal:
+      break;
+      
+    case ePBMonEnable:
+      break;
+      
+      
   }
 }
 
@@ -987,18 +1022,24 @@ void CATHandlePushbutton(unsigned int Button, EButtonActions Action, bool IsPres
 //
 void CATHandleEncoder(unsigned int Encoder, int Clicks, EEncoderActions AssignedAction)
 {
+//
+// firstly re-map an A/B channel AF gain to the correct A/B handler
+//
+  if (AssignedAction == eENAFGain)
+  {
+    if (GConsoleVFOA == true)
+      AssignedAction = eENRX1AFGain;
+    else
+      AssignedAction = eENRX2AFGain;
+  }
+
   switch(AssignedAction)
   {
     case eENNoAction:                        // no action - ignore
     case eENMulti:                           // multifunction already trapped
       break;
 
-    case eENAFGain:
-      GChanAFGainClicks += Clicks;          // set how many "unactioned" steps
-      if(GChanAFGainRecent != 0)            // if recent current threshold exists, use it
-        SendChanAFGainClicks();
-      else
-        CATRequestChanAFGain();
+    case eENAFGain:                         // this shouldn't happen - mapped to RX1 or RX2
       break;    
 
     case eENMasterGain:
@@ -1144,6 +1185,31 @@ void CATHandleEncoder(unsigned int Encoder, int Clicks, EEncoderActions Assigned
         SendDiversityPhaseClicks();
       else
         CATRequestDiversityPhase();
+      break;
+
+    case eENCompanderThreshold:                 // adjust compander threshold
+      break;
+      
+    case eENRX1AFGain:                          // RX1 AF gain (as opposed to current channel AF gain)
+      GRX1AFGainClicks += Clicks;               // set how many "unactioned" steps
+      if(GRX1AFGainRecent != 0)                 // if recent current threshold exists, use it
+        SendRX1AFGainClicks();
+      else
+        CATRequestRX1AFGain();
+      break;
+      
+    case eENRX2AFGain:                          // RX2 AF gain
+      GRX2AFGainClicks += Clicks;               // set how many "unactioned" steps
+      if(GRX2AFGainRecent != 0)                 // if recent current threshold exists, use it
+        SendRX2AFGainClicks();
+      else
+        CATRequestRX2AFGain();
+      break;
+      
+    case eENRX1StepAtten:                       // RX1 step atten (badged as RF gain)
+      break;
+      
+    case eENRX2StepAtten:                       // RX2 step atten (badged as RF gain)
       break;
   }
 }
@@ -1370,6 +1436,7 @@ void CATSetBand(EBand Band)
 }
 
 
+/////////////////////// MODE //////////////////////////////
 //
 // send Mode change request to CAT
 //
@@ -1757,21 +1824,18 @@ void SendSquelchLevelClicks(void)
 
 
 
-/////////////////////////////// A/B  CHANNEL AF GAIN ///////////////////////////////////////
+/////////////////////////////// RX1  CHANNEL AF GAIN ///////////////////////////////////////
 //
 // request 
 // if recent data: send the recent data to the display
 // if no recent data: sends a request message and sets a timeout
 //
-void CATRequestChanAFGain(void)
+void CATRequestRX1AFGain(void)
 {
-  if(GChanAFGainTimeout == 0)
+  if(GRX1AFGainTimeout == 0)
   {
-    if (GConsoleVFOA == true)
-      MakeCATMessageNoParam(eZZLA);
-    else
-      MakeCATMessageNoParam(eZZLE);
-    GChanAFGainTimeout = VGETTIMEOUT;
+    MakeCATMessageNoParam(eZZLA);
+    GRX1AFGainTimeout = VGETTIMEOUT;
   }
 }
 
@@ -1780,16 +1844,45 @@ void CATRequestChanAFGain(void)
 // deal with an encoder turn: a CAT message has arrived so now we need to update the param and send back to CAT
 // update & clip; send CAT; clear stored clicks; send to display
 //
-void SendChanAFGainClicks(void)
+void SendRX1AFGainClicks(void)
 {
-  GCatChanAFGain += GChanAFGainClicks;                              // update
-  GCatChanAFGain = ClipParameter(GCatChanAFGain, eZZLA);            // clip to limits
-  GChanAFGainClicks = 0;                                            // clear the stored clicks
-  if (GConsoleVFOA == true)                                         // send the right message
-    MakeCATMessageNumeric(eZZLA, GCatChanAFGain);
-  else
-    MakeCATMessageNumeric(eZZLE, GCatChanAFGain);
-  GChanAFGainRecent = VRECENTTHRESHOLD;                              // set "recent"
+  GCatRX1AFGain += GRX1AFGainClicks;                                // update
+  GCatRX1AFGain = ClipParameter(GCatRX1AFGain, eZZLA);              // clip to limits
+  GRX1AFGainClicks = 0;                                             // clear the stored clicks
+  MakeCATMessageNumeric(eZZLA, GCatRX1AFGain);
+  GRX1AFGainRecent = VRECENTTHRESHOLD;                              // set "recent"
+}
+
+
+
+
+/////////////////////////////// RX2  CHANNEL AF GAIN ///////////////////////////////////////
+//
+// request 
+// if recent data: send the recent data to the display
+// if no recent data: sends a request message and sets a timeout
+//
+void CATRequestRX2AFGain(void)
+{
+  if(GRX2AFGainTimeout == 0)
+  {
+    MakeCATMessageNoParam(eZZLE);
+    GRX2AFGainTimeout = VGETTIMEOUT;
+  }
+}
+
+
+//
+// deal with an encoder turn: a CAT message has arrived so now we need to update the param and send back to CAT
+// update & clip; send CAT; clear stored clicks; send to display
+//
+void SendRX2AFGainClicks(void)
+{
+  GCatRX2AFGain += GRX2AFGainClicks;                                // update
+  GCatRX2AFGain = ClipParameter(GCatRX2AFGain, eZZLE);              // clip to limits
+  GRX2AFGainClicks = 0;                                             // clear the stored clicks
+  MakeCATMessageNumeric(eZZLE, GCatRX2AFGain);
+  GRX2AFGainRecent = VRECENTTHRESHOLD;                              // set "recent"
 }
 
 
@@ -2143,7 +2236,7 @@ void SendDiversityPhaseClicks(void)
 
 
 
-/////////////////////////////// ATTENUATION ///////////////////////////////////////
+/////////////////////////////// 10dB step ATTENUATION ///////////////////////////////////////
 
 
 //
@@ -2173,7 +2266,7 @@ void CATSetAttenuation(EAtten AttenValue)
 
 
 
-////////////////////////////////////  STRING   ////////////////////////////////////////
+////////////////////////////////// CAT HANDLER RX STRING   ////////////////////////////////////////
 //
 // handlers for received CAT commands
 //
@@ -2248,8 +2341,7 @@ void HandleCATCommandStringParam(ECATCommands MatchedCAT, char* ParsedParam)
 
 
 
-///////////////////////////////////////   NUM   //////////////////////////////////////////
-
+/////////////////////////////////  CAT HANDLER RX   NUM   ////////////////////////////////////
 
 void HandleCATCommandNumParam(ECATCommands MatchedCAT, int ParsedParam)
 {
@@ -2265,18 +2357,21 @@ void HandleCATCommandNumParam(ECATCommands MatchedCAT, int ParsedParam)
       break;
       
     case eZZLA:                         // RX1 AF gain
-    case eZZLE:                         // RX2 AF gain
-      if(((GConsoleVFOA == true) && (MatchedCAT == eZZLA)) ||                     // respond to ZZLA if on VFO A, else ZZLE
-         ((GConsoleVFOA == false) && (MatchedCAT == eZZLE)))
-      {
-        GChanAFGainTimeout = 0;                                                   // clear timeout
-        GCatChanAFGain = ParsedParam;                                             // store locally
-        GChanAFGainRecent = VRECENTTHRESHOLD;                                     // set recent
-        if (GChanAFGainClicks != 0)                                               // we want to send a new update with encoder clicks
-          SendChanAFGainClicks();
-      }
+      GRX1AFGainTimeout = 0;                                                   // clear timeout
+      GCatRX1AFGain = ParsedParam;                                             // store locally
+      GRX1AFGainRecent = VRECENTTHRESHOLD;                                     // set recent
+      if (GRX1AFGainClicks != 0)                                               // we want to send a new update with encoder clicks
+        SendRX1AFGainClicks();
       break;
-      
+
+    case eZZLE:                         // RX2 AF gain
+      GRX2AFGainTimeout = 0;                                                   // clear timeout
+      GCatRX2AFGain = ParsedParam;                                             // store locally
+      GRX2AFGainRecent = VRECENTTHRESHOLD;                                     // set recent
+      if (GRX2AFGainClicks != 0)                                               // we want to send a new update with encoder clicks
+        SendRX2AFGainClicks();
+      break;
+            
     case eZZPA:                           // RX1 attenuation  (NO HANDLER NEEDED - WE NEVER "GET" THIS - use combined RX msg instead)
     case eZZPB:                           // RX2 attenuation  (NO HANDLER NEEDED - WE NEVER "GET" THIS - use combined RX msg instead)
       break;
@@ -2516,12 +2611,22 @@ void HandleCATCommandNumParam(ECATCommands MatchedCAT, int ParsedParam)
 
     case eZZDH:                                                       // diversity receiver source
       break;
+
+    case eZZRX:                                                       // RX1 step atten
+      break;
+
+    case eZZRY:                                                       // RX2 step atten
+      break;
+
+    case eZZCT:                                                       // compander threshold
+      break;
+    
   }
 }
 
 
 
-////////////////////////////////////   BOOL   ////////////////////////////////////////
+///////////////////////////// CAT HANDLER RX BOOL   /////////////////////////////////////
 
 
 void HandleCATCommandBoolParam(ECATCommands MatchedCAT, bool ParsedParam)
@@ -2598,6 +2703,18 @@ void HandleCATCommandBoolParam(ECATCommands MatchedCAT, bool ParsedParam)
       break;
       
     case eZZDE:                          // diversity enable
+      break;
+
+    case eZZCP:                         // compander enable
+      break;
+
+    case eZZLI:                         // puresignal enable
+      break;
+
+    case eZZUT:                         // puresignal 2 tone test
+      break;
+
+    case eZZMO:                         // MON on/off
       break;
   }      
 }

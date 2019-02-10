@@ -49,7 +49,7 @@ long DivisorTable[] =
 // array of records. This must exactly match the enum ECATCommands in tiger.h
 // and the number of commands defined here must be correct
 //
-#define VNUMCATCMDS 77
+#define VNUMCATCMDS 85
 
 SCATCommands GCATCommands[VNUMCATCMDS] = 
 {
@@ -136,7 +136,16 @@ SCATCommands GCATCommands[VNUMCATCMDS] =
   {"ZZDE", eBool, 0, 1, 1, false},                          // diversity enable
   {"ZZDG", eNum, 0, 5000, 4, false},                        // diversity RX1 gain
   {"ZZDH", eNum, 0, 2, 1, false},                           // diversity receiver source
-  {"ZZSW", eBool, 0, 1, 1, false}                           // VFO A/B enabled for TX
+  {"ZZSW", eBool, 0, 1, 1, false},                          // VFO A/B enabled for TX
+  {"ZZRX", eNum, 0, 31, 2, false},                          // RX1 step atten
+  {"ZZRY", eNum, 0, 31, 2, false},                          // RX2 step atten
+  {"ZZCP", eBool, 0, 1, 1, false},                          // compander enable
+
+  {"ZZCT", eNum, 0, 31, 3, false},                          // compander threshold
+  {"ZZLI", eBool, 0, 1, 1, false},                          // puresignal on/off
+  {"ZZUT", eBool, 0, 1, 1, false},                          // puresignal 2 tone test
+  {"ZZUS", eNone, 0, 0, 0, false},                          // puresignal single cal
+  {"ZZMO", eBool, 0, 1, 1, false}                           // MON on/off
 };
 
 

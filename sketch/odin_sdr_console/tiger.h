@@ -103,6 +103,15 @@ enum ECATCommands
   eZZDG,                          // diversity RX1 gain
   eZZDH,                          // diversity receiver source
   eZZSW,                          // VFO A/B enabled for TX
+  eZZRX,                          // RX1 step atten
+  eZZRY,                          // RX2 step atten
+  eZZCP,                          // compander on/off
+
+  eZZCT,                          // compander threshold
+  eZZLI,                          // puresignal on/off
+  eZZUT,                          // puresignal 2 tone
+  eZZUS,                          // puresignal single cal
+  eZZMO,                          // monitor on/off
   
   eNoCommand                      // this is an exception condition
 };

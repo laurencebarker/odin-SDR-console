@@ -65,9 +65,14 @@ typedef enum
   eENSquelch,
   eENDiversityGain,
   eENDiversityPhase,
-  eENMulti                      // multifunction
+  eENMulti,                      // multifunction
+  eENCompanderThreshold,
+  eENRX1AFGain,
+  eENRX2AFGain,
+  eENRX1StepAtten,
+  eENRX2StepAtten
 } EEncoderActions;
-#define VNUMENCODERACTIONS 18
+#define VNUMENCODERACTIONS 23
 
 //
 // this enum type lists all the functions that can be assigned to LED indicators
@@ -86,9 +91,12 @@ typedef enum
   eINANF,
   eINSquelch,
   eINVFOAB,
+  eINCompanderEnabled,
+  eINPuresignalEnabled,
+  eINEncoder2nd,
   eINNone
 } EIndicatorActions;
-#define VNUMINDICATORACTIONS 13
+#define VNUMINDICATORACTIONS 16
 
 //
 // this enum type lists all the functions that can be assigned to configurable pushbuttons
@@ -125,9 +133,14 @@ typedef enum
   ePBSquelch,
   ePBAtten,
   ePBVoxOnOff,
-  ePBDiversityFastSlow
+  ePBDiversityFastSlow,
+  ePBCompanderEnable,
+  ePBPuresignalEnable,
+  ePBPuresignal2Tone,
+  ePBPuresignalSingleCal,
+  ePBMonEnable
 } EButtonActions;
-#define VNUMBUTTONACTIONS 29
+#define VNUMBUTTONACTIONS 35
 
 //
 // this enum defines legal baud rates for serial

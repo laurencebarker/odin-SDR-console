@@ -130,11 +130,13 @@ void CATRequestSquelchLevel(void);
 void SendSquelchLevelClicks(void);
 
 //
-// request A/B channel AF gain;
-// channel AF gain encoder clicks
+// request RX1, RX2 AF gain;
+// RX1, RX2 AF gain encoder clicks
 //
-void CATRequestChanAFGain(void);
-void SendChanAFGainClicks(void);
+void CATRequestRX1AFGain(void);
+void SendRX1AFGainClicks(void);
+void CATRequestRX2AFGain(void);
+void SendRX2AFGainClicks(void);
 
 //
 // request master AF gain;

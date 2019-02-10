@@ -465,7 +465,12 @@ char* EncoderActionStrings[] =
   "Squelch level",
   "Diversity Gain",
   "Diversity Phase",
-  "Multifunction"                      // multifunction
+  "Multifunction",        // multifunction
+  "Comp Threshold",
+  "RX1 AF Gain",
+  "RX2 AF Gain",
+  "RX1 RF Gain",
+  "RX2 RF Gain"
 };
 
 char* MultiEncoderActionStrings[] = 
@@ -504,6 +509,9 @@ char* IndicatorActionStrings[] =
   "ANF on",
   "Squelch on",
   "VFO A/B",
+  "Comp Enabled",
+  "PS Enabled",
+  "Encoder 2nd fn",
   "None"
 };
 
@@ -539,7 +547,13 @@ char* ButtonActionStrings[] =
   "Squelch on/off",
   "Atten step",
   "VOX on/off",
-  "Diversity fast/slow"
+  "Diversity fast/slow",
+  "Comp Enable",
+  "PS Enable",
+  "PS 2 Tone Cal",
+  "PS Single Cal",
+  "MON Enable"
+  
 };
 
 
