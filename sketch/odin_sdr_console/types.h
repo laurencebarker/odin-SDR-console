@@ -138,9 +138,10 @@ typedef enum
   ePBPuresignalEnable,
   ePBPuresignal2Tone,
   ePBPuresignalSingleCal,
-  ePBMonEnable
+  ePBMonEnable,
+  ePBDiversityEnable
 } EButtonActions;
-#define VNUMBUTTONACTIONS 35
+#define VNUMBUTTONACTIONS 36
 
 //
 // this enum defines legal baud rates for serial

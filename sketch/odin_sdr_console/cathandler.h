@@ -88,12 +88,67 @@ void CATRequestRadioOnOff(void);
 void CATSetRadioOnOff(bool IsStart);
 
 
-
 //
 // request the current band
 // sends a request message, then sets timeout
 //
 void CATRequestBand(void);
+
+//
+// request Compander on/off state
+// we don't use timeout as user can simply press again
+//
+void CATRequestCompanderOnOff(void);
+
+//
+// send Compander on/off request to CAT
+//
+void CATSetCompanderOnOff(bool IsMute);
+
+//
+// request Puresignal on/off state
+// we don't use timeout as user can simply press again
+//
+void CATRequestPuresignalOnOff(void);
+
+//
+// send Puresignal on/off request to CAT
+//
+void CATSetPuresignalOnOff(bool IsMute);
+
+//
+// request TwoTone test on/off state
+// we don't use timeout as user can simply press again
+//
+void CATRequestTwoToneOnOff(void);
+
+//
+// send TwoTone on/off request to CAT
+//
+void CATSetTwoToneOnOff(bool IsMute);
+
+//
+// request MON on/off state
+// we don't use timeout as user can simply press again
+//
+void CATRequestMonOnOff(void);
+
+//
+// send MON on/off request to CAT
+//
+void CATSetMonOnOff(bool IsMute);
+
+//
+// request Diversity on/off state
+// we don't use timeout as user can simply press again
+//
+void CATRequestDiversityOnOff(void);
+
+//
+// send Diversity on/off request to CAT
+//
+void CATSetDiversityOnOff(bool IsMute);
+
 
 //
 // request AGC threshold
@@ -137,6 +192,15 @@ void CATRequestRX1AFGain(void);
 void SendRX1AFGainClicks(void);
 void CATRequestRX2AFGain(void);
 void SendRX2AFGainClicks(void);
+
+//
+// request RX1, RX2 step atten (treated as RF gain);
+// RX1, RX2 step atten encoder clicks
+//
+void CATRequestRX1StepAtten(void);
+void SendRX1StepAttenClicks(void);
+void CATRequestRX2StepAtten(void);
+void SendRX2StepAttenClicks(void);
 
 //
 // request master AF gain;
@@ -213,15 +277,12 @@ void CATRequestDiversityRefSource(void);
 //
 void CATEncoderVFOABTune(int Clicks, bool IsA);
 
-
-
-
 //
-
-
-
-
-
+// request compander threshold;
+// compander threshold encoder clicks
+//
+void CATRequestCompThreshold(void);
+void SendCompThresholdClicks(void);
 
 //
 // handlers for pushbutton:

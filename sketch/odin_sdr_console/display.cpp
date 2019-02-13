@@ -552,8 +552,8 @@ char* ButtonActionStrings[] =
   "PS Enable",
   "PS 2 Tone Cal",
   "PS Single Cal",
-  "MON Enable"
-  
+  "MON Enable",
+  "Diversity Enable"  
 };
 
 

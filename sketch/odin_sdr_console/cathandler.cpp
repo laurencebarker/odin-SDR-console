@@ -13,6 +13,7 @@
 #include "display.h"
 #include "cathandler.h"
 #include "configdata.h"
+#include "encoders.h"
 #include "led.h"
 #include <stdlib.h>
 
@@ -43,6 +44,8 @@ ENRState GCatStateNR = eNROff;                              // RX1/2 NR
 ENBState GCatStateNB = eNBOff;                              // RX1/2 NB
 EMode GCatStateMode;                                        // RX1/2 mode
 EBand GCatStateBand;                                        // RX1/2 band
+bool GCatStateCompanderEnable = false;                      // compander on/off
+bool GCatStatePuresignalEnable = false;                     // puresignal on/off
 unsigned long GCatFrequency_Hz;                             // current frequency in Hz
 int GCatAGCThreshold;                                       // current AGC threshold
 int GCatFilterLow;                                          // current filter passband low edge
@@ -50,6 +53,8 @@ int GCatFilterHigh;                                         // current filter pa
 int GCatSquelchLevel;                                       // current squelch level
 int GCatRX1AFGain;                                          // current RX1 AF gain
 int GCatRX2AFGain;                                          // current RX2 AF gain
+int GCatRX1StepAtten;                                       // current RX1 Step Atten
+int GCatRX2StepAtten;                                       // current RX2 Step Atten
 int GCatMastAFGain;                                         // current master AF gain
 int GCatDriveLevel;                                         // current TX drive level
 int GCatMicGain;                                            // current TX mic gain
@@ -60,6 +65,7 @@ int GCatCWSpeed;                                            // current CW speed
 long GCatDiversityPhase;                                    // current diversity phase (-18000 to 18000, meaning -180 to 180 degrees)
 int GCatDiversityGain;                                      // current diversity gain (0 to 5000, meaning 0.000 to 5.000)
 bool GCatDiversityRefSource;                                // current reference (true: RX1; false: RX2)
+int GCatCompThreshold;                                      // current compander threshold (0 to 20)
 
 int GVFOStepSize;                                           // current VFO step, in Hz
 int GDisplayThrottle;                                       // !=0 for a few ticks after a display frequency update
@@ -78,6 +84,11 @@ bool GToggleRadioOnOff;                             // true if we need to toggle
 bool GToggleMute;                                   // true if we need to toggle bool
 bool GFilterReset;                                  // true if we need to initiate a filter reset
 bool GToggleVoxOnOff;                               // true to initiate toggle VOX on/off
+bool GToggleCompanderOnOff;                         // true if to toggle compander on/off
+bool GTogglePuresignalOnOff;                        // true if to toggle Puresignal on/off
+bool GToggleTwoToneOnOff;                           // true if to toggle Puresignal two tone test on/off
+bool GToggleMonOnOff;                               // true if to toggle MON on/off
+bool GToggleDiversityOnOff;                         // true to initiate toggle Diversity on/off
 
 //
 #define GPERIODICREFRESHDELAY 10                    // 10ms ticks; initially 100ms/step for testing
@@ -135,6 +146,14 @@ int GMastAFGainTimeout;
 int GMastAFGainRecent;
 int GMastAFGainClicks;
 
+// step attenuations
+int GRX1StepAttenTimeout;
+int GRX1StepAttenRecent;
+int GRX1StepAttenClicks;
+int GRX2StepAttenTimeout;
+int GRX2StepAttenRecent;
+int GRX2StepAttenClicks;
+
 // TX drive
 int GDriveLevelTimeout;
 int GDriveLevelRecent;
@@ -170,6 +189,11 @@ int GDiversityGainRecent;
 int GDiversityGainClicks;
 int GDiversitySourceTimeout;
 bool GDiversityStepFast = true;                    // true for fast steps
+
+// compander threshold
+int GCompThresholdTimeout;
+int GCompThresholdRecent;
+int GCompThresholdClicks;
 
 // lookup VFO step size from CAT msg parameter, in hz
 // this table must match the CAT definition for ZZAC!
@@ -353,12 +377,17 @@ void UpdateIndicators(void)
         break;
 
       case eINCompanderEnabled:
+        if(GCatStateCompanderEnable == true)
+          NewState = true;
         break;
         
       case eINPuresignalEnabled:
+        if(GCatStatePuresignalEnable == true)
+          NewState = true;
         break;
         
       case eINEncoder2nd:
+        NewState = GetEncoderMain2ndAction(GUpdateIndicator);
         break;
               
       case eINNone:
@@ -487,7 +516,7 @@ void PeriodicRefresh(void)
         break;
 
       case 9:                                                 // if this state we sequence between infrequently needed values
-        if (++GPeriodicRefreshSubState > 2)
+        if (++GPeriodicRefreshSubState > 4)
           GPeriodicRefreshSubState = 0;
         switch(GPeriodicRefreshSubState)
         {
@@ -501,11 +530,20 @@ void PeriodicRefresh(void)
             else
               MakeCATMessageNoParam(eZZFS);                   // request B filter
             break;
+
           case 2:                                             // filter high cut
             if (GConsoleVFOA)
               MakeCATMessageNoParam(eZZFH);                   // request A filter
             else
               MakeCATMessageNoParam(eZZFR);                   // request B filter
+            break;
+
+          case 3:                                             // compander enable
+            MakeCATMessageNoParam(eZZCP);                     // request compander
+            break;
+
+          case 4:                                             // puresignal enable
+            MakeCATMessageNoParam(eZZLI);                     // request puresignal
             break;
         }
         break;
@@ -573,6 +611,21 @@ void CheckTimeouts(void)
     GMastAFGainRecent--;
 
 
+// Step attenuations
+  if(GRX1StepAttenTimeout != 0)                    // decrement channel step atten timeout if non zero
+    if (--GRX1StepAttenTimeout == 0)               // if it times out, re-request
+      CATRequestRX1StepAtten();
+  if(GRX1StepAttenRecent != 0)                     // just decrement if non zero
+    GRX1StepAttenRecent--;
+
+  if(GRX2StepAttenTimeout != 0)                    // decrement channel step atten timeout if non zero
+    if (--GRX2StepAttenTimeout == 0)               // if it times out, re-request
+      CATRequestRX2StepAtten();
+  if(GRX2StepAttenRecent != 0)                     // just decrement if non zero
+    GRX2StepAttenRecent--;
+
+
+
 // TX drive
   if(GDriveLevelTimeout != 0)                   // decrement drive level timeout if non zero
     if (--GDriveLevelTimeout == 0)              // if it times out, re-request
@@ -636,6 +689,14 @@ void CheckTimeouts(void)
 
   if(GDisplayThrottle != 0)                 // display update throttle
     GDisplayThrottle--;
+
+// Compander Threshold
+  if(GCompThresholdTimeout != 0)                   // decrement compander threshold timeout if non zero
+    if (--GCompThresholdTimeout == 0)              // if it times out, re-request
+      CATRequestCompThreshold();
+  if(GCompThresholdRecent != 0)                    // just decrement if non zero
+    GCompThresholdRecent--;
+
 }
 
 
@@ -988,21 +1049,48 @@ void CATHandlePushbutton(unsigned int Button, EButtonActions Action, bool IsPres
       break;
 
     case ePBCompanderEnable:
+      if (IsPressed)
+      {
+        GToggleCompanderOnOff = true;
+        CATRequestCompanderOnOff();
+      }
       break;
       
     case ePBPuresignalEnable:
+      if (IsPressed)
+      {
+        GTogglePuresignalOnOff = true;
+        CATRequestPuresignalOnOff();
+      }
       break;
       
     case ePBPuresignal2Tone:
+      if (IsPressed)
+      {
+        GToggleTwoToneOnOff = true;
+        CATRequestTwoToneOnOff();
+      }
       break;
       
     case ePBPuresignalSingleCal:
+      MakeCATMessageNoParam(eZZUS);
       break;
       
     case ePBMonEnable:
+      if (IsPressed)
+      {
+        GToggleMonOnOff = true;
+        CATRequestMonOnOff();
+      }
       break;
-      
-      
+
+    case ePBDiversityEnable:                             // toggle Diversity on/off
+      if (IsPressed)
+      {
+        GToggleDiversityOnOff = true;
+        CATRequestDiversityOnOff();
+      }
+      break;
   }
 }
 
@@ -1188,6 +1276,11 @@ void CATHandleEncoder(unsigned int Encoder, int Clicks, EEncoderActions Assigned
       break;
 
     case eENCompanderThreshold:                 // adjust compander threshold
+      GCompThresholdClicks += Clicks;           // set how many "unactioned" steps
+      if(GCompThresholdRecent != 0)             // if recent current threshold exists, use it
+        SendCompThresholdClicks();
+      else
+        CATRequestCompThreshold();
       break;
       
     case eENRX1AFGain:                          // RX1 AF gain (as opposed to current channel AF gain)
@@ -1207,9 +1300,19 @@ void CATHandleEncoder(unsigned int Encoder, int Clicks, EEncoderActions Assigned
       break;
       
     case eENRX1StepAtten:                       // RX1 step atten (badged as RF gain)
+      GRX1StepAttenClicks -= Clicks;            // set how many "unactioned" steps. reversed direction to make it act as gain not atten
+      if(GRX1StepAttenRecent != 0)              // if recent current threshold exists, use it
+        SendRX1StepAttenClicks();
+      else
+        CATRequestRX1StepAtten();
       break;
       
     case eENRX2StepAtten:                       // RX2 step atten (badged as RF gain)
+      GRX2StepAttenClicks -= Clicks;            // set how many "unactioned" steps. reversed direction to make it act as gain not atten
+      if(GRX2StepAttenRecent != 0)              // if recent current threshold exists, use it
+        SendRX2StepAttenClicks();
+      else
+        CATRequestRX2StepAtten();
       break;
   }
 }
@@ -1354,7 +1457,7 @@ void CATRequestVoxOnOff(void)
   MakeCATMessageNoParam(eZZVE);
 }
 //
-// send MUTE request to CAT
+// send VOX request to CAT
 //
 void CATSetVoxOnOff(bool IsOn)
 {
@@ -1612,6 +1715,101 @@ void CATSetVFOLock(bool State)
 
 
 
+///////////////////////   Compander ON/OFF   //////////////////////////
+//
+// request Compander on/off state
+// we don't use timeout as user can simply press again
+//
+void CATRequestCompanderOnOff(void)
+{
+  MakeCATMessageNoParam(eZZCP);
+}
+//
+// send Compander request to CAT
+//
+void CATSetCompanderOnOff(bool IsOn)
+{
+  MakeCATMessageBool(eZZCP, IsOn);
+}
+
+
+
+///////////////////////   Puresignal ON/OFF   //////////////////////////
+//
+// request Puresignal on/off state
+// we don't use timeout as user can simply press again
+//
+void CATRequestPuresignalOnOff(void)
+{
+  MakeCATMessageNoParam(eZZLI);
+}
+//
+// send Puresignal request to CAT
+//
+void CATSetPuresignalOnOff(bool IsOn)
+{
+  MakeCATMessageBool(eZZLI, IsOn);
+}
+
+
+
+///////////////////////   Two Tone Test ON/OFF   //////////////////////////
+//
+// request Two Tone Test on/off state
+// we don't use timeout as user can simply press again
+//
+void CATRequestTwoToneOnOff(void)
+{
+  MakeCATMessageNoParam(eZZUT);
+}
+//
+// send TwoTone request to CAT
+//
+void CATSetTwoToneOnOff(bool IsOn)
+{
+  MakeCATMessageBool(eZZUT, IsOn);
+}
+
+
+
+///////////////////////   MON ON/OFF   //////////////////////////
+//
+// request MON on/off state
+// we don't use timeout as user can simply press again
+//
+void CATRequestMonOnOff(void)
+{
+  MakeCATMessageNoParam(eZZMO);
+}
+//
+// send MON request to CAT
+//
+void CATSetMonOnOff(bool IsOn)
+{
+  MakeCATMessageBool(eZZMO, IsOn);
+}
+
+
+
+///////////////////////   Diversity ON/OFF   //////////////////////////
+//
+// request Diversity on/off state
+// we don't use timeout as user can simply press again
+//
+void CATRequestDiversityOnOff(void)
+{
+  MakeCATMessageNoParam(eZZDE);
+}
+//
+// send Diversity on/off request to CAT
+//
+void CATSetDiversityOnOff(bool IsOn)
+{
+  MakeCATMessageBool(eZZDE, IsOn);
+}
+
+
+
 /////////////////////////////// AGC THRESHOLD ///////////////////////////////////////
 //
 // request AGC threshold
@@ -1682,6 +1880,8 @@ void CATRequestFilterLow(void)
     GFilterLowTimeout = VGETTIMEOUT;
   }
 }
+
+
 
 
 //
@@ -1920,6 +2120,70 @@ void SendMastAFGainClicks(void)
 
 
 
+/////////////////////////////// RX1  CHANNEL STEP ATTEN  ///////////////////////////////////
+//
+// request 
+// if recent data: send the recent data to the display
+// if no recent data: sends a request message and sets a timeout
+//
+void CATRequestRX1StepAtten(void)
+{
+  if(GRX1StepAttenTimeout == 0)
+  {
+    MakeCATMessageNoParam(eZZRX);
+    GRX1StepAttenTimeout = VGETTIMEOUT;
+  }
+}
+
+
+//
+// deal with an encoder turn: a CAT message has arrived so now we need to update the param and send back to CAT
+// update & clip; send CAT; clear stored clicks; send to display
+//
+void SendRX1StepAttenClicks(void)
+{
+  GCatRX1StepAtten += GRX1StepAttenClicks;                          // update
+  GCatRX1StepAtten = ClipParameter(GCatRX1StepAtten, eZZRX);        // clip to limits
+  GRX1StepAttenClicks = 0;                                          // clear the stored clicks
+  MakeCATMessageNumeric(eZZRX, GCatRX1StepAtten);
+  GRX1StepAttenRecent = VRECENTTHRESHOLD;                           // set "recent"
+}
+
+
+
+
+/////////////////////////////// RX2  CHANNEL STEP ATTEN  ///////////////////////////////////
+//
+// request 
+// if recent data: send the recent data to the display
+// if no recent data: sends a request message and sets a timeout
+//
+void CATRequestRX2StepAtten(void)
+{
+  if(GRX2StepAttenTimeout == 0)
+  {
+    MakeCATMessageNoParam(eZZRY);
+    GRX2StepAttenTimeout = VGETTIMEOUT;
+  }
+}
+
+
+//
+// deal with an encoder turn: a CAT message has arrived so now we need to update the param and send back to CAT
+// update & clip; send CAT; clear stored clicks; send to display
+//
+void SendRX2StepAttenClicks(void)
+{
+  GCatRX2StepAtten += GRX2StepAttenClicks;                          // update
+  GCatRX2StepAtten = ClipParameter(GCatRX2StepAtten, eZZRY);        // clip to limits
+  GRX2StepAttenClicks = 0;                                          // clear the stored clicks
+  MakeCATMessageNumeric(eZZRY, GCatRX2StepAtten);
+  GRX2StepAttenRecent = VRECENTTHRESHOLD;                           // set "recent"
+}
+
+
+
+
 /////////////////////////////// DRIVE LEVEL ///////////////////////////////////////
 //
 // request 
@@ -2152,6 +2416,7 @@ long GetDiversityPhaseIncrement(int Clicks)
   return (Step*Clicks);
 }
 
+
 //
 // request reference Source
 //
@@ -2163,6 +2428,7 @@ void CATRequestDiversityRefSource(void)
     GDiversitySourceTimeout = VGETTIMEOUT;
   }
 }
+
 
 
 //
@@ -2232,6 +2498,43 @@ void SendDiversityPhaseClicks(void)
   MakeCATMessageNumeric(eZZDD, GCatDiversityPhase);
   GDiversityPhaseRecent = VRECENTTHRESHOLD;                              // set "recent"
 }
+
+
+
+
+////////////////////////////// Compander Threshold   ///////////////////////////////////////
+
+
+
+//
+// threshold request 
+// if no recent data: sends a request message and sets a timeout
+//
+void CATRequestCompThreshold(void)
+{
+  if(GCompThresholdTimeout == 0)
+  {
+    MakeCATMessageNoParam(eZZCT);
+    GCompThresholdTimeout = VGETTIMEOUT;
+  }
+}
+
+
+//
+// deal with an encoder turn: a CAT message has arrived so now we need to update the param and send back to CAT
+// update & clip; send CAT; clear stored clicks; send to display
+//
+void SendCompThresholdClicks(void)
+{
+  GCatCompThreshold += GCompThresholdClicks;                        // update
+  GCatCompThreshold = ClipParameter(GCatCompThreshold, eZZCT);      // clip to limits
+  GCompThresholdClicks = 0;                                         // clear the stored clicks
+  MakeCATMessageNumeric(eZZCT, GCatCompThreshold);
+  GCompThresholdRecent = VRECENTTHRESHOLD;                          // set "recent"
+}
+
+
+
 
 
 
@@ -2341,7 +2644,7 @@ void HandleCATCommandStringParam(ECATCommands MatchedCAT, char* ParsedParam)
 
 
 
-/////////////////////////////////  CAT HANDLER RX   NUM   ////////////////////////////////////
+/////////////////////////////////  CAT HANDLER RX NUM   ////////////////////////////////////
 
 void HandleCATCommandNumParam(ECATCommands MatchedCAT, int ParsedParam)
 {
@@ -2613,12 +2916,27 @@ void HandleCATCommandNumParam(ECATCommands MatchedCAT, int ParsedParam)
       break;
 
     case eZZRX:                                                       // RX1 step atten
+      GRX1StepAttenTimeout = 0;                                             // clear timeout
+      GCatRX1StepAtten = ParsedParam;                                       // store locally
+      GRX1StepAttenRecent = VRECENTTHRESHOLD;                               // set recent
+      if (GRX1StepAttenClicks != 0)                                         // we want to send a new update with encoder clicks
+        SendRX1StepAttenClicks();
       break;
 
     case eZZRY:                                                       // RX2 step atten
+      GRX2StepAttenTimeout = 0;                                             // clear timeout
+      GCatRX2StepAtten = ParsedParam;                                       // store locally
+      GRX2StepAttenRecent = VRECENTTHRESHOLD;                               // set recent
+      if (GRX2StepAttenClicks != 0)                                         // we want to send a new update with encoder clicks
+        SendRX2StepAttenClicks();
       break;
 
     case eZZCT:                                                       // compander threshold
+      GCompThresholdTimeout = 0;                                                   // clear timeout
+      GCatCompThreshold = ParsedParam;                                             // store locally
+      GCompThresholdRecent = VRECENTTHRESHOLD;                                     // set recent
+      if (GCompThresholdClicks != 0)                                               // we want to send a new update with encoder clicks
+        SendCompThresholdClicks();
       break;
     
   }
@@ -2703,21 +3021,52 @@ void HandleCATCommandBoolParam(ECATCommands MatchedCAT, bool ParsedParam)
       break;
       
     case eZZDE:                          // diversity enable
+      if (GToggleDiversityOnOff)
+      {
+        CATSetDiversityOnOff(!ParsedParam);
+        GToggleDiversityOnOff = false;
+      }
       break;
 
     case eZZCP:                         // compander enable
+      GCatStateCompanderEnable = ParsedParam;         // save the state now
+      if (GToggleCompanderOnOff)                      // if we have a toggle request - now invert
+      {
+        CATSetCompanderOnOff(!ParsedParam);
+        GCatStateCompanderEnable = !ParsedParam;
+        GToggleCompanderOnOff = false;
+      }
       break;
 
     case eZZLI:                         // puresignal enable
+      GCatStatePuresignalEnable = ParsedParam;      // save the state now
+      if (GTogglePuresignalOnOff)
+      {
+        CATSetPuresignalOnOff(!ParsedParam);
+        GCatStatePuresignalEnable = !ParsedParam;
+        GTogglePuresignalOnOff = false;
+      }
       break;
 
     case eZZUT:                         // puresignal 2 tone test
+      if (GToggleTwoToneOnOff)
+      {
+        CATSetTwoToneOnOff(!ParsedParam);
+        GToggleTwoToneOnOff = false;
+      }
       break;
 
     case eZZMO:                         // MON on/off
+      if (GToggleMonOnOff)
+      {
+        CATSetMonOnOff(!ParsedParam);
+        GToggleMonOnOff = false;
+      }
       break;
   }      
 }
+
+
 
 // are there any of these?
 void HandleCATCommandNoParam(ECATCommands MatchedCAT)

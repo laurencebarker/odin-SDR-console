@@ -4,7 +4,7 @@
 //
 // this sketch provides a knob and switch interface through USB and CAT
 //
-// encoders.c
+// encoders.h
 // this file holds the code to manage the rotary encoders
 // it looks like it needs two technologies:
 // interrupt driven code for optical VFO encoder (apparenrtly largely bounce free)
@@ -40,6 +40,11 @@ void EncoderSlowTick(void);
 //
 void EncoderHandleButton(unsigned int ButtonNum, bool IsPress);
 
+
+//
+// get a bool to say if 2nd action selected or not
+//
+bool GetEncoderMain2ndAction(unsigned int Encoder);
 
 
 

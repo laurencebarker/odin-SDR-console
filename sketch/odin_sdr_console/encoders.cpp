@@ -8,7 +8,7 @@
 // this file holds the code to manage the rotary encoders
 // it needs two technologies:
 // interrupt driven code for optical VFO encoder (bounce free)
-// polled code for very bouncy mechanicsl encoders for other controls
+// polled code for very bouncy mechanical encoders for other controls
 /////////////////////////////////////////////////////////////////////////
 
 #include "mechencoder.h"
@@ -273,5 +273,20 @@ void EncoderHandleButton(unsigned int ButtonNum, bool IsPress)
     if (Action != eENMulti)
       DisplaySetEncoderAction(EncoderNumber, Action, false);    
   }
+}
+
+
+//
+// get a bool to say if 2nd action selected or not
+//
+bool GetEncoderMain2ndAction(unsigned int Encoder)
+{
+  bool Result;
+
+  if (Encoder < VMAXENCODERS)
+    Result = Is2ndAction[Encoder];
+  else
+    Result = false;
+  return Result;
 }
 
