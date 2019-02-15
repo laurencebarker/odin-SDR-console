@@ -449,7 +449,7 @@ char* AGCStrings[] =
 char* EncoderActionStrings[] = 
 {
   "No action",
-  "AF Gain",
+  "A/B AF Gain",
   "Master AF Gain",
   "AGC Level",
   "Filter High Cut",
@@ -470,7 +470,8 @@ char* EncoderActionStrings[] =
   "RX1 AF Gain",
   "RX2 AF Gain",
   "RX1 RF Gain",
-  "RX2 RF Gain"
+  "RX2 RF Gain",
+  "A/B RF Gain"
 };
 
 char* MultiEncoderActionStrings[] = 

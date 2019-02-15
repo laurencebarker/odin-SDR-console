@@ -70,9 +70,10 @@ typedef enum
   eENRX1AFGain,
   eENRX2AFGain,
   eENRX1StepAtten,
-  eENRX2StepAtten
+  eENRX2StepAtten,
+  eENStepAtten
 } EEncoderActions;
-#define VNUMENCODERACTIONS 23
+#define VNUMENCODERACTIONS 24
 
 //
 // this enum type lists all the functions that can be assigned to LED indicators

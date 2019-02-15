@@ -385,9 +385,13 @@ void UpdateIndicators(void)
         if(GCatStatePuresignalEnable == true)
           NewState = true;
         break;
-        
-      case eINEncoder2nd:
-        NewState = GetEncoderMain2ndAction(GUpdateIndicator);
+
+//
+// encoders are numbered 0-1-2-3-4-5-6-7 for 1A-1B-2A-2B-3A-3B-4A-4B
+// we need to double the indicator number to get 1A-2A-3A-4A etc
+//        
+      case eINEncoder2nd:                                           // light up if encoder has 2nd function selected
+        NewState = GetEncoderMain2ndAction(GUpdateIndicator *2);
         break;
               
       case eINNone:
@@ -1111,7 +1115,7 @@ void CATHandlePushbutton(unsigned int Button, EButtonActions Action, bool IsPres
 void CATHandleEncoder(unsigned int Encoder, int Clicks, EEncoderActions AssignedAction)
 {
 //
-// firstly re-map an A/B channel AF gain to the correct A/B handler
+// firstly re-map an A/B channel AF gain or step atten to the correct A/B handler
 //
   if (AssignedAction == eENAFGain)
   {
@@ -1119,6 +1123,13 @@ void CATHandleEncoder(unsigned int Encoder, int Clicks, EEncoderActions Assigned
       AssignedAction = eENRX1AFGain;
     else
       AssignedAction = eENRX2AFGain;
+  }
+  if (AssignedAction == eENStepAtten)
+  {
+    if (GConsoleVFOA == true)
+      AssignedAction = eENRX1StepAtten;
+    else
+      AssignedAction = eENRX2StepAtten;
   }
 
   switch(AssignedAction)

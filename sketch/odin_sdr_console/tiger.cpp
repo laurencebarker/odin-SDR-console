@@ -141,7 +141,7 @@ SCATCommands GCATCommands[VNUMCATCMDS] =
   {"ZZRY", eNum, 0, 31, 2, false},                          // RX2 step atten
   {"ZZCP", eBool, 0, 1, 1, false},                          // compander enable
 
-  {"ZZCT", eNum, 0, 31, 3, false},                          // compander threshold
+  {"ZZCT", eNum, 0, 20, 2, false},                          // compander threshold
   {"ZZLI", eBool, 0, 1, 1, false},                          // puresignal on/off
   {"ZZUT", eBool, 0, 1, 1, false},                          // puresignal 2 tone test
   {"ZZUS", eNone, 0, 0, 0, false},                          // puresignal single cal
