@@ -68,14 +68,22 @@ void CATSetVoxOnOff(bool IsMute);
 
 
 //
-// request AF MUTE state
+// request RX1 AF MUTE state
 //
-void CATRequestMute(void);
+void CATRequestRX1Mute(void);
 //
-// send MUTE request to CAT
+// send RX1 MUTE request to CAT
 //
-void CATSetMute(bool IsMute);
+void CATSetRX1Mute(bool IsMute);
 
+//
+// request RX2 AF MUTE state
+//
+void CATRequestRX2Mute(void);
+//
+// send RX2 MUTE request to CAT
+//
+void CATSetRX2Mute(bool IsMute);
 
 //
 // request Radio On/Off state

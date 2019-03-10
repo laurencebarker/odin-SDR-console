@@ -8,9 +8,12 @@
 // this file holds the CAT parsing code
 // large CAT file = tiger....
 /////////////////////////////////////////////////////////////////////////
+
+#include "globalinclude.h"
 #include "tiger.h"
 #include "display.h"
 #include "cathandler.h"
+#include "led.h"
 
 //
 // input buffer
@@ -20,6 +23,7 @@
 char GCATInputBuffer[VBUFLENGTH];
 char* GCATWritePtr;
 char Output[20];                                        // TX CAT msg buffer
+unsigned int GNumCommands;                              // number of commands in table
 
 //
 // lookup initial divisor from number of digits
@@ -44,6 +48,19 @@ long DivisorTable[] =
 };
 
 
+//
+// array of debug command records. This must exactly match the enum EDebugCATCommands in tiger.h
+// and the number of commands defined here must be correct
+//
+#ifdef SENSORDEBUG
+#define VNUMDEBUGCATCMDS 3
+SCATCommands GCATDebugCommands[VNUMDEBUGCATCMDS] = 
+{
+  {"LED+", eNum, 1, 7, 2, false},                         // master AG gain
+  {"LED-", eNum, 1, 100, 3, false},                         // RX1 AF gain
+  {"IDNT", eNone, 0, 0, 0, false}                         // RX2 AF gain
+};
+#endif
 
 //
 // array of records. This must exactly match the enum ECATCommands in tiger.h
@@ -150,7 +167,7 @@ SCATCommands GCATCommands[VNUMCATCMDS] =
 
 
 
-// this array holds a 32 bit representation fo the CAT command
+// this array holds a 32 bit representation of the CAT command
 // to so a compare in a single test
 unsigned long GCATMatch[VNUMCATCMDS];
 
@@ -178,18 +195,29 @@ unsigned long Make32BitStr(char* Input)
 
 //
 // initialise CAT handler
+// load up the match strings with either valid commands or debug commands
 //
 void InitCAT()
 {
   int CmdCntr;
   unsigned long MatchWord;
-
+#ifdef SENSORDEBUG
+// initialise the matching 32 bit words to hold a version of each debug command
+  GNumCommands = VNUMDEBUGCATCMDS;
+  for(CmdCntr=0; CmdCntr < VNUMDEBUGCATCMDS; CmdCntr++)
+  {
+    MatchWord = Make32BitStr(GCATDebugCommands[CmdCntr].CATString);
+    GCATMatch[CmdCntr] = MatchWord;
+  }
+#else
 // initialise the matching 32 bit words to hold a version of each CAT command
+  GNumCommands = VNUMCATCMDS;
   for(CmdCntr=0; CmdCntr < VNUMCATCMDS; CmdCntr++)
   {
     MatchWord = Make32BitStr(GCATCommands[CmdCntr].CATString);
     GCATMatch[CmdCntr] = MatchWord;
   }
+#endif
   GCATWritePtr = GCATInputBuffer;                   // point to start of buffer
 }
 
@@ -221,7 +249,11 @@ void ScanParseSerial()
         if (Ch == ';')
         {
           *GCATWritePtr++ = 0;
+#ifdef SENSORDEBUG
+          ParseDebugCATCmd();     
+#else
           ParseCATCmd();     
+#endif
         }
       }
     }
@@ -278,7 +310,7 @@ void ParseCATCmd(void)
   else
   {
     MatchWord = Make32BitStr(GCATInputBuffer);
-    for (CmdCntr=0; CmdCntr < VNUMCATCMDS; CmdCntr++)         // loop thro commands we recognise
+    for (CmdCntr=0; CmdCntr < GNumCommands; CmdCntr++)         // loop thro commands we recognise
     {
       if (GCATMatch[CmdCntr] == MatchWord)
       {
@@ -371,6 +403,135 @@ void ParseCATCmd(void)
    GCATWritePtr = GCATInputBuffer;                   // point to start of buffer
 }
 
+
+
+#ifdef SENSORDEBUG
+//
+// ParseDebugCATCmd()
+// Parse a single command in the local input buffer
+// process it if it is a valid command
+//
+void ParseDebugCATCmd(void)
+{
+  int CharCnt;                              // number of characters in the buffer (same as length of string)
+  unsigned long MatchWord;                  // 32 bit compressed input cmd
+  EDebugCATCommands MatchedCAT = eNoDebugCommand;     // CAT command we've matched this to
+  int CmdCntr;                              // counts CAT commands
+  SCATCommands* StructPtr;                  // pointer to structure with CAT data
+  ERXParamType ParsedType;                  // type of parameter actually found
+  bool ParsedBool;                          // if a bool expected, it goes here
+  int ParsedInt;                            // if int expected, it goes here
+  char ParsedString[20];                    // if string expected, it goes here
+  int ByteCntr;
+  char ch;
+  bool ValidResult = true;                  // true if we get a valid parse result
+
+  
+  CharCnt = (GCATWritePtr - GCATInputBuffer) - 2;
+//
+// CharCnt holds the input string length excluding the terminating null and excluding the semicolon
+// test minimum length for a valid CAT command: ZZxx; plus terminating 0
+//
+  if (CharCnt < 4)
+    ValidResult = false;
+  else
+  {
+    MatchWord = Make32BitStr(GCATInputBuffer);
+    for (CmdCntr=0; CmdCntr < GNumCommands; CmdCntr++)         // loop thro commands we recognise
+    {
+      if (GCATMatch[CmdCntr] == MatchWord)
+      {
+        MatchedCAT = (EDebugCATCommands)CmdCntr;                           // if a match, exit loop
+        StructPtr = GCATCommands + (int)CmdCntr;
+        break;
+      }
+    }
+    if(MatchedCAT == eNoCommand)                                      // if no match was found
+      ValidResult = false;
+    else
+    {
+//
+// we have recognised a 4 char abcd command that is terminated by a semicolon
+// now we need to process the parameter bytes (if any) in the middle
+// the CAT structs have the required information
+// any parameter starts at position 4 and ends at (charcnt-1)
+//
+      if (CharCnt == 4)
+        ParsedType=eNone;
+      else
+      {
+//
+// strategy is: first copy just the param to a string
+// if required type is not a string, parse to a number
+// then if required type is bool, check the value
+//        
+        ParsedType = eStr;
+        for(ByteCntr = 0; ByteCntr < (CharCnt-4); ByteCntr++)
+          ParsedString[ByteCntr] = GCATInputBuffer[ByteCntr+4];
+        ParsedString[CharCnt - 4] = 0;
+// now see if we want a non string type
+// for an integer - use atoi, but see if 1st character is numeric, + or -
+        if (StructPtr->RXType != eStr)
+        {
+          ch=ParsedString[0];
+          if (isNumeric(ch))
+          {
+            ParsedType = eNum;
+            ParsedInt = atoi(ParsedString);
+// finally see if we need a bool
+            if (StructPtr->RXType == eBool)
+            {
+              ParsedType = eBool;
+              if (ParsedInt == 1)
+                ParsedBool = true;
+              else
+                ParsedBool = false;
+            }
+          }
+          else
+          {
+            ParsedType = eNone;
+            ValidResult = false;            
+          }
+        }
+      }
+    }
+  }
+  if (ValidResult == true)
+  {
+//    Serial.print("match= ");
+//    Serial.print(GCATCommands[MatchedCAT].CATString);
+//    Serial.print("; parameter=");
+    switch(MatchedCAT)
+    {
+      case eLEDOn:                           // turn LED on
+        SetLED(ParsedInt-1, true);
+        break;
+
+      case eLEDOff:                          // turn LED off
+        SetLED(ParsedInt-1, false);
+        break;
+
+      case eIdent:                           // identify h/w
+#ifdef V2HARDWARE
+        Serial.println("ODIN Console, Andromeda prototype hardware");
+#else
+        Serial.println("ODIN Console, original hardware");
+#endif      
+        break;
+    }
+  }
+  else
+  {
+    Serial.print("Parse Error - cmd= ");
+    Serial.println(GCATInputBuffer);
+  }
+//
+// finally clear the input buffer to start again for the next command
+//
+   GCATWritePtr = GCATInputBuffer;                   // point to start of buffer
+}
+#endif
 
 
 //

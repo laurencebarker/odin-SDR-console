@@ -8,6 +8,7 @@
 // this file holds the code to debounce pushbutton inputs and the external MOX input
 /////////////////////////////////////////////////////////////////////////
 
+#include "globalinclude.h"
 #include "types.h"
 #include "button.h"
 #include "iopins.h"
@@ -107,12 +108,18 @@ void GButtonInitialise(void)
 //
 // called when a button is pressed
 // the parameter is the button number (0..N-1)
+// if SENSORDEBUG, just display a message
 //
 void ButtonPressed(int ButtonNum)
 {
   EButtonActions AssignedAction;                          // programmed function for this button
   
   GButtonPressed[ButtonNum] = true;
+#ifdef SENSORDEBUG
+  Serial.print("button ");
+  Serial.print(ButtonNum+1);
+  Serial.println(" pressed;");
+#else
   if (ButtonNum != VMAXBUTTONS)                           // normal pushbutton event
   {
     AssignedAction = GetButtonAction(ButtonNum);
@@ -145,6 +152,7 @@ void ButtonPressed(int ButtonNum)
     else
       CATExtMox(true);
   }
+#endif  
 }
 
 
@@ -158,6 +166,13 @@ void ButtonReleased(int ButtonNum)
   EButtonActions AssignedAction;                          // programmed function for this button
   
   GButtonPressed[ButtonNum] = false;
+
+#ifdef SENSORDEBUG
+  Serial.print("button ");
+  Serial.print(ButtonNum+1);
+  Serial.println(" released;");
+#else
+  
   if (ButtonNum != VMAXBUTTONS)                           // normal pushbutton event
   {
     AssignedAction = GetButtonAction(ButtonNum);
@@ -190,6 +205,7 @@ void ButtonReleased(int ButtonNum)
     else
       CATExtMox(false);
   }
+#endif
 }
 
 

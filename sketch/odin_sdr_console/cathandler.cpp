@@ -10,6 +10,7 @@
 // this is the main body of the program!
 /////////////////////////////////////////////////////////////////////////
 
+#include "globalinclude.h"
 #include "display.h"
 #include "cathandler.h"
 #include "configdata.h"
@@ -81,7 +82,8 @@ bool GConsoleExtTX = false;                                 // true if externall
 //
 // requests to change CAT state
 bool GToggleRadioOnOff;                             // true if we need to toggle radio on/off message
-bool GToggleMute;                                   // true if we need to toggle bool
+bool GToggleRX1Mute;                                // true if we need to toggle bool
+bool GToggleRX2Mute;                                // true if we need to toggle bool
 bool GFilterReset;                                  // true if we need to initiate a filter reset
 bool GToggleVoxOnOff;                               // true to initiate toggle VOX on/off
 bool GToggleCompanderOnOff;                         // true if to toggle compander on/off
@@ -305,9 +307,11 @@ int GUpdateIndicator;                                     // indicator number be
 //
 // function to set LEDs to the required state
 // update one per tick
+// if in SENSORDEBUG, don't process. LEDs set by serial commands
 //
 void UpdateIndicators(void)
 {
+#ifndef SENSORDEBUG
   EIndicatorActions Action;                               // assigned function of indicator
   bool NewState = false;                                  // state LED should be set to
   
@@ -399,6 +403,7 @@ void UpdateIndicators(void)
     }
     SetLED(GUpdateIndicator, NewState);                     // finally set the LED
   }
+#endif
 }
 
 
@@ -462,8 +467,11 @@ void CatDisplayFreq(long Frequency_Hz)
 //  7: Mode
 //  8: VFO step size
 //
+// disabled if in sensor debug mode
+//
 void PeriodicRefresh(void)
 {
+#ifndef SENSORDEBUG
   if (--GPeriodicRefreshTimer < 0)                            // see if timed out
   {
     GPeriodicRefreshTimer =  GPERIODICREFRESHDELAY;           // reload if timed out
@@ -553,6 +561,7 @@ void PeriodicRefresh(void)
         break;
     }
   }
+#endif  
 }
 
 
@@ -771,9 +780,19 @@ void ToggleAB(void)
 
 //
 // handler for pushbutton events: 
+// for mute - convert to RX1 or rX2 first!
 //
 void CATHandlePushbutton(unsigned int Button, EButtonActions Action, bool IsPressed)
 {
+
+  if (Action == ePBChanAFMute)                // find active channel & set to RX1 or RX2
+  {
+    if (GConsoleVFOA == true)
+      Action = ePBRX1AFMute;
+    else
+      Action = ePBRX2AFMute;
+  }
+
   switch(Action)
   {
     
@@ -820,12 +839,23 @@ void CATHandlePushbutton(unsigned int Button, EButtonActions Action, bool IsPres
       }
       break;
       
-    case ePBAFMute:
+    case ePBRX1AFMute:
       if (IsPressed)
       {
-        GToggleMute = true;
-        CATRequestMute();
+        GToggleRX1Mute = true;
+        CATRequestRX1Mute();
       }
+      break;
+      
+    case ePBRX2AFMute:
+      if (IsPressed)
+      {
+        GToggleRX2Mute = true;
+        CATRequestRX2Mute();
+      }
+      break;
+      
+    case ePBChanAFMute:                       // shouldn't happen
       break;
       
     case ePBFilterReset:
@@ -1479,27 +1509,38 @@ void CATSetVoxOnOff(bool IsOn)
 
 ///////////////////////   MUTE   //////////////////////////
 //
-// request AF MUTE state
+// request RX1 AF MUTE state
 // we don't use timeout as user can simply press again
 //
-void CATRequestMute(void)
+void CATRequestRX1Mute(void)
 {
-  if (GConsoleVFOA == true)
-    MakeCATMessageNoParam(eZZMA);
-  else
-    MakeCATMessageNoParam(eZZMB);
-}
-//
-// send MUTE request to CAT
-//
-void CATSetMute(bool IsMute)
-{
-  if (GConsoleVFOA == true)
-    MakeCATMessageBool(eZZMA, IsMute);
-  else
-    MakeCATMessageBool(eZZMB, IsMute);
+  MakeCATMessageNoParam(eZZMA);
 }
 
+//
+// send RX1 MUTE request to CAT
+//
+void CATSetRX1Mute(bool IsMute)
+{
+  MakeCATMessageBool(eZZMA, IsMute);
+}
+
+//
+// request RX2 AF MUTE state
+// we don't use timeout as user can simply press again
+//
+void CATRequestRX2Mute(void)
+{
+  MakeCATMessageNoParam(eZZMB);
+}
+
+//
+// send RX2 MUTE request to CAT
+//
+void CATSetRX2Mute(bool IsMute)
+{
+  MakeCATMessageBool(eZZMB, IsMute);
+}
 
 
 //////////////////// RADIO START/STOP /////////////////////
@@ -2995,18 +3036,21 @@ void HandleCATCommandBoolParam(ECATCommands MatchedCAT, bool ParsedParam)
       break;
       
     case eZZMA:                          // RX1 mute
-    case eZZMB:                          // RX2 mute
-      if(((GConsoleVFOA == true) && (MatchedCAT == eZZMA)) ||                     // respond to ZZMA if on VFO A, else ZZMB
-        ((GConsoleVFOA == false) && (MatchedCAT == eZZMB)))
+      if (GToggleRX1Mute)
       {
-        if (GToggleMute)
-        {
-          CATSetMute(!ParsedParam);
-          GToggleMute = false;
-        }
+        CATSetRX1Mute(!ParsedParam);
+        GToggleRX1Mute = false;
       }
       break;
-      
+
+    case eZZMB:                          // RX2 mute
+      if (GToggleRX2Mute)
+      {
+        CATSetRX2Mute(!ParsedParam);
+        GToggleRX2Mute = false;
+      }
+      break;      
+
     case eZZPS:                          // radio START
       if (GToggleRadioOnOff)
       {

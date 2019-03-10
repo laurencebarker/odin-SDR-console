@@ -8,10 +8,12 @@
 // this file holds the code to control 8 LED indicators
 /////////////////////////////////////////////////////////////////////////
 
+#include <Arduino.h>
+#include "mechencoder.h"
 #include "led.h"
 #include "iopins.h"
 #include "types.h"
-#include <Arduino.h>
+
 
 
 //
@@ -36,10 +38,13 @@ int LEDPinList[] =
 //
 void SetLED(unsigned int LEDNumber, bool State)
 {
-  if (State == true)
-    digitalWrite(LEDPinList[LEDNumber], HIGH);
-  else
-    digitalWrite(LEDPinList[LEDNumber], LOW);
+  if (LEDNumber < VMAXINDICATORS)
+  {
+    if (State == true)
+      digitalWrite(LEDPinList[LEDNumber], HIGH);
+    else
+      digitalWrite(LEDPinList[LEDNumber], LOW);
+  }
 }
 
 

@@ -65,13 +65,13 @@ typedef enum
   eENSquelch,
   eENDiversityGain,
   eENDiversityPhase,
-  eENMulti,                      // multifunction
   eENCompanderThreshold,
   eENRX1AFGain,
   eENRX2AFGain,
   eENRX1StepAtten,
   eENRX2StepAtten,
-  eENStepAtten
+  eENStepAtten,
+  eENMulti                      // multifunction
 } EEncoderActions;
 #define VNUMENCODERACTIONS 24
 
@@ -110,7 +110,9 @@ typedef enum
   ePBABVfo,
   ePBMox,
   ePBTune,
-  ePBAFMute,
+  ePBChanAFMute,
+  ePBRX1AFMute,
+  ePBRX2AFMute,
   ePBFilterReset,
   ePBBandUp,
   ePBBandDown,
@@ -142,7 +144,7 @@ typedef enum
   ePBMonEnable,
   ePBDiversityEnable
 } EButtonActions;
-#define VNUMBUTTONACTIONS 36
+#define VNUMBUTTONACTIONS 38
 
 //
 // this enum defines legal baud rates for serial

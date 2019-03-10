@@ -9,8 +9,11 @@
 // it is 400x240 pixels
 // note the Nextion Display appears on "Serial1"
 // its serial port is defined in nexconfig.h in the library folder
+// if the console does not have a display: NODISPLAY should be defined
+// all funcvtions here are wrapped with #ifndef NODISPLAY
 /////////////////////////////////////////////////////////////////////////
 
+#include "globalinclude.h"
 #include "display.h"
 #include "types.h"
 #include "led.h"
@@ -465,13 +468,13 @@ char* EncoderActionStrings[] =
   "Squelch level",
   "Diversity Gain",
   "Diversity Phase",
-  "Multifunction",        // multifunction
   "Comp Threshold",
   "RX1 AF Gain",
   "RX2 AF Gain",
   "RX1 RF Gain",
   "RX2 RF Gain",
-  "A/B RF Gain"
+  "A/B RF Gain",
+  "Multifunction"        // multifunction
 };
 
 char* MultiEncoderActionStrings[] = 
@@ -493,6 +496,12 @@ char* MultiEncoderActionStrings[] =
   "M:Squelch",
   "M: Div'ty Gain",
   "M: Div'ty Phase",
+  "M: Comp",
+  "M: RX1 AF Gain",
+  "M: RX2 AF Gain",
+  "M: RX1 RF Gain",
+  "M: RX2 RF Gain",
+  "M: A/B RF Gain",
   "M:Multi"                      // multifunction
 };
   
@@ -524,7 +533,9 @@ char* ButtonActionStrings[] =
   "Toggle A/B VFO",
   "Mox",
   "Tune",
-  "AF Mute",
+  "A/B AF Mute",
+  "RX1 Mute",
+  "RX2 Mute",
   "Filter Reset",
   "Band Up",
   "Band Down",
@@ -658,6 +669,8 @@ const char * BtnObjectNames[] =
 //
 void DrawDisplayBar (unsigned int X, unsigned int Y, unsigned int W, unsigned int H, unsigned int Colour)
 {
+#ifndef NODISPLAY                               // if defined, no action
+  
   char CmdBuffer[30], Cmd[10];
   strcpy(CmdBuffer, "fill ");                   // "fill "
   itoa(X, Cmd, 10);
@@ -675,6 +688,7 @@ void DrawDisplayBar (unsigned int X, unsigned int Y, unsigned int W, unsigned in
   itoa(Colour, Cmd, 10);
   strcat(CmdBuffer,Cmd);                        // "fill X,Y,W,H,colour"
   sendCommand(CmdBuffer);
+#endif
 }
 
 //
@@ -685,6 +699,8 @@ void DrawDisplayBar (unsigned int X, unsigned int Y, unsigned int W, unsigned in
 //
 void RedrawFilterPassband(void)
 {
+  #ifndef NODISPLAY                               // if defined, no action
+
   long IdealLow, IdealHigh, IdealWidth, IdealCentre;      // ideal filter passband 
   long DisplayWidth, DisplayLow, DisplayHigh;             // display range (LHS pixel, centre pixel, RHS pixel)
   int LeftPix, RightPix, WidthPix;                        // low and high pixels for actual filter settings
@@ -755,6 +771,7 @@ void RedrawFilterPassband(void)
     DrawDisplayBar(Filtx, Filty, Filtw, Filth, NEXWHITE);     // erase old bar
     DrawDisplayBar(StartPix, Filty, WidthPix, Filth, NEXGREEN);     // draw new bar
   }
+#endif
 }
 
 //
@@ -763,6 +780,8 @@ void RedrawFilterPassband(void)
 //
 void RedrawVFOStatusBox(void)
 {
+  #ifndef NODISPLAY                               // if defined, no action
+
   char String[30];
   memset(String, 0, sizeof(String));
 
@@ -778,6 +797,7 @@ void RedrawVFOStatusBox(void)
 
   if(GDisplayPage == eFrontPage)
     p0t9.setText(String);  
+#endif
 }
 
 
@@ -786,6 +806,8 @@ void RedrawVFOStatusBox(void)
 //
 void RedrawRXStatusBox(void)
 {
+#ifndef NODISPLAY                               // if defined, no action
+  
   char String[30];
   memset(String, 0, sizeof(String));
 
@@ -823,11 +845,14 @@ void RedrawRXStatusBox(void)
 
   if(GDisplayPage == eFrontPage)
     p0t11.setText(String);  
+#endif
 }
 
 
 void RedrawRIT(bool IsRIT)
 {
+#ifndef NODISPLAY                               // if defined, no action
+  
   if (IsRIT)
   {
     p0t10.Set_font_color_pco(NEXRED);
@@ -838,6 +863,7 @@ void RedrawRIT(bool IsRIT)
     p0t10.Set_font_color_pco(NEXBLACK);
     p0t10.setText("OFF");
   }
+#endif
 }
 
 //
@@ -847,6 +873,8 @@ void RedrawRIT(bool IsRIT)
 //
 unsigned int Page9GetMaxControlCount(void)
 {
+#ifndef NODISPLAY                               // if defined, no action
+
   unsigned int Result;
   switch(GControlType)                        // now find the initial actions
   {
@@ -861,6 +889,9 @@ unsigned int Page9GetMaxControlCount(void)
       break;
   }
   return Result;  
+#else
+  return 0;
+#endif  
 }
 
 
@@ -870,6 +901,8 @@ unsigned int Page9GetMaxControlCount(void)
 //
 unsigned int Page9GetMaxActionCount(void)
 {
+#ifndef NODISPLAY                               // if defined, no action
+  
   unsigned int Result;
   switch(GControlType)                        // now find the initial actions
   {
@@ -884,6 +917,9 @@ unsigned int Page9GetMaxActionCount(void)
       break;
   }
   return Result;  
+#else
+  return 0;
+#endif  
 }
 
 
@@ -893,6 +929,8 @@ unsigned int Page9GetMaxActionCount(void)
 //
 void Page9GetActions(void)
 {
+#ifndef NODISPLAY                               // if defined, no action
+  
   switch(GControlType)                        // now find the initial actions
   {
     case eEncoders:
@@ -906,6 +944,7 @@ void Page9GetActions(void)
       GActionNumber = (unsigned int) GetIndicatorAction(GControlNumber);
       break;
   }
+#endif
 }
 
 
@@ -915,6 +954,8 @@ void Page9GetActions(void)
 //
 void Page9SetControls(void)
 {
+#ifndef NODISPLAY                               // if defined, no action
+  
   switch(GControlType)                        // now find the initial action and display it
   {
     case eEncoders:
@@ -937,6 +978,7 @@ void Page9SetControls(void)
       p9t4.setText(IndicatorActionStrings[GActionNumber]);             // show in text boxes
       break;
   }
+#endif
 }
 
 
@@ -946,6 +988,8 @@ void Page9SetControls(void)
 //
 void RedrawEncoderString1(void)
 {
+#ifndef NODISPLAY                               // if defined, no action
+  
   if ( GDisplayPage == eFrontPage)
   {
 //
@@ -968,10 +1012,13 @@ void RedrawEncoderString1(void)
         p0t5.setText(EncoderActionStrings[(unsigned int)DisplayCurrentAction1]);
     }
   }
+#endif
 }
 
 void RedrawEncoderString2(void)
 {
+#ifndef NODISPLAY                               // if defined, no action
+
   if ( GDisplayPage == eFrontPage)
   {
 //
@@ -994,10 +1041,13 @@ void RedrawEncoderString2(void)
         p0t6.setText(EncoderActionStrings[(unsigned int)DisplayCurrentAction2]);
     }
   }
+#endif
 }
 
 void RedrawEncoderString3(void)
 {
+#ifndef NODISPLAY                               // if defined, no action
+  
   if ( GDisplayPage == eFrontPage)
   {
 //
@@ -1020,10 +1070,13 @@ void RedrawEncoderString3(void)
         p0t7.setText(EncoderActionStrings[(unsigned int)DisplayCurrentAction3]);
     }
   }
+#endif
 }
 
 void RedrawEncoderString4(void)
 {
+#ifndef NODISPLAY                               // if defined, no action
+
   if ( GDisplayPage == eFrontPage)
   {
 //
@@ -1046,6 +1099,7 @@ void RedrawEncoderString4(void)
         p0t4.setText(EncoderActionStrings[(unsigned int)DisplayCurrentAction4]);
     }
   }
+#endif
 }
 
 
@@ -1054,6 +1108,8 @@ void RedrawEncoderString4(void)
 //
 void DisplaySetMeterBackground(void)
 {
+#ifndef NODISPLAY                               // if defined, no action
+  
   int Angle;
   
   if(GDisplayPage == eFrontPage)                // redraw main page, if displayed
@@ -1071,6 +1127,7 @@ void DisplaySetMeterBackground(void)
       Angle = DisplayCurrentSReading;
     p0z0.setValue(Angle);
   }
+#endif
 }
 
 
@@ -1086,6 +1143,7 @@ void DisplaySetMeterBackground(void)
 //
 void page0mainPushCallback(void *ptr)             // called when page 0 loads (main page)
 {
+#ifndef NODISPLAY                               // if defined, no action
 
 // begin by setting screen number then request screen size
   
@@ -1116,37 +1174,47 @@ void page0mainPushCallback(void *ptr)             // called when page 0 loads (m
 
   DisplaySetMeterBackground();
   RedrawFilterPassband();    
+#endif
 }
 
 void page1PushCallback(void *ptr)             // called when page 1 loads (I/O test page)
 {
+#ifndef NODISPLAY                               // if defined, no action
   GDisplayPage = eIOTestPage;
   ClearLEDs();
+#endif
 }
 
 void page2PushCallback(void *ptr)             // called when page 2 loads (about page)
 {
+#ifndef NODISPLAY                               // if defined, no action
   GDisplayPage = eAboutPage;
   p2t5.setText("Arduino s/w v0.3");
+#endif
 }
 
 void page3PushCallback(void *ptr)             // called when page 3 loads (frequency entry page)
 {
+#ifndef NODISPLAY                               // if defined, no action
   GDisplayPage = eFreqEntryPage;
+#endif
 }
 
 
 
 void page4PushCallback(void *ptr)             // called when page 4 loads (band page)
 {
+#ifndef NODISPLAY                               // if defined, no action
   GDisplayPage = eBandPage;                   // set the new page number
   CATRequestBand();
+#endif
 }
 
 
 
 void page5PushCallback(void *ptr)             // called when page 5 loads (mode page)
 {
+#ifndef NODISPLAY                               // if defined, no action
   GDisplayPage = eModePage;
   switch(DisplayCurrentMode)                         // now set 1 button to current mode
   {
@@ -1164,11 +1232,13 @@ void page5PushCallback(void *ptr)             // called when page 5 loads (mode 
     case eDRM: p5bt11.setValue(1); break;     // set button
   }
   p5vamode.setValue((int)DisplayCurrentMode);              // finally set the "which button is pressed" variable
-
+#endif
 }
 
 void page6PushCallback(void *ptr)             // called when page 6 loads (noise page)
 {
+#ifndef NODISPLAY                               // if defined, no action
+
   GDisplayPage = eNRPage;
 
   p6bt0.setValue((unsigned int)DisplayCurrentSNBState);     // set SNB initial state
@@ -1188,10 +1258,13 @@ void page6PushCallback(void *ptr)             // called when page 6 loads (noise
     case 2: p6bt7.setValue(1); break;
   }
   p6vanb.setValue(DisplayCurrentNBState);                   // set the "which button pressed" variable
+#endif
 }
 
 void page7PushCallback(void *ptr)             // called when page 7 loads (RF page)
 {
+#ifndef NODISPLAY                               // if defined, no action
+
   GDisplayPage = eRFPage;
 
   switch(DisplayCurrentAtten)                          // attenuation initial state
@@ -1215,6 +1288,7 @@ void page7PushCallback(void *ptr)             // called when page 7 loads (RF pa
   CATRequestAGCThreshold();
 
 //  p7h0.setValue(DisplayCurrentAGCThreshold);               // set slider
+#endif
 }
 
 //
@@ -1222,6 +1296,8 @@ void page7PushCallback(void *ptr)             // called when page 7 loads (RF pa
 //
 void page8PushCallback(void *ptr)             // called when page 8 loads
 {
+#ifndef NODISPLAY                               // if defined, no action
+
   char NumStr[5];                             // short string
   GDisplayPage = eSettingsPage;
 
@@ -1250,6 +1326,7 @@ void page8PushCallback(void *ptr)             // called when page 8 loads
   p8t4.setText(NumStr);
   itoa(GVFOEncoderDivisor, NumStr, 10);
   p8t7.setText(NumStr);
+#endif
 }
 
 //
@@ -1258,9 +1335,12 @@ void page8PushCallback(void *ptr)             // called when page 8 loads
 //
 void page9PushCallback(void *ptr)             // called when page 9 loads
 {
+#ifndef NODISPLAY                               // if defined, no action
+
   GDisplayPage = eConfigurePage;
   Page9GetActions();                            // get the current assigned actions
   Page9SetControls();                           // update the text boxes
+#endif
 }
 
 
@@ -1271,7 +1351,9 @@ void page9PushCallback(void *ptr)             // called when page 9 loads
 //
 void page0PushCallback(void *ptr)             // called when page 0 loads (splash page)
 {
+#ifndef NODISPLAY                               // if defined, no action
   GDisplayPage = eSplashPage;
+#endif
 }
 
 
@@ -1282,51 +1364,65 @@ void page0PushCallback(void *ptr)             // called when page 0 loads (splas
 //
 void p1bt0PushCallback(void *ptr)             // I/O test LED1
 {
+#ifndef NODISPLAY                               // if defined, no action
   uint32_t LEDState;
   p1bt0.getValue(&LEDState);                // read the button state
   SetLED(0, (LEDState != 0));
+#endif
 }
 
 void p1bt1PushCallback(void *ptr)             // I/O test LED2
 {
+#ifndef NODISPLAY                               // if defined, no action
   uint32_t LEDState;
   p1bt1.getValue(&LEDState);                // read the button state
   SetLED(1, (LEDState != 0));
+#endif
 }
 
 void p1bt2PushCallback(void *ptr)             // I/O test LED3
 {
+#ifndef NODISPLAY                               // if defined, no action
   uint32_t LEDState;
   p1bt2.getValue(&LEDState);                // read the button state
   SetLED(2, (LEDState != 0));
+#endif
 }
 
 void p1bt3PushCallback(void *ptr)             // I/O test LED4
 {
+#ifndef NODISPLAY                               // if defined, no action
   uint32_t LEDState;
   p1bt3.getValue(&LEDState);                // read the button state
   SetLED(3, (LEDState != 0));
+#endif
 }
 
 void p1bt4PushCallback(void *ptr)             // I/O test LED5
 {
+#ifndef NODISPLAY                               // if defined, no action
   uint32_t LEDState;
   p1bt4.getValue(&LEDState);                // read the button state
   SetLED(4, (LEDState != 0));
+#endif
 }
 
 void p1bt5PushCallback(void *ptr)             // I/O test LED6
 {
+#ifndef NODISPLAY                               // if defined, no action
   uint32_t LEDState;
   p1bt5.getValue(&LEDState);                // read the button state
   SetLED(5, (LEDState != 0));
+#endif
 }
 
 void p1bt6PushCallback(void *ptr)             // I/O test LED7
 {
+#ifndef NODISPLAY                               // if defined, no action
   uint32_t LEDState;
   p1bt6.getValue(&LEDState);                // read the button state
   SetLED(6, (LEDState != 0));
+#endif
 }
 
 
@@ -1336,25 +1432,33 @@ void p1bt6PushCallback(void *ptr)             // I/O test LED7
 //
 void p2b1PushCallback(void *ptr)             // encoder configure button
 {
+#ifndef NODISPLAY                               // if defined, no action
   GControlType = eEncoders;                   // type of control being edited = encoders
   GControlNumber = 0;                         // control being edited = first encoder
+#endif
 }
 
 void p2b2PushCallback(void *ptr)              // pushbutton configure button
 {
+#ifndef NODISPLAY                               // if defined, no action
   GControlType = ePushbuttons;                // type of control being edited = pushbuttons
   GControlNumber = 0;                         // control being edited = first pushbutton
+#endif
 }
 
 void p2b3PushCallback(void *ptr)             // indicator configure button
 {
+#ifndef NODISPLAY                               // if defined, no action
   GControlType = eIndicators;                 // type of control being edited = indicators
   GControlNumber = 0;                         // control being edited = first indicator
+#endif
 }
 
 void p2b5PushCallback(void *ptr)             // "save settings" button
 {
+#ifndef NODISPLAY                               // if defined, no action
   CopySettingsToFlash();
+#endif
 }
 
 
@@ -1364,10 +1468,12 @@ void p2b5PushCallback(void *ptr)             // "save settings" button
 //
 void p3b1PushCallback(void *ptr)              // set frequency button
 {
+#ifndef NODISPLAY                               // if defined, no action
   char NewFreq[20];
   memset(NewFreq, 0, sizeof(NewFreq));
   p3t2.getText(NewFreq, sizeof(NewFreq));
   CATSetFrequency(NewFreq); 
+#endif
 }
 
 
@@ -1378,9 +1484,11 @@ void p3b1PushCallback(void *ptr)              // set frequency button
 //
 void p4bt0PushCallback(void *ptr)             // all band buttons
 {
+#ifndef NODISPLAY                               // if defined, no action
   uint32_t BandValue;
   p4vaband.getValue(&BandValue);
   CATSetBand((EBand)BandValue);
+#endif
 }
 
 
@@ -1391,10 +1499,12 @@ void p4bt0PushCallback(void *ptr)             // all band buttons
 //
 void p5bt0PushCallback(void *ptr)             // all mode buttons
 {
+#ifndef NODISPLAY                               // if defined, no action
   uint32_t ModeValue;
   p5vamode.getValue(&ModeValue);
   CATSetMode((EMode)ModeValue);
   DisplayCurrentMode = (EMode)ModeValue;
+#endif
 }
 
 
@@ -1405,36 +1515,44 @@ void p5bt0PushCallback(void *ptr)             // all mode buttons
 //
 void p6bt0PushCallback(void *ptr)             // SNB button
 {
+#ifndef NODISPLAY                               // if defined, no action
   uint32_t SNBValue;
   p6bt0.getValue(&SNBValue);
   CATSetSNBState((bool)SNBValue);
   DisplayCurrentSNBState = (bool)SNBValue;
+#endif
 }
 
 void p6bt1PushCallback(void *ptr)             // ANF button
 {
+#ifndef NODISPLAY                               // if defined, no action
   uint32_t ANFValue;
   p6bt1.getValue(&ANFValue);
   CATSetANFState((bool)ANFValue);
   DisplayCurrentANFState = (bool)ANFValue;
+#endif
 }
 
 
 void p6bt2PushCallback(void *ptr)             // NR button
 {
+#ifndef NODISPLAY                               // if defined, no action
   uint32_t NRValue;
   p6vanr.getValue(&NRValue);
   CATSetNRState((ENRState)NRValue);
   DisplayCurrentNRState = (ENRState)NRValue;
+#endif
 }
 
 
 void p6bt5PushCallback(void *ptr)             // NB button
 {
+#ifndef NODISPLAY                               // if defined, no action
   uint32_t NBValue;
   p6vanb.getValue(&NBValue);
   CATSetNBState((ENBState)NBValue);
   DisplayCurrentNBState = (ENBState)NBValue;
+#endif
 }
 
 
@@ -1445,19 +1563,23 @@ void p6bt5PushCallback(void *ptr)             // NB button
 //
 void p7bt0PushCallback(void *ptr)             // atten button
 {
+#ifndef NODISPLAY                               // if defined, no action
   uint32_t AttenValue;
   p7vaatten.getValue(&AttenValue);
   CATSetAttenuation((EAtten)AttenValue);
   DisplayCurrentAtten = (EAtten)AttenValue;
+#endif
 }
 
 
 void p7bt4PushCallback(void *ptr)             // AGC button
 {
+#ifndef NODISPLAY                               // if defined, no action
   uint32_t AGCValue;
   p7vaagc.getValue(&AGCValue);
   CATSetAGCSpeed((EAGCSpeed)AGCValue);
   DisplayCurrentAGCSpeed = (EAGCSpeed)AGCValue;
+#endif
 }
 
 
@@ -1468,9 +1590,11 @@ void p7bt4PushCallback(void *ptr)             // AGC button
 //
 void p7h0PopCallback(void *ptr)              // AGC slider
 {
+#ifndef NODISPLAY                               // if defined, no action
   uint32_t AGCValue;
   p7h0.getValue(&AGCValue);
   CATSetAGCThreshold(AGCValue-20);
+#endif
 }
 
 
@@ -1483,34 +1607,43 @@ void p7h0PopCallback(void *ptr)              // AGC slider
 //
 void p8bt0PushCallback(void *ptr)             // all baud buttons
 {
+#ifndef NODISPLAY                               // if defined, no action
   uint32_t BaudValue;
   p8vabaud.getValue(&BaudValue);
   GUSBBaudRate = (EBaudRates)BaudValue;
+#endif
 }
 
 void p8bt4PushCallback(void *ptr)             // all encoder buttons
 {
+#ifndef NODISPLAY                               // if defined, no action
   uint32_t EncoderValue;
   p8vaenc.getValue(&EncoderValue);
   GEncoderOperation = (EDualFnEncoders)EncoderValue;
+#endif
 }
 
 void p8bt3PushCallback(void *ptr)             // bottom encoder string button
 {
+#ifndef NODISPLAY                               // if defined, no action
   uint32_t BottomStringValue;
   p8bt3.getValue(&BottomStringValue);
   GBottomEncoderStrings = (bool) BottomStringValue;
+#endif
 }
 
 void p8bt6PushCallback(void *ptr)             // side encoder string button
 {
+#ifndef NODISPLAY                               // if defined, no action
   uint32_t SideStringValue;
   p8bt6.getValue(&SideStringValue);
   GSideEncoderStrings = (bool) SideStringValue;
+#endif
 }
 
 void p8b1PushCallback(void* ptr)              // encoder minus button
 {
+#ifndef NODISPLAY                               // if defined, no action
   char DivisorStr[10];
   int Divisor;
   
@@ -1522,10 +1655,12 @@ void p8b1PushCallback(void* ptr)              // encoder minus button
   itoa(Divisor, DivisorStr, 10);
   p8t4.setText(DivisorStr);
   GEncoderDivisor = Divisor;
+#endif
 }
 
 void p8b2PushCallback(void* ptr)              // encoder plus button
 {
+#ifndef NODISPLAY                               // if defined, no action
   char DivisorStr[10];
   int Divisor;
   
@@ -1537,10 +1672,13 @@ void p8b2PushCallback(void* ptr)              // encoder plus button
   itoa(Divisor, DivisorStr, 10);
   p8t4.setText(DivisorStr);
   GEncoderDivisor = Divisor;
+#endif
 }
 
 void p8b3PushCallback(void* ptr)              // VFO encoder minus button
 {
+#ifndef NODISPLAY                               // if defined, no action
+
   char DivisorStr[10];
   int Divisor;
   
@@ -1552,10 +1690,12 @@ void p8b3PushCallback(void* ptr)              // VFO encoder minus button
   itoa(Divisor, DivisorStr, 10);
   p8t7.setText(DivisorStr);
   GVFOEncoderDivisor = Divisor;
+#endif
 }
 
 void p8b4PushCallback(void* ptr)              // VFO encoder plus button
 {
+#ifndef NODISPLAY                               // if defined, no action
   char DivisorStr[10];
   int Divisor;
   
@@ -1567,6 +1707,7 @@ void p8b4PushCallback(void* ptr)              // VFO encoder plus button
   itoa(Divisor, DivisorStr, 10);
   p8t7.setText(DivisorStr);
   GVFOEncoderDivisor = Divisor;
+#endif
 }
 
 
@@ -1582,10 +1723,12 @@ void p8b4PushCallback(void* ptr)              // VFO encoder plus button
 //
 void p9b1PushCallback(void *ptr)             // device number -
 {
+#ifndef NODISPLAY                               // if defined, no action
   if (GControlNumber > 0)
     GControlNumber--;
   Page9GetActions();                            // get the current assigned actions
   Page9SetControls();                           // update the text boxes
+#endif
 }
 
 //
@@ -1595,12 +1738,14 @@ void p9b1PushCallback(void *ptr)             // device number -
 //
 void p9b2PushCallback(void *ptr)             // device number +
 {
+#ifndef NODISPLAY                               // if defined, no action
   unsigned int MaxControlNum;
   MaxControlNum = Page9GetMaxControlCount();          // find out the max number we are allowed
   if (GControlNumber < MaxControlNum)
     GControlNumber++;
   Page9GetActions();                            // get the current assigned actions
   Page9SetControls();                           // update the text boxes
+#endif
 }
 
 //
@@ -1609,9 +1754,11 @@ void p9b2PushCallback(void *ptr)             // device number +
 //
 void p9b3PushCallback(void *ptr)             // function -
 {
+#ifndef NODISPLAY                               // if defined, no action
   if (GActionNumber > 0)
     GActionNumber--;
   Page9SetControls();                           // update the text boxes
+#endif
 }
 
 //
@@ -1620,11 +1767,13 @@ void p9b3PushCallback(void *ptr)             // function -
 //
 void p9b4PushCallback(void *ptr)             // function +
 {
+#ifndef NODISPLAY                               // if defined, no action
   unsigned int MaxActionNum;
   MaxActionNum = Page9GetMaxActionCount();          // find out the max number we are allowed
   if (GActionNumber < MaxActionNum)
     GActionNumber++;
   Page9SetControls();                           // update the text boxes
+#endif
 }
 
 
@@ -1634,6 +1783,7 @@ void p9b4PushCallback(void *ptr)             // function +
 //
 void p9b7PushCallback(void *ptr)             // Set/Accept
 {
+#ifndef NODISPLAY                               // if defined, no action
   switch(GControlType)                        // now find the initial actions
   {
     case eEncoders:
@@ -1647,6 +1797,7 @@ void p9b7PushCallback(void *ptr)             // Set/Accept
       SetIndicatorAction(GControlNumber, (EIndicatorActions)GActionNumber);
       break;
   }
+#endif
 }
 
 //
@@ -1654,10 +1805,12 @@ void p9b7PushCallback(void *ptr)             // Set/Accept
 //
 void p9bt0PushCallback(void *ptr)               // "direction" press
 {
+#ifndef NODISPLAY                               // if defined, no action
   uint32_t DirectionValue;
   p9bt0.getValue(&DirectionValue);
   GDirectionSetting = (bool)DirectionValue;
   Page9SetControls();                           // update the text boxes
+#endif
 }
 
 
@@ -1667,6 +1820,7 @@ void p9bt0PushCallback(void *ptr)               // "direction" press
 //
 void DisplayInit(void)
 {
+#ifndef NODISPLAY                               // if defined, no action
 //
 // set baud rate & register event callback functions
 //  
@@ -1774,6 +1928,7 @@ void DisplayInit(void)
 // that will lead to a callback when we redraw the display.
 //
   page0main.show();
+#endif
 }
 
 
@@ -1783,6 +1938,7 @@ void DisplayInit(void)
 //
 void DisplayTick(void)
 {
+#ifndef NODISPLAY                               // if defined, no action
 //
 // handle touch display events
 //  
@@ -1839,7 +1995,7 @@ void DisplayTick(void)
     else
       Enc4DisplayLowerCntr--;                           // just decrement if not expired
   }
-
+#endif
 }
 
 
@@ -1854,6 +2010,7 @@ void DisplayTick(void)
 //
 void DisplayEncoderHandler(unsigned int Encoder, int Count)
 {
+#ifndef NODISPLAY                               // if defined, no action
   char TxtBuffer[TXTBUFSIZE];                                   // text representation of count vlaue
   if (GDisplayPage == eIOTestPage)
   {
@@ -1872,6 +2029,7 @@ void DisplayEncoderHandler(unsigned int Encoder, int Count)
        case 8: p1tEnc9.setText(TxtBuffer); break;
      }
   }
+#endif
 }
 
 
@@ -1884,6 +2042,7 @@ void DisplayEncoderHandler(unsigned int Encoder, int Count)
 //
 void DisplayButtonHandler(unsigned int Button, bool IsPressed)
 {
+#ifndef NODISPLAY                               // if defined, no action
   char Cmd1Buffer[CMDBUFSIZE];
   char Cmd2Buffer[CMDBUFSIZE];
   if (GDisplayPage == eIOTestPage)
@@ -1906,6 +2065,7 @@ void DisplayButtonHandler(unsigned int Button, bool IsPressed)
     sendCommand(Cmd1Buffer);
     sendCommand(Cmd2Buffer);
   }
+#endif
 }
 
 
@@ -1915,10 +2075,12 @@ void DisplayButtonHandler(unsigned int Button, bool IsPressed)
 //
 void DisplayExtMoxHandler(bool IsPressed)
 {
+#ifndef NODISPLAY                               // if defined, no action
   if (IsPressed)
     p1tpb25.Set_background_color_bco(NEXGREEN);
   else
     p1tpb25.Set_background_color_bco(NEXWHITE);
+#endif
 }
 
 
@@ -1928,6 +2090,7 @@ void DisplayExtMoxHandler(bool IsPressed)
 //
 void DisplayShowABState(bool IsA)
 {
+#ifndef NODISPLAY                               // if defined, no action
   if (DisplayABState != IsA)                      // if different from current settings
   {
     DisplayABState = IsA;                         // save new state
@@ -1939,6 +2102,7 @@ void DisplayShowABState(bool IsA)
         p0t0.setText("B");  
     }
   }
+#endif
 }
 
 
@@ -1947,6 +2111,7 @@ void DisplayShowABState(bool IsA)
 //
 void DisplayShowTXState(bool IsTX, bool IsTune)
 {
+#ifndef NODISPLAY                               // if defined, no action
   if (DisplayTXState != IsTX)                      // if different from current settings
   {
     DisplayTXState = IsTX;                                // save new settings
@@ -1971,38 +2136,45 @@ void DisplayShowTXState(bool IsTX, bool IsTune)
       p0t13.Set_font_color_pco(NEXBLACK);
     }
   }
+#endif
 }
 
 
 void DisplayShowRITState(bool IsRIT)
 {
+#ifndef NODISPLAY                               // if defined, no action
   if (DisplayRITState != IsRIT)                // if different from current settings
   {
     DisplayRITState = IsRIT;                     // save new settings
     if(GDisplayPage == eFrontPage)                      // redraw main page, if displayed
       RedrawRIT(DisplayRITState);
   }
+#endif
 }
 
 
 
 void DisplayShowLockState(bool IsLock)
 {
+#ifndef NODISPLAY                               // if defined, no action
   if (DisplayCurrentLockState != IsLock)                // if different from current settings
   {
     DisplayCurrentLockState = IsLock;                     // save new settings
     RedrawVFOStatusBox();
   }
+#endif
 }
 
 
 void DisplayShowSplit(bool IsSplit)
 {
+#ifndef NODISPLAY                               // if defined, no action
   if (DisplayCurrentSplitState != IsSplit)              // if different from current settings
   {
     DisplayCurrentSplitState = IsSplit;                   // save new settings
     RedrawVFOStatusBox();
   }
+#endif
 }
 
 
@@ -2014,6 +2186,7 @@ void DisplayShowSplit(bool IsSplit)
 //
 void DisplayShowSMeter(unsigned int Reading)
 {
+#ifndef NODISPLAY                               // if defined, no action
   unsigned int Angle;                                   // new pointer angle
   Angle = (Reading << 1);
   Angle = (Angle / 5) + VDISPLAYMINANGLE;               // 4N/5+34
@@ -2022,6 +2195,7 @@ void DisplayShowSMeter(unsigned int Reading)
       if (DisplayTXState == false)                      // if RX
         p0z0.setValue(Angle);
   DisplayCurrentSReading = Angle;                       // save new settings
+#endif
 }
 
 
@@ -2034,6 +2208,7 @@ void DisplayShowSMeter(unsigned int Reading)
 //
 void DisplayShowTXPower(unsigned int Reading)
 {
+#ifndef NODISPLAY                               // if defined, no action
   unsigned int Angle;                                   // new pointer angle
   Angle = (Reading + Reading/10) + VDISPLAYMINANGLE;
   if (DisplayCurrentPowerReading != Angle)              // if different from current settings
@@ -2041,6 +2216,7 @@ void DisplayShowTXPower(unsigned int Reading)
       if (DisplayTXState)                               // if TX
         p0z0.setValue(Angle);
   DisplayCurrentPowerReading = Angle;                   // save new settings
+#endif
 }
 
 
@@ -2051,12 +2227,14 @@ void DisplayShowTXPower(unsigned int Reading)
 //
 void DisplayShowFrequency(char* Frequency)         // string with MHz as ASCII
 {
+#ifndef NODISPLAY                               // if defined, no action
   if (strcmp(DisplayCurrentFrequency, Frequency) != 0)
   {
     strcpy(DisplayCurrentFrequency, Frequency);          // copy new to A
     if(GDisplayPage == eFrontPage)                      // redraw main page, if displayed
       p0t2.setText(Frequency);
   }
+#endif
 }
 
 
@@ -2066,6 +2244,7 @@ void DisplayShowFrequency(char* Frequency)         // string with MHz as ASCII
 //
 void DisplayShowBand(EBand Band)
 {
+#ifndef NODISPLAY                               // if defined, no action
   uint32_t BandValue;
   
   if (GDisplayPage == eBandPage)
@@ -2104,11 +2283,13 @@ void DisplayShowBand(EBand Band)
     }
     p4vaband.setValue(Band);                    // set button number variable
   }
+#endif
 }
 
 
 void DisplayShowMode(EMode Mode)
 {
+#ifndef NODISPLAY                               // if defined, no action
   uint32_t ModeValue;
 
   if (DisplayCurrentMode != Mode)
@@ -2161,6 +2342,7 @@ void DisplayShowMode(EMode Mode)
       p5vamode.setValue((int)DisplayCurrentMode);              // finally set the "which button is pressed" variable
     }
   }
+#endif
 }
 
 
@@ -2170,6 +2352,7 @@ void DisplayShowMode(EMode Mode)
 //
 void DisplayShowNRState(ENRState State)
 {
+#ifndef NODISPLAY                               // if defined, no action
   uint32_t NRValue;
   if(DisplayCurrentNRState != State)                        // if data different from current
   {
@@ -2194,6 +2377,7 @@ void DisplayShowNRState(ENRState State)
       p6vanr.setValue(State);                                   // set the "which button pressed" variable
     }
   }
+#endif
 }
 
 
@@ -2202,6 +2386,7 @@ void DisplayShowNRState(ENRState State)
 //
 void DisplayShowNBState(ENBState State)
 {
+#ifndef NODISPLAY                               // if defined, no action
   uint32_t NBValue;
   if(DisplayCurrentNBState != State)                        // if data different from current
   {
@@ -2227,6 +2412,7 @@ void DisplayShowNBState(ENBState State)
       p6vanb.setValue(State);                                   // set the "which button pressed" variable
     }
   }
+#endif
 }
 
 //
@@ -2234,6 +2420,7 @@ void DisplayShowNBState(ENBState State)
 //
 void DisplayShowSNBState(bool SNBState)
 {
+#ifndef NODISPLAY                               // if defined, no action
   if(DisplayCurrentSNBState != SNBState)
   {
     DisplayCurrentSNBState = SNBState;
@@ -2243,6 +2430,7 @@ void DisplayShowSNBState(bool SNBState)
       p6bt0.setValue((unsigned int)DisplayCurrentSNBState);     // set SNB initial state  
     }
   }
+#endif
 }
 
 //
@@ -2250,6 +2438,7 @@ void DisplayShowSNBState(bool SNBState)
 //
 void DisplayShowANFState(bool ANFState)
 {
+#ifndef NODISPLAY                               // if defined, no action
   if(DisplayCurrentANFState != ANFState)
   {
     DisplayCurrentANFState = ANFState;
@@ -2259,6 +2448,7 @@ void DisplayShowANFState(bool ANFState)
       p6bt1.setValue((unsigned int)DisplayCurrentANFState);     // ANF initial state
     }
   }
+#endif
 }
 
 
@@ -2268,6 +2458,7 @@ void DisplayShowANFState(bool ANFState)
 //
 void DisplayShowAGCSpeed(EAGCSpeed Speed)
 {
+#ifndef NODISPLAY                               // if defined, no action
   uint32_t AGCValue;
   if (DisplayCurrentAGCSpeed != Speed)
   {
@@ -2295,8 +2486,7 @@ void DisplayShowAGCSpeed(EAGCSpeed Speed)
       p7vaagc.setValue(DisplayCurrentAGCSpeed);                 // set the "current pressed button"
     }
   }
-
-
+#endif
 }
 
 
@@ -2307,8 +2497,10 @@ void DisplayShowAGCSpeed(EAGCSpeed Speed)
 //
 void DisplayShowAGCThreshold(int Threshold)
 {
+#ifndef NODISPLAY                               // if defined, no action
   if(GDisplayPage == eRFPage)                           // update controls if on the screen
     p7h0.setValue(Threshold+20);               // set slider
+#endif
 }
 
 
@@ -2317,6 +2509,7 @@ void DisplayShowAGCThreshold(int Threshold)
 //
 void DisplayShowAtten(EAtten Attenuation)
 {
+#ifndef NODISPLAY                               // if defined, no action
   uint32_t AttenValue;
 
   if(DisplayCurrentAtten != Attenuation)                  // update if changed
@@ -2344,6 +2537,7 @@ void DisplayShowAtten(EAtten Attenuation)
       p7vaatten.setValue(DisplayCurrentAtten);             // set the "current pressed control" variable
     }
   }
+#endif
 }
 
 
@@ -2354,12 +2548,14 @@ void DisplayShowAtten(EAtten Attenuation)
 //
 void DisplayShowFilterLow(int Freq)
 {
+#ifndef NODISPLAY                               // if defined, no action
   GValidFilterLow = true;
   if (Freq != DisplayCurrentFilterLow)
   {
     DisplayCurrentFilterLow = Freq;
     RedrawFilterPassband();
   }
+#endif
 }
 
 
@@ -2371,12 +2567,14 @@ void DisplayShowFilterLow(int Freq)
 //
 void DisplayShowFilterHigh(int Freq)
 {
+#ifndef NODISPLAY                               // if defined, no action
   GValidFilterHigh = true;
   if (Freq != DisplayCurrentFilterHigh)
   {
     DisplayCurrentFilterHigh = Freq;
     RedrawFilterPassband();
   }
+#endif
 }
 
 
@@ -2387,6 +2585,7 @@ void DisplayShowFilterHigh(int Freq)
 //
 void DisplaySetEncoderAction(unsigned int EncoderNumber, EEncoderActions Action, bool IsMulti)         // set to assigned actions
 {
+#ifndef NODISPLAY                               // if defined, no action
   if (EncoderNumber == 0)                                           // update display position 0
   {
     Enc1IsMulti = IsMulti;
@@ -2423,6 +2622,7 @@ void DisplaySetEncoderAction(unsigned int EncoderNumber, EEncoderActions Action,
       RedrawEncoderString4();
     }
   }
+#endif
 }
 
 
@@ -2436,6 +2636,7 @@ void DisplaySetEncoderAction(unsigned int EncoderNumber, EEncoderActions Action,
 //
 void DisplayEncoderTurned(unsigned int EncoderNumber)
 {
+#ifndef NODISPLAY                               // if defined, no action
   bool StringCurrentDisplayState;                      // true if string should display lower encoder(red); false if top encoder (blue)
 
   switch(EncoderNumber)
@@ -2507,5 +2708,6 @@ void DisplayEncoderTurned(unsigned int EncoderNumber)
         RedrawEncoderString4();
       break;
   }
+#endif
 }
 

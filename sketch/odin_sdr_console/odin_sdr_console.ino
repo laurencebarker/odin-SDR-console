@@ -11,6 +11,7 @@
 #include <efc.h>
 #include <flash_efc.h>
 #include <Arduino.h>
+#include "globalinclude.h"
 #include "types.h"
 #include "configdata.h"
 #include "iopins.h"

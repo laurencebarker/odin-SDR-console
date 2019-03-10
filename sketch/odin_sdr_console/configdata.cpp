@@ -9,6 +9,8 @@
 /////////////////////////////////////////////////////////////////////////
 
 #include <Arduino.h>
+#include "globalinclude.h"
+
 #include "types.h"
 #include <DueFlashStorage.h>
 DueFlashStorage dueFlashStorage;                 // instance of flash reader
@@ -115,7 +117,7 @@ const EButtonActions GFactoryButtonActions[] =
   ePBBandUp,                          // SW15
   ePBModeUp,                          // SW16
   ePBNRStep,                          // SW17
-  ePBAFMute,                          // encoder 2 click
+  ePBChanAFMute,                      // encoder 2 click
   ePBFilterReset,                     // encoder 3 click
   ePBDiversityFastSlow,               // encoder 4 click
   ePBEncoderClick                     // encoder 5 click

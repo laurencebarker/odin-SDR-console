@@ -15,6 +15,17 @@
 
 
 //
+// an enumerated list of all of the debug CAT commands
+//
+enum EDebugCATCommands
+{
+  eLEDOn,                           // turn LED on
+  eLEDOff,                          // turn LED off
+  eIdent,                           // identify hardware
+  eNoDebugCommand                   // exception
+};
+
+//
 // firstly an enumerated list of all of the CAT commands
 // ordered as per documentation, not alphsabetically!
 enum ECATCommands
@@ -116,6 +127,7 @@ enum ECATCommands
   eNoCommand                      // this is an exception condition
 };
 
+
 // defines for the ZZVS message:
 #define V_ZZVS_ATOB 0
 #define V_ZZVS_BTOA 1
@@ -169,6 +181,9 @@ void ScanParseSerial(void);
 // process it if it is a valid command
 //
 void ParseCATCmd(void);
+#ifdef SENSORDEBUG
+void ParseDebugCATCmd(void);
+#endif
 
 //
 // create CAT message:

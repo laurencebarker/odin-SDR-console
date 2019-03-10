@@ -11,8 +11,10 @@
 // polled code for very bouncy mechanical encoders for other controls
 /////////////////////////////////////////////////////////////////////////
 
-#include "mechencoder.h"
 #include <Arduino.h>
+#include "globalinclude.h"
+#include "mechencoder.h"
+
 #include <Encoder.h>
 #include "types.h"
 #include "encoders.h"
@@ -138,6 +140,8 @@ void EncoderFastTick(void)
 
 //
 // encoder 10ms tick
+// detect and handle encoders that have moved
+// if SENSORDEBUG, just send a display string
 // 
 void EncoderSlowTick(void)
 {
@@ -150,6 +154,21 @@ void EncoderSlowTick(void)
     Movement = EncoderList[Cntr].Ptr->getValue();
     if (Movement != 0) 
     {
+#ifdef SENSORDEBUG
+      Serial.print("encoder ");
+      Serial.print(Cntr+1);
+      Serial.print(" turned; steps = ");
+      if (Movement > 0)
+      {
+        Serial.print(Movement);
+        Serial.println (" steps c/w");
+      }
+      else
+      {
+        Serial.print(-Movement);
+        Serial.println (" steps ac/w");
+      }
+#else
       EncoderList[Cntr].LastPosition += Movement;
       switch (GDisplayPage)                                   // display dependent handling:
       {
@@ -196,6 +215,7 @@ void EncoderSlowTick(void)
         case eConfigurePage:
             break;
       }
+#endif      
     }
   }
 
@@ -205,6 +225,20 @@ void EncoderSlowTick(void)
 long ct = (VFOEncoder.read())/GVFOEncoderDivisor;
   if (ct != old_ct)
   {
+#ifdef SENSORDEBUG
+    Serial.print("VFO encoder turned; ");
+    if (ct > old_ct)
+    {
+      Serial.print(ct-old_ct);
+      Serial.println (" steps c/w");
+    }
+    else
+    {
+      Serial.print(old_ct-ct);
+      Serial.println (" steps ac/w");
+    }
+#else
+
     //format the output for printing 
     char buf[50];
     switch (GDisplayPage)                                   // display dependent handling:
@@ -225,6 +259,7 @@ long ct = (VFOEncoder.read())/GVFOEncoderDivisor;
       case eConfigurePage:
           break;
     }
+#endif    
     old_ct=ct;
   }
 }
