@@ -18,8 +18,8 @@ DueFlashStorage dueFlashStorage;                 // instance of flash reader
 #define VFLASHINITPATTERN 0x6D                    // addr 0 set to this if configured
 
 //
-// note switch and encoder numbering:
-// in the software switches are numbered 0-22, and encoders 0-6. The VFO encoder is treated separately.
+// note Odin (original hardware) switch and encoder numbering:
+// in the software switches are numbered 0-20, and encoders 0-7. The VFO encoder is treated separately.
 // these correspond to the control of Kjell's PCB as follows:
 //
 // encoder numbering:
@@ -61,9 +61,96 @@ DueFlashStorage dueFlashStorage;                 // instance of flash reader
 
 
 
+#ifdef V2HARDWARE                             // Andromeda prototype
 
 //
-// array of factory encoder settings. User can reconfigure from this.
+// array of Andromeda factory encoder settings. User can reconfigure from this.
+//
+const EEncoderActions GFactoryEncoderActions[] =
+{
+  eENRX1AFGain,           // 2A: RX1 AF gain
+  eENRX1StepAtten,        // 2B: RX1 RF gain
+  eENFilterHigh,          // 3A: filter cut
+  eENFilterLow,           // 3B: filter cut
+  eENDiversityGain,       // 4A: diversity gain
+  eENDiversityPhase,      // 4B: diversity phase
+  eENMicGain,             // 5A: mic gain
+  eENDrive,               // 5B: drive
+  eENRX2AFGain,           // 6A: RX2 AF gain
+  eENRX2StepAtten,        // 6B: RX2 RF gain
+  eENCompanderThreshold,  // 7A: Compander
+  eENMasterGain,          // 7B: master gain (also used for sidfetone level)
+  eENSquelch,             // 8A: squelch level
+  eENVOXGain              // 8B: unspecified, so VOX Gain used
+};
+
+
+//
+// array of Andromeda factory indicator settings. User can reconfigure from this.
+//
+const EIndicatorActions GFactoryIndicatorActions[] =
+{
+  eINLock,                    // 0: LOCK
+  eINPuresignalEnabled,       // 1: Puresignal enabled
+  eINMOX,                     // 2: TX/RX
+  eINTune,                    // 3: TUNE enabled
+  eINCTune,                   // 4: Click Tune enabled
+  eINCompanderEnabled,        // 5: COMP enabled
+  eINSquelch,                 // 6: Squelch
+  eINRIT,                     // 7: RIT on
+  eINTune                     // 8: TUNE (this should be ATU ready, but not a PowerSDR function)
+};
+
+
+
+//
+// array of Andromeda factory pushbutton settings. User can reconfigure from this.
+// 1-7 are encoder 1-7 "click" settings; 8-23 are pushbuttons 1-16
+//
+const EButtonActions GFactoryButtonActions[] =
+{
+  ePBRITMinus,                        // 0: SW10
+  ePBNone,                            // 1: SW46 (unused menu button)
+  ePBNone,                            // 2: SW47 (unused menu button)
+  ePBNone,                            // 3: SW48 (unused menu button)
+  ePBNone,                            // 4: SW49 (unused menu button)
+  ePBNone,                            // 5: SW50 (unused menu button)
+  ePBRX1AFMute,                       // 6: encoder 2 click
+  ePBNRStep,                          // 7: SW17
+  ePBDiversityFastSlow,               // 8: encoder 4 click
+  ePBNone,                            // 9: encoder 5 click
+  ePBRITPlus,                         // 10: SW11
+  ePBBandDown,                        // 11: SW12
+  ePBModeDown,                        // 12: SW13
+  ePBStartStop,                       // 13: SW14
+  ePBBandUp,                          // 14: SW15
+  ePBModeUp,                          // 15: SW16
+  ePBNBStep,                          // 16: SW18
+  ePBFilterReset,                     // 17: encoder 3 click
+  ePBRIT,                             // 18: SW9
+  ePBABVfo,                           // 19: SW1
+  ePBMox,                             // 20: SW2
+  ePBTune,                            // 21: SW3
+  ePBCTune,                           // 22: SW4
+  ePBLock,                            // 23: SW5
+  ePBAtoB,                            // 24: SW6
+  ePBRX2AFMute,                       // 25: encoder 6 click
+  ePBCompanderEnable,                 // 26: encoder 7 click
+  ePBSquelch,                         // 27: encoder 8 click
+  ePBSplit,                           // 28: SW8
+  ePBBtoA,                            // 29: SW7
+  ePBPuresignalEnable,                // 30: SW21
+  ePBPuresignalSingleCal,             // 31: SW19
+  ePBPuresignal2Tone,                 // 32: SW20
+  ePBSNB                              // 33: SW22
+};
+
+#else
+//
+// defines for original Odin PCB
+//
+//
+// array of Odin factory encoder settings. User can reconfigure from this.
 //
 const EEncoderActions GFactoryEncoderActions[] =
 {
@@ -79,7 +166,7 @@ const EEncoderActions GFactoryEncoderActions[] =
 
 
 //
-// array of factory indicator settings. User can reconfigure from this.
+// array of Odin factory indicator settings. User can reconfigure from this.
 //
 const EIndicatorActions GFactoryIndicatorActions[] =
 {
@@ -95,7 +182,7 @@ const EIndicatorActions GFactoryIndicatorActions[] =
 
 
 //
-// array of factory pushbutton settings. User can reconfigure from this.
+// array of Odin factory pushbutton settings. User can reconfigure from this.
 // 1-7 are encoder 1-7 "click" settings; 8-23 are pushbuttons 1-16
 //
 const EButtonActions GFactoryButtonActions[] =
@@ -123,6 +210,7 @@ const EButtonActions GFactoryButtonActions[] =
   ePBEncoderClick                     // encoder 5 click
 };
 
+#endif
 
 
 

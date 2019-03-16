@@ -132,9 +132,6 @@ void ConfigIOPins(void)
 {
   pinMode(LED_BUILTIN, OUTPUT);
 
-//  pinMode(52, OUTPUT);                      // temp for debug
-  pinMode(52, INPUT_PULLUP);                            // ext PTT input
-
   pinMode(VPININDICATOR1, OUTPUT);                      // LED indicator
   pinMode(VPININDICATOR2, OUTPUT);                      // LED indicator
   pinMode(VPININDICATOR3, OUTPUT);                      // LED indicator
@@ -149,38 +146,65 @@ void ConfigIOPins(void)
   digitalWrite(VPININDICATOR5, LOW);                    // LED indicator
   digitalWrite(VPININDICATOR6, LOW);                    // LED indicator
   digitalWrite(VPININDICATOR7, LOW);                    // LED indicator
+#ifdef V2HARDWARE
+  pinMode(VPININDICATOR8, OUTPUT);                      // LED indicator
+  pinMode(VPININDICATOR9, OUTPUT);                      // LED indicator
+  digitalWrite(VPININDICATOR8, LOW);                    // LED indicator
+  digitalWrite(VPININDICATOR9, LOW);                    // LED indicator
+#endif
+
+
 
 //  pinMode(VPINVFOENCODERA, INPUT_PULLUP);               // VFO encoder
 //  pinMode(VPINVFOENCODERB, INPUT_PULLUP);               // VFO encoder
 
-  
+
   pinMode(VPINENCODER1A, INPUT_PULLUP);                 // normal encoder
   pinMode(VPINENCODER1B, INPUT_PULLUP);                 // normal encoder
-  pinMode(VPINENCODER1SW, INPUT_PULLUP);                // normal encoder
 
   pinMode(VPINENCODER2A, INPUT_PULLUP);                 // normal encoder
   pinMode(VPINENCODER2B, INPUT_PULLUP);                 // normal encoder
 
   pinMode(VPINENCODER3A, INPUT_PULLUP);                 // normal encoder
   pinMode(VPINENCODER3B, INPUT_PULLUP);                 // normal encoder
-  pinMode(VPINENCODER3SW, INPUT_PULLUP);                // normal encoder
 
   pinMode(VPINENCODER4A, INPUT_PULLUP);                 // normal encoder
   pinMode(VPINENCODER4B, INPUT_PULLUP);                 // normal encoder
 
   pinMode(VPINENCODER5A, INPUT_PULLUP);                 // normal encoder
   pinMode(VPINENCODER5B, INPUT_PULLUP);                 // normal encoder
-  pinMode(VPINENCODER5SW, INPUT_PULLUP);                // normal encoder
   
   pinMode(VPINENCODER6A, INPUT_PULLUP);                 // normal encoder
   pinMode(VPINENCODER6B, INPUT_PULLUP);                 // normal encoder
 
   pinMode(VPINENCODER7A, INPUT_PULLUP);                 // normal encoder
   pinMode(VPINENCODER7B, INPUT_PULLUP);                 // normal encoder
-  pinMode(VPINENCODER7SW, INPUT_PULLUP);                // normal encoder
 
   pinMode(VPINENCODER8A, INPUT_PULLUP);                 // normal encoder
   pinMode(VPINENCODER8B, INPUT_PULLUP);                 // normal encoder
+
+#ifdef V2HARDWARE                           // Andromeda prototype h/w
+  pinMode(VPINENCODER9A, INPUT_PULLUP);                 // normal encoder
+  pinMode(VPINENCODER9B, INPUT_PULLUP);                 // normal encoder
+
+  pinMode(VPINENCODER10A, INPUT_PULLUP);                 // normal encoder
+  pinMode(VPINENCODER10B, INPUT_PULLUP);                 // normal encoder
+
+  pinMode(VPINENCODER11A, INPUT_PULLUP);                 // normal encoder
+  pinMode(VPINENCODER11B, INPUT_PULLUP);                 // normal encoder
+
+  pinMode(VPINENCODER12A, INPUT_PULLUP);                 // normal encoder
+  pinMode(VPINENCODER12B, INPUT_PULLUP);                 // normal encoder
+
+  pinMode(VPINENCODER13A, INPUT_PULLUP);                 // normal encoder
+  pinMode(VPINENCODER13B, INPUT_PULLUP);                 // normal encoder
+
+  pinMode(VPINENCODER14A, INPUT_PULLUP);                 // normal encoder
+  pinMode(VPINENCODER14B, INPUT_PULLUP);                 // normal encoder
+#endif
+
+
+
 
   pinMode(VPINBUTTON1, INPUT_PULLUP);                   // normal pushbutton
   pinMode(VPINBUTTON2, INPUT_PULLUP);                   // normal pushbutton
@@ -200,6 +224,16 @@ void ConfigIOPins(void)
   pinMode(VPINBUTTON15, INPUT_PULLUP);                  // normal pushbutton
   pinMode(VPINBUTTON16, INPUT_PULLUP);                  // normal pushbutton
   pinMode(VPINBUTTON17, INPUT_PULLUP);                  // normal pushbutton
+#ifdef V2HARDWARE                           // Andromeda prototype h/w
+  pinMode(VPINBUTTON18, INPUT_PULLUP);                  // normal pushbutton
+#else                                       // Odin hardware
+//  pinMode(52, OUTPUT);                      // temp for debug
+  pinMode(52, INPUT_PULLUP);                            // ext PTT input
+  pinMode(VPINENCODER1SW, INPUT_PULLUP);                // normal encoder
+  pinMode(VPINENCODER3SW, INPUT_PULLUP);                // normal encoder
+  pinMode(VPINENCODER5SW, INPUT_PULLUP);                // normal encoder
+  pinMode(VPINENCODER7SW, INPUT_PULLUP);                // normal encoder
+#endif
 
 }
 

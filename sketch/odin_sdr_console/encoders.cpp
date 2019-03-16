@@ -116,6 +116,40 @@ void InitEncoders(void)
     EncoderList[7].Ptr = new NoClickEncoder(VPINENCODER8B, VPINENCODER8A, GEncoderDivisor, true);
   else
     EncoderList[7].Ptr = new NoClickEncoder(VPINENCODER8A, VPINENCODER8B, GEncoderDivisor, true);
+
+
+
+#ifdef V2HARDWARE                                     // Andromeda hardware
+  if (GetEncoderReversed(8))
+    EncoderList[8].Ptr = new NoClickEncoder(VPINENCODER7B, VPINENCODER7A, GEncoderDivisor, true);
+  else
+    EncoderList[8].Ptr = new NoClickEncoder(VPINENCODER7A, VPINENCODER7B, GEncoderDivisor, true);
+
+  if (GetEncoderReversed(9))
+    EncoderList[9].Ptr = new NoClickEncoder(VPINENCODER8B, VPINENCODER8A, GEncoderDivisor, true);
+  else
+    EncoderList[9].Ptr = new NoClickEncoder(VPINENCODER8A, VPINENCODER8B, GEncoderDivisor, true);
+
+  if (GetEncoderReversed(10))
+    EncoderList[10].Ptr = new NoClickEncoder(VPINENCODER7B, VPINENCODER7A, GEncoderDivisor, true);
+  else
+    EncoderList[10].Ptr = new NoClickEncoder(VPINENCODER7A, VPINENCODER7B, GEncoderDivisor, true);
+
+  if (GetEncoderReversed(11))
+    EncoderList[11].Ptr = new NoClickEncoder(VPINENCODER8B, VPINENCODER8A, GEncoderDivisor, true);
+  else
+    EncoderList[11].Ptr = new NoClickEncoder(VPINENCODER8A, VPINENCODER8B, GEncoderDivisor, true);
+
+  if (GetEncoderReversed(12))
+    EncoderList[12].Ptr = new NoClickEncoder(VPINENCODER7B, VPINENCODER7A, GEncoderDivisor, true);
+  else
+    EncoderList[12].Ptr = new NoClickEncoder(VPINENCODER7A, VPINENCODER7B, GEncoderDivisor, true);
+
+  if (GetEncoderReversed(13))
+    EncoderList[13].Ptr = new NoClickEncoder(VPINENCODER8B, VPINENCODER8A, GEncoderDivisor, true);
+  else
+    EncoderList[13].Ptr = new NoClickEncoder(VPINENCODER8A, VPINENCODER8B, GEncoderDivisor, true);
+#endif
 }
 
 
@@ -135,6 +169,14 @@ void EncoderFastTick(void)
   EncoderList[5].Ptr->service();
   EncoderList[6].Ptr->service();
   EncoderList[7].Ptr->service();
+#ifdef V2HARDWARE
+  EncoderList[8].Ptr->service();
+  EncoderList[9].Ptr->service();
+  EncoderList[10].Ptr->service();
+  EncoderList[11].Ptr->service();
+  EncoderList[12].Ptr->service();
+  EncoderList[13].Ptr->service();
+#endif
 }
 
 
@@ -267,48 +309,108 @@ long ct = (VFOEncoder.read())/GVFOEncoderDivisor;
 
 
 //
+// lookup encoder number of switch number
+// value stored = 0xFF if not an encoder button
+//
+#ifdef V2HARDWARE                         // Andromeda prototype
+byte GLookupEncoderNumber[] = 
+{
+  0xFF, //    SW10               0
+  0xFF, //    SW46               1
+  0xFF, //    SW47               2
+  0xFF, //    SW48               3
+  0xFF, //    SW49               4
+  0xFF, //    SW50               5
+  0x0,  //    enc 2              6
+  0xFF, //    SW17               7
+  0x4,  //    enc 4              8
+  0x6,  //    enc 5              9
+  0xFF, //    SW11               10
+  0xFF, //    SW12               11
+  0xFF, //    SW13               12
+  0xFF, //    SW14               13
+  0xFF, //    SW15               14
+  0xFF, //    SW16               15
+  0xFF, //    SW18               16
+  0x2,  //    enc 3              17
+  0xFF, //    SW9                18
+  0xFF, //    SW1                19
+  0xFF, //    SW2                20
+  0xFF, //    SW3                21
+  0xFF, //    SW4                22
+  0xFF, //    SW5                23
+  0xFF, //    SW6                24
+  0x8,  //    enc 6              25
+  0xA,  //    enc 7              26
+  0xC,  //    enc 8              27
+  0xFF, //    SW8                28
+  0xFF, //    SW7                29
+  0xFF, //    SW21               30
+  0xFF, //    SW19               31
+  0xFF, //    SW20               32
+  0xFF, //    SW22               33
+};
+#else                                     // Odin
+byte GLookupEncoderNumber[] = 
+{
+  0xFF, //    SW1                 0
+  0xFF, //    SW2                 1
+  0xFF, //    SW3                 2
+  0xFF, //    SW4                 3
+  0xFF, //    SW5                 4
+  0xFF, //    SW6                 5
+  0xFF, //    SW7                 6
+  0xFF, //    SW8                 7
+  0xFF, //    SW9                 8
+  0xFF, //    SW10                9
+  0xFF, //    SW11               10
+  0xFF, //    SW12               11
+  0xFF, //    SW13               12
+  0xFF, //    SW14               13
+  0xFF, //    SW15               14
+  0xFF, //    SW16               15
+  0xFF, //    SW17               16
+  0,    //    encoder 2 push     17
+  2,    //    encoder 3 push     18
+  4,    //    encoder 4 push     19
+  6     //    encoder 5 push     20
+};
+#endif
+
+
+//
 // handler for a button event where button is set to be the encoder control button
 // (for dual function encoders)
 // check button number is in range to be an encoder button! (user programming error if not)
 //
-// the button number to encoder number matching is as follows:
-// (the encoder 2-5 are the schematic references)
-//    encoder 2 push     ButtonNum=17    belongs to encoder 1, encodernum=0
-//    encoder 3 push     ButtonNum=18    belongs to encoder 3, encodernum=2
-//    encoder 4 push     ButtonNum=19    belongs to encoder 5, encodernum=4
-//    encoder 5 push     ButtonNum=20    belongs to encoder 7, encodernum=6
-//
-
-#define VBUTTONNUMENC0 17              // button for s/w encoder 0
-#define VBUTTONNUMENC2 18              // button for s/w encoder 2
-#define VBUTTONNUMENC4 19              // button for s/w encoder 4
-#define VBUTTONNUMENC6 20              // button for s/w encoder 6
-
 void EncoderHandleButton(unsigned int ButtonNum, bool IsPress)
 {
   EEncoderActions Action;
   int EncoderNumber;
-  
-  if ((ButtonNum >= VBUTTONNUMENC0) && (ButtonNum <= VBUTTONNUMENC6))                 // only process if it could correspond to an encoder
-                                                    // (user config error if not!)
+
+  if (ButtonNum < VMAXBUTTONS)
   {
-    EncoderNumber = (ButtonNum - VBUTTONNUMENC0)<<1;        // 0,2,4 or 6
-    DisplayEncoderTurned(EncoderNumber);                    // this will reset the legend display to top encoder
-    if (GEncoderOperation == eDualFnClick)                  // dual fn; press toggles which function
+    EncoderNumber = GLookupEncoderNumber[ButtonNum];
+    if (EncoderNumber != 0xFF)                                                      // if a "real" encoder button
     {
-      if (IsPress)
-        Is2ndAction[EncoderNumber] = !Is2ndAction[EncoderNumber];
-    }
-    else if (GEncoderOperation == eDualFnPress)             // dual fn; 2nd function while pressed
-      Is2ndAction[EncoderNumber] = IsPress;
+      DisplayEncoderTurned(EncoderNumber);                    // this will reset the legend display to top encoder
+      if (GEncoderOperation == eDualFnClick)                  // dual fn; press toggles which function
+      {
+        if (IsPress)
+          Is2ndAction[EncoderNumber] = !Is2ndAction[EncoderNumber];
+      }
+      else if (GEncoderOperation == eDualFnPress)             // dual fn; 2nd function while pressed
+        Is2ndAction[EncoderNumber] = IsPress;
 //
 // now send the new encoder action to the display, UNLESS it is multi;
 //
-    Action = GetEncoderAction(EncoderNumber, Is2ndAction[EncoderNumber]);
-    if (Action != eENMulti)
-      DisplaySetEncoderAction(EncoderNumber, Action, false);    
+      Action = GetEncoderAction(EncoderNumber, Is2ndAction[EncoderNumber]);
+      if (Action != eENMulti)
+        DisplaySetEncoderAction(EncoderNumber, Action, false);    
+    }
   }
 }
+
 
 
 //

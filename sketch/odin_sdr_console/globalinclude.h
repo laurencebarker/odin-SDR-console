@@ -20,7 +20,7 @@
 // define V2HARDWARE to compile for Kjell's Andromeda prototype PCB
 // design proving initally using Odin software
 //
-// #define V2HARDWARE 1
+#define V2HARDWARE 1
 
 
 //
