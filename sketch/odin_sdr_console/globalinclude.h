@@ -27,7 +27,7 @@
 // define SENSORDEBUG to make pushbuttons and encoders send debug strings not operate CAT commands
 // also periodic CAT requests and CAT parser disabled too.
 //
-// #define SENSORDEBUG 1
+#define SENSORDEBUG 1
 
 
 

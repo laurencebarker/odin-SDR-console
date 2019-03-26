@@ -9,6 +9,7 @@
 /////////////////////////////////////////////////////////////////////////
 
 #include <Arduino.h>
+#include "globalinclude.h"
 #include "mechencoder.h"
 #include "led.h"
 #include "iopins.h"
@@ -73,4 +74,3 @@ void ClearLEDs(void)
   for (Cntr = 0; Cntr < VMAXINDICATORS; Cntr++)
     SetLED(Cntr, false);
 }
-

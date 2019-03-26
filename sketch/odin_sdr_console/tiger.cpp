@@ -56,8 +56,8 @@ long DivisorTable[] =
 #define VNUMDEBUGCATCMDS 3
 SCATCommands GCATDebugCommands[VNUMDEBUGCATCMDS] = 
 {
-  {"LED+", eNum, 1, 7, 2, false},                         // master AG gain
-  {"LED-", eNum, 1, 100, 3, false},                         // RX1 AF gain
+  {"LED+", eNum, 1, 9, 2, false},                         // master AG gain
+  {"LED-", eNum, 1, 9, 2, false},                         // RX1 AF gain
   {"IDNT", eNone, 0, 0, 0, false}                         // RX2 AF gain
 };
 #endif
@@ -442,11 +442,11 @@ void ParseDebugCATCmd(void)
       if (GCATMatch[CmdCntr] == MatchWord)
       {
         MatchedCAT = (EDebugCATCommands)CmdCntr;                           // if a match, exit loop
-        StructPtr = GCATCommands + (int)CmdCntr;
+        StructPtr = GCATDebugCommands + (int)CmdCntr;
         break;
       }
     }
-    if(MatchedCAT == eNoCommand)                                      // if no match was found
+    if(MatchedCAT == eNoDebugCommand)                                      // if no match was found
       ValidResult = false;
     else
     {
@@ -506,10 +506,16 @@ void ParseDebugCATCmd(void)
     {
       case eLEDOn:                           // turn LED on
         SetLED(ParsedInt-1, true);
+        Serial.print("SET led ");
+        Serial.print(ParsedInt);
+        Serial.println(" on");
         break;
 
       case eLEDOff:                          // turn LED off
         SetLED(ParsedInt-1, false);
+        Serial.print("SET led ");
+        Serial.print(ParsedInt);
+        Serial.println(" off");
         break;
 
       case eIdent:                           // identify h/w
@@ -718,6 +724,3 @@ void MakeCATMessageString(ECATCommands Cmd, char* Param)
   strcat(Output, ";");                                // add the terminating semicolon
   SendCATMessage(Output);
 }
-
-
-

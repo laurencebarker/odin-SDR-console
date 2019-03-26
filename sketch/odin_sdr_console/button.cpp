@@ -286,13 +286,14 @@ void ButtonTick(void)
   }
   else                                                    // reserved to poll V2 hardware extra inputs
   {
+#ifdef V2HARDWARE    
     Wire.beginTransmission(0x20);
     Wire.write(0x12);                                     // point to GPIOA
     Wire.endTransmission();
     Wire.requestFrom(0x20, 2);                            // read 2 bytes
     Input=Wire.read();                                    // GPIOA
     Input2 = Wire.read();                                 // GPIOB
-    Input23017 = (Input2 << 8) | Input;                   // bit0 = dig54
+    Input23017 = (Input << 8) | Input2;                   // bit0 = dig54
 //
 // now process the 16 bits, one at a time
 //
@@ -314,6 +315,6 @@ void ButtonTick(void)
           ButtonReleased(Cntr + VMAXGPIOBUTTONS);
       }
     }
+#endif    
   }
 }
-
