@@ -40,7 +40,9 @@ void CATSetNBState(ENBState State);
 void CATSetSNBState(bool SNBState);
 void CATSetANFState(bool ANFState);
 void CATSetAGCSpeed(EAGCSpeed Speed);
-void CATSetAGCThreshold(int Threshold);
+void CATSetAGCThreshold(int Threshold);       // called by display, needs to find out A or B
+void CATSetRX1AGCThreshold(int Threshold);    // channel specific
+void CATSetRX2AGCThreshold(int Threshold);    // channel specific
 void CATSetAttenuation(EAtten AttenValue);
 void CATSetSquelchOnOff(bool State);
 void CATSetSplitOnOff(bool State);
@@ -162,13 +164,15 @@ void CATSetDiversityOnOff(bool IsMute);
 // request AGC threshold
 // sends a request message and sets a timeout
 //
-void CATRequestAGCThreshold(void);
+void CATRequestRX1AGCThreshold(void);
+void CATRequestRX2AGCThreshold(void);
 
 //
 // deal with an encoder turn: a CAT message has arrived so now we need to update the param and send back to CAT
 // update & clip; send CAT; clear stored clicks; send to display
 //
-void SendAGCThresholdClicks(void);
+void SendRX1AGCThresholdClicks(void);
+void SendRX2AGCThresholdClicks(void);
 
 
 //
@@ -209,6 +213,16 @@ void CATRequestRX1StepAtten(void);
 void SendRX1StepAttenClicks(void);
 void CATRequestRX2StepAtten(void);
 void SendRX2StepAttenClicks(void);
+
+//
+// request RX1, RX2 AGC threshold;
+// RX1, RX2 AGC threshold encoder clicks
+//
+void CATRequestRX1AGCThreshold(void);
+void SendRX1AGCThreshold(void);
+void CATRequestRX2AGCThreshold(void);
+void SendRX2AGCThreshold(void);
+
 
 //
 // request master AF gain;

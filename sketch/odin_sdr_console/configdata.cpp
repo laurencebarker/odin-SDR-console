@@ -69,7 +69,7 @@ DueFlashStorage dueFlashStorage;                 // instance of flash reader
 const EEncoderActions GFactoryEncoderActions[] =
 {
   eENRX1AFGain,           // 2A: RX1 AF gain
-  eENRX1StepAtten,        // 2B: RX1 RF gain
+  eENRX1AGCLevel,         // 2B: RX1 AGC
   eENFilterHigh,          // 3A: filter cut
   eENFilterLow,           // 3B: filter cut
   eENDiversityGain,       // 4A: diversity gain
@@ -77,7 +77,7 @@ const EEncoderActions GFactoryEncoderActions[] =
   eENMicGain,             // 5A: mic gain
   eENDrive,               // 5B: drive
   eENRX2AFGain,           // 6A: RX2 AF gain
-  eENRX2StepAtten,        // 6B: RX2 RF gain
+  eENRX2AGCLevel,         // 6B: RX2 AGC
   eENCompanderThreshold,  // 7A: Compander
   eENMasterGain,          // 7B: master gain (also used for sidfetone level)
   eENSquelch,             // 8A: squelch level
@@ -430,4 +430,3 @@ void SetEncoderReversed(unsigned int Encoder, bool IsReversed)
 {
   GEncoderReversed[Encoder] = IsReversed;
 }
-

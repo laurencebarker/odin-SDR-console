@@ -452,9 +452,16 @@ char* AGCStrings[] =
 char* EncoderActionStrings[] = 
 {
   "No action",
-  "A/B AF Gain",
   "Master AF Gain",
-  "AGC Level",
+  "A/B AF Gain",
+  "RX1 AF Gain",
+  "RX2 AF Gain",
+  "A/B AGC Level",
+  "RX1 AGC level",
+  "RX2 AGC level", 
+  "A/B RF Gain",
+  "RX1 RF Gain",
+  "RX2 RF Gain",
   "Filter High Cut",
   "Filter Low Cut",
   "Drive",
@@ -469,20 +476,22 @@ char* EncoderActionStrings[] =
   "Diversity Gain",
   "Diversity Phase",
   "Comp Threshold",
-  "RX1 AF Gain",
-  "RX2 AF Gain",
-  "RX1 RF Gain",
-  "RX2 RF Gain",
-  "A/B RF Gain",
   "Multifunction"        // multifunction
 };
 
 char* MultiEncoderActionStrings[] = 
 {
   "M:No Action",
-  "M:AF Gain",
   "M:Master AF",
-  "M:AGC Level",
+  "M:A/B AF Gain",
+  "M:RX1 AF Gain",
+  "M:RX2 AF Gain",
+  "M:A/B AGC Level",
+  "M:RX1 AGC",
+  "M:RX2 AGC", 
+  "M:A/B RF Gain",
+  "M:RX1 RF Gain",
+  "M:RX2 RF Gain",
   "M:Filt High",
   "M:Filt Low",
   "M:Drive",
@@ -494,14 +503,9 @@ char* MultiEncoderActionStrings[] =
   "M:CW Tone",
   "M:CW Speed",
   "M:Squelch",
-  "M: Div'ty Gain",
-  "M: Div'ty Phase",
-  "M: Comp",
-  "M: RX1 AF Gain",
-  "M: RX2 AF Gain",
-  "M: RX1 RF Gain",
-  "M: RX2 RF Gain",
-  "M: A/B RF Gain",
+  "M:Div'ty Gain",
+  "M:Div'ty Phase",
+  "M:Comp",
   "M:Multi"                      // multifunction
 };
   
@@ -2710,4 +2714,3 @@ void DisplayEncoderTurned(unsigned int EncoderNumber)
   }
 #endif
 }
-

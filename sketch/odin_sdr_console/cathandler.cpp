@@ -48,7 +48,8 @@ EBand GCatStateBand;                                        // RX1/2 band
 bool GCatStateCompanderEnable = false;                      // compander on/off
 bool GCatStatePuresignalEnable = false;                     // puresignal on/off
 unsigned long GCatFrequency_Hz;                             // current frequency in Hz
-int GCatAGCThreshold;                                       // current AGC threshold
+int GCatRX1AGCThreshold;                                    // current RX1 AGC threshold
+int GCatRX2AGCThreshold;                                    // current RX2 AGC threshold
 int GCatFilterLow;                                          // current filter passband low edge
 int GCatFilterHigh;                                         // current filter passband high edge
 int GCatSquelchLevel;                                       // current squelch level
@@ -120,9 +121,12 @@ bool GLiveRequestMode;
 int GBandTimeout;
 
 // AGC threshold
-int GAGCThresholdTimeout;
-int GAGCThresholdRecent;
-int GAGCThresholdClicks; 
+int GRX1AGCThresholdTimeout;
+int GRX1AGCThresholdRecent;
+int GRX1AGCThresholdClicks; 
+int GRX2AGCThresholdTimeout;
+int GRX2AGCThresholdRecent;
+int GRX2AGCThresholdClicks; 
 
 // filter low/high
 int GFilterLowTimeout;
@@ -576,11 +580,17 @@ void CheckTimeouts(void)
       CATRequestBand();
 
 // AGC threshold
-  if(GAGCThresholdTimeout != 0)                   // decrement AGC threshold timeout if non zero
-    if (--GAGCThresholdTimeout == 0)              // if it times out, re-request
-      CATRequestAGCThreshold();
-  if(GAGCThresholdRecent != 0)                    // just decrement if non zero
-    GAGCThresholdRecent--;
+  if(GRX1AGCThresholdTimeout != 0)                // decrement AGC threshold timeout if non zero
+    if (--GRX1AGCThresholdTimeout == 0)           // if it times out, re-request
+      CATRequestRX1AGCThreshold();
+  if(GRX1AGCThresholdRecent != 0)                 // just decrement if non zero
+    GRX1AGCThresholdRecent--;
+
+  if(GRX2AGCThresholdTimeout != 0)                // decrement AGC threshold timeout if non zero
+    if (--GRX2AGCThresholdTimeout == 0)           // if it times out, re-request
+      CATRequestRX2AGCThreshold();
+  if(GRX2AGCThresholdRecent != 0)                 // just decrement if non zero
+    GRX2AGCThresholdRecent--;
 
 // filter low/high
   if(GFilterLowTimeout != 0)                   // decrement filter low cut timeout if non zero
@@ -763,9 +773,6 @@ void ToggleAB(void)
 {
   GConsoleVFOA = !GConsoleVFOA;
   DisplayShowABState(GConsoleVFOA);
-  GAGCThresholdTimeout = 0;
-  GAGCThresholdRecent = 0;
-  GAGCThresholdClicks=0;
   GFilterLowTimeout = 0;
   GFilterLowRecent = 0;
   GFilterLowClicks = 0;
@@ -1131,12 +1138,6 @@ void CATHandlePushbutton(unsigned int Button, EButtonActions Action, bool IsPres
 
 
 //
-// handler for encoder events. Has the following parameters: 
-// encoder number 0-7, with VFO=7);
-// number of +/- clicks
-// true if it is the main function, false if 2nd function
-//
-//
 // encoder passes the following parameters: 
 // encoder number 0-7, with VFO=7);
 // number of +/- clicks
@@ -1161,6 +1162,13 @@ void CATHandleEncoder(unsigned int Encoder, int Clicks, EEncoderActions Assigned
     else
       AssignedAction = eENRX2StepAtten;
   }
+  if (AssignedAction == eENAGCLevel)
+  {
+    if (GConsoleVFOA == true)
+      AssignedAction = eENRX1AGCLevel;
+    else
+      AssignedAction = eENRX2AGCLevel;
+  }
 
   switch(AssignedAction)
   {
@@ -1179,16 +1187,30 @@ void CATHandleEncoder(unsigned int Encoder, int Clicks, EEncoderActions Assigned
         CATRequestMastAFGain();
       break;    
 
-    case eENAGCLevel:                         // update AGC threshold
-      GAGCThresholdClicks += Clicks;          // set how many "unactioned" steps
-      if(GAGCThresholdRecent != 0)            // if recent current threshold exists, use it
+    case eENRX1AGCLevel:                      // update AGC threshold
+      GRX1AGCThresholdClicks += Clicks;       // set how many "unactioned" steps
+      if(GRX1AGCThresholdRecent != 0)         // if recent current threshold exists, use it
       {
-        SendAGCThresholdClicks();
-        DisplayShowAGCThreshold(GCatAGCThreshold);
+        SendRX1AGCThresholdClicks();
+        if (GConsoleVFOA == true)
+          DisplayShowAGCThreshold(GCatRX1AGCThreshold);
       }
       else
-        CATRequestAGCThreshold();
+        CATRequestRX1AGCThreshold();
       break;    
+
+    case eENRX2AGCLevel:                      // update AGC threshold
+      GRX2AGCThresholdClicks += Clicks;       // set how many "unactioned" steps
+      if(GRX2AGCThresholdRecent != 0)         // if recent current threshold exists, use it
+      {
+        SendRX2AGCThresholdClicks();
+        if (GConsoleVFOA == false)
+          DisplayShowAGCThreshold(GCatRX2AGCThreshold);
+      }
+      else
+        CATRequestRX2AGCThreshold();
+      break;    
+
 
 //
 // IF filter high: behaviour different in LSB-like spectrum reversed modes 
@@ -1862,23 +1884,36 @@ void CATSetDiversityOnOff(bool IsOn)
 
 
 
-/////////////////////////////// AGC THRESHOLD ///////////////////////////////////////
+
+
+//
+// handle display set AGC threshold
+//
+void CATSetAGCThreshold(int Threshold)
+{
+  if (GConsoleVFOA == true)
+    CATSetRX1AGCThreshold(Threshold);
+  else
+    CATSetRX2AGCThreshold(Threshold);
+}
+
+/////////////////////////////// RX1 AGC THRESHOLD ///////////////////////////////////////
 //
 // request AGC threshold
 // if recent data: send the recent data to the display
 // if no recent data: sends a request message and sets a timeout
 //
-void CATRequestAGCThreshold(void)
+void CATRequestRX1AGCThreshold(void)
 {
-  if(GAGCThresholdRecent != 0)
-    DisplayShowAGCThreshold(GCatAGCThreshold);
-  else
+  if(GRX1AGCThresholdRecent != 0)
   {
     if (GConsoleVFOA == true)
-      MakeCATMessageNoParam(eZZAR);
-    else
-      MakeCATMessageNoParam(eZZAS);
-    GAGCThresholdTimeout = VGETTIMEOUT;
+      DisplayShowAGCThreshold(GCatRX1AGCThreshold);
+  }
+  else
+  {
+    MakeCATMessageNoParam(eZZAR);
+    GRX1AGCThresholdTimeout = VGETTIMEOUT;
   }
 }
 
@@ -1887,14 +1922,11 @@ void CATRequestAGCThreshold(void)
 // send AGC threshold change request to CAT
 // I don't think this is complete - can be changed by an encoder too!
 //
-void CATSetAGCThreshold(int Threshold)
+void CATSetRX1AGCThreshold(int Threshold)
 {
-  if (GConsoleVFOA == true)
-    MakeCATMessageNumeric(eZZAR, Threshold);
-  else
-    MakeCATMessageNumeric(eZZAS, Threshold);
-  GAGCThresholdRecent = VRECENTTHRESHOLD;
-  GCatAGCThreshold = Threshold;
+  MakeCATMessageNumeric(eZZAR, Threshold);
+  GRX1AGCThresholdRecent = VRECENTTHRESHOLD;
+  GCatRX1AGCThreshold = Threshold;
 }
 
 
@@ -1902,13 +1934,62 @@ void CATSetAGCThreshold(int Threshold)
 // deal with an encoder turn: a CAT message has arrived so now we need to update the param and send back to CAT
 // update & clip; send CAT; clear stored clicks; send to display
 //
-void SendAGCThresholdClicks(void)
+void SendRX1AGCThresholdClicks(void)
 {
-  GCatAGCThreshold += GAGCThresholdClicks;                        // update
-  GCatAGCThreshold = ClipParameter(GCatAGCThreshold, eZZAR);      // clip to limits
-  CATSetAGCThreshold(GCatAGCThreshold);                           // send CAT command
-  GAGCThresholdClicks = 0;                                        // clear the stored clicks
-  DisplayShowAGCThreshold(GCatAGCThreshold);
+  GCatRX1AGCThreshold += GRX1AGCThresholdClicks;                        // update
+  GCatRX1AGCThreshold = ClipParameter(GCatRX1AGCThreshold, eZZAR);      // clip to limits
+  CATSetRX1AGCThreshold(GCatRX1AGCThreshold);                           // send CAT command
+  GRX1AGCThresholdClicks = 0;                                           // clear the stored clicks
+  if (GConsoleVFOA == true)                                             // only display if that one is selected
+    DisplayShowAGCThreshold(GCatRX1AGCThreshold);
+}
+
+
+/////////////////////////////// RX2 AGC THRESHOLD ///////////////////////////////////////
+//
+// request AGC threshold
+// if recent data: send the recent data to the display
+// if no recent data: sends a request message and sets a timeout
+//
+void CATRequestRX2AGCThreshold(void)
+{
+  if(GRX2AGCThresholdRecent != 0)
+  {
+    if (GConsoleVFOA == false)
+      DisplayShowAGCThreshold(GCatRX2AGCThreshold);
+  }
+  else
+  {
+    MakeCATMessageNoParam(eZZAS);
+    GRX2AGCThresholdTimeout = VGETTIMEOUT;
+  }
+}
+
+
+//
+// send AGC threshold change request to CAT
+// I don't think this is complete - can be changed by an encoder too!
+//
+void CATSetRX2AGCThreshold(int Threshold)
+{
+  MakeCATMessageNumeric(eZZAS, Threshold);
+  GRX2AGCThresholdRecent = VRECENTTHRESHOLD;
+  GCatRX2AGCThreshold = Threshold;
+}
+
+
+//
+// deal with an encoder turn: a CAT message has arrived so now we need to update the param and send back to CAT
+// update & clip; send CAT; clear stored clicks; send to display
+//
+void SendRX2AGCThresholdClicks(void)
+{
+  GCatRX2AGCThreshold += GRX2AGCThresholdClicks;                        // update
+  GCatRX2AGCThreshold = ClipParameter(GCatRX2AGCThreshold, eZZAR);      // clip to limits
+  CATSetRX2AGCThreshold(GCatRX2AGCThreshold);                           // send CAT command
+  GRX2AGCThresholdClicks = 0;                                           // clear the stored clicks
+  if (GConsoleVFOA == false)                                            // only display if that one is selected
+    DisplayShowAGCThreshold(GCatRX2AGCThreshold);
 }
 
 
@@ -2703,7 +2784,7 @@ void HandleCATCommandNumParam(ECATCommands MatchedCAT, int ParsedParam)
   int i;
   switch(MatchedCAT)
   {
-    case eZZAG:                         // master AG gain
+    case eZZAG:                         // master AF gain
       GMastAFGainTimeout = 0;                                                   // clear timeout
       GCatMastAFGain = ParsedParam;                                             // store locally
       GMastAFGainRecent = VRECENTTHRESHOLD;                                     // set recent
@@ -2732,17 +2813,23 @@ void HandleCATCommandNumParam(ECATCommands MatchedCAT, int ParsedParam)
       break;
       
     case eZZAR:                       // RX1 AGC threshold
+      GRX1AGCThresholdTimeout = 0;                                                 // clear timeout
+      GCatRX1AGCThreshold = ParsedParam;                                           // store locally
+      GRX1AGCThresholdRecent = VRECENTTHRESHOLD;                                   // set recent
+      if (GRX1AGCThresholdClicks != 0)                                             // we want to send a new update with encoder clicks
+        SendRX1AGCThresholdClicks();
+      if (GConsoleVFOA == true)
+        DisplayShowAGCThreshold(GCatRX1AGCThreshold);                                // send to display
+      break;
+
     case eZZAS:                       // RX2 AGC threshold
-      if(((GConsoleVFOA == true) && (MatchedCAT == eZZAR)) ||                     // respond to ZZAR if on VFO A, else ZZAS
-         ((GConsoleVFOA == false) && (MatchedCAT == eZZAS)))
-      {
-        GAGCThresholdTimeout = 0;                                                 // clear timeout
-        GCatAGCThreshold = ParsedParam;                                           // store locally
-        GAGCThresholdRecent = VRECENTTHRESHOLD;                                   // set recent
-        if (GAGCThresholdClicks != 0)                                             // we want to send a new update with encoder clicks
-          SendAGCThresholdClicks();
-        DisplayShowAGCThreshold(GCatAGCThreshold);                                // send to display
-      }
+      GRX2AGCThresholdTimeout = 0;                                                 // clear timeout
+      GCatRX2AGCThreshold = ParsedParam;                                           // store locally
+      GRX2AGCThresholdRecent = VRECENTTHRESHOLD;                                   // set recent
+      if (GRX2AGCThresholdClicks != 0)                                             // we want to send a new update with encoder clicks
+        SendRX2AGCThresholdClicks();
+      if (GConsoleVFOA == false)
+        DisplayShowAGCThreshold(GCatRX2AGCThreshold);                                // send to display
       break;
       
     case eZZGT:                           // RX1 AGC speed  (NO HANDLER NEEDED - WE NEVER "GET" THIS - use combined RX msg instead)
@@ -3128,5 +3215,3 @@ void HandleCATCommandNoParam(ECATCommands MatchedCAT)
 {
   Serial.println("no parameter");
 }
-
-

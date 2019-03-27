@@ -60,9 +60,16 @@ typedef enum
 typedef enum
 {
   eENNoAction,
-  eENAFGain,
   eENMasterGain,
+  eENAFGain,
+  eENRX1AFGain,
+  eENRX2AFGain,
   eENAGCLevel,
+  eENRX1AGCLevel,
+  eENRX2AGCLevel,
+  eENStepAtten,
+  eENRX1StepAtten,
+  eENRX2StepAtten,
   eENFilterHigh,
   eENFilterLow,
   eENDrive,
@@ -77,14 +84,9 @@ typedef enum
   eENDiversityGain,
   eENDiversityPhase,
   eENCompanderThreshold,
-  eENRX1AFGain,
-  eENRX2AFGain,
-  eENRX1StepAtten,
-  eENRX2StepAtten,
-  eENStepAtten,
   eENMulti                      // multifunction
 } EEncoderActions;
-#define VNUMENCODERACTIONS 24
+#define VNUMENCODERACTIONS 26
 
 //
 // this enum type lists all the functions that can be assigned to LED indicators
