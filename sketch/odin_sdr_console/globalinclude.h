@@ -11,7 +11,7 @@
 #define __globalinclude_h
 
 //
-// define NODISPLAY to compile with no attacked nextion display
+// define NODISPLAY to compile with no attached nextion display
 //
 // #define NODISPLAY 1
 

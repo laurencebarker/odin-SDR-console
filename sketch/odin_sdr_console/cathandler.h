@@ -218,6 +218,7 @@ void SendRX2StepAttenClicks(void);
 // request RX1, RX2 AGC threshold;
 // RX1, RX2 AGC threshold encoder clicks
 //
+void CATRequestAGCThreshold(void);                // called by display
 void CATRequestRX1AGCThreshold(void);
 void SendRX1AGCThreshold(void);
 void CATRequestRX2AGCThreshold(void);

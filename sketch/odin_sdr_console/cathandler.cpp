@@ -1897,6 +1897,17 @@ void CATSetAGCThreshold(int Threshold)
     CATSetRX2AGCThreshold(Threshold);
 }
 
+//
+// handle display request AGC threshold
+//
+void CATRequestAGCThreshold(void)
+{
+  if (GConsoleVFOA == true)
+    return CATRequestRX1AGCThreshold();
+  else  
+    return CATRequestRX2AGCThreshold();
+}
+
 /////////////////////////////// RX1 AGC THRESHOLD ///////////////////////////////////////
 //
 // request AGC threshold
