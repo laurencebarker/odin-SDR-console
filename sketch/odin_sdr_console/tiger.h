@@ -123,6 +123,15 @@ enum ECATCommands
   eZZUT,                          // puresignal 2 tone
   eZZUS,                          // puresignal single cal
   eZZMO,                          // monitor on/off
+  eZZXD,                          // XIT down
+  eZZXU,                          // XIT up
+  eZZXS,                          // XIT on/off
+  eZZXC,                          // XIT clear
+  eZZRC,                          // RIT clear
+
+  eZZSY,                          // VFO Sync
+  eZZFI,                          // RX1 Filter select
+  eZZFJ,                          // RX2 Filter select
   
   eNoCommand                      // this is an exception condition
 };
@@ -210,6 +219,12 @@ void MakeCATMessageBool(ECATCommands Cmd, bool Param);
 void MakeCATMessageString(ECATCommands Cmd, char* Param);
 
 //
+// special function to make the CAT message that shows the current multifunction encoder action
+// parameter is the int action number; string looked up from a table
+//
+void MakeEncoderActionCAT(int MultiFunction);
+
+//
 // helper to convert int to string
 //
 void LongToString(long Param, char* Output, int CharCount);
@@ -217,6 +232,7 @@ void LongToString(long Param, char* Output, int CharCount);
 // helper to append a string with a character
 //
 void Append(char* s, char ch);
+
 
 
 #endif //not defined

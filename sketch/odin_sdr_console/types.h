@@ -84,9 +84,10 @@ typedef enum
   eENDiversityGain,
   eENDiversityPhase,
   eENCompanderThreshold,
+  eENRIT,
   eENMulti                      // multifunction
 } EEncoderActions;
-#define VNUMENCODERACTIONS 26
+#define VNUMENCODERACTIONS 27
 
 //
 // this enum type lists all the functions that can be assigned to LED indicators
@@ -107,10 +108,12 @@ typedef enum
   eINVFOAB,
   eINCompanderEnabled,
   eINPuresignalEnabled,
+  eINXIT,
+  eINVFOSync,
   eINEncoder2nd,
   eINNone
 } EIndicatorActions;
-#define VNUMINDICATORACTIONS 16
+#define VNUMINDICATORACTIONS 18
 
 //
 // this enum type lists all the functions that can be assigned to configurable pushbuttons
@@ -155,9 +158,13 @@ typedef enum
   ePBPuresignal2Tone,
   ePBPuresignalSingleCal,
   ePBMonEnable,
-  ePBDiversityEnable
+  ePBDiversityEnable,
+  ePBVFOSync,
+  ePBClearRIT,
+  ePBFilterUp,
+  ePBFilterDown
 } EButtonActions;
-#define VNUMBUTTONACTIONS 38
+#define VNUMBUTTONACTIONS 42
 
 //
 // this enum defines legal baud rates for serial

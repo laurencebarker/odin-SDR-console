@@ -459,9 +459,9 @@ char* EncoderActionStrings[] =
   "A/B AGC Level",
   "RX1 AGC level",
   "RX2 AGC level", 
-  "A/B RF Gain",
-  "RX1 RF Gain",
-  "RX2 RF Gain",
+  "A/B Step Atten",
+  "RX1 Step Atten",
+  "RX2 Step Atten",
   "Filter High Cut",
   "Filter Low Cut",
   "Drive",
@@ -476,6 +476,7 @@ char* EncoderActionStrings[] =
   "Diversity Gain",
   "Diversity Phase",
   "Comp Threshold",
+  "RIT",
   "Multifunction"        // multifunction
 };
 
@@ -489,9 +490,9 @@ char* MultiEncoderActionStrings[] =
   "M:A/B AGC Level",
   "M:RX1 AGC",
   "M:RX2 AGC", 
-  "M:A/B RF Gain",
-  "M:RX1 RF Gain",
-  "M:RX2 RF Gain",
+  "M:A/B Step Atten",
+  "M:RX1 Step Atten",
+  "M:RX2 Step Atten",
   "M:Filt High",
   "M:Filt Low",
   "M:Drive",
@@ -506,9 +507,48 @@ char* MultiEncoderActionStrings[] =
   "M:Div'ty Gain",
   "M:Div'ty Phase",
   "M:Comp",
+  "M:RIT",
   "M:Multi"                      // multifunction
 };
-  
+
+
+//
+// strings for CAT display of multifunction device setting
+// the string count must match the number of enumerations!
+// Each must be exactly 15 chars!
+// 123456789012345678901234*
+//
+char* MultiEncoderCATStrings[] = 
+{
+  "No action      ",
+  "Master AF Gain ",
+  "A/B AF Gain    ",
+  "RX1 AF Gain    ",
+  "RX2 AF Gain    ",
+  "A/B AGC Level  ",
+  "RX1 AGC level  ",
+  "RX2 AGC level  ", 
+  "A/B Step Atten ",
+  "RX1 Step Atten ",
+  "RX2 Step Atten ",
+  "Filter High Cut",
+  "Filter Low Cut ",
+  "Drive          ",
+  "Mic Gain       ",
+  "VFO A Tune     ",
+  "VFO B Tune     ",
+  "VOX Gain       ",
+  "VOX Delay      ",
+  "CW Sidetone    ",
+  "CW Speed       ",
+  "Squelch level  ",
+  "Diversity Gain ",
+  "Diversity Phase",
+  "Comp Threshold ",
+  "RIT            ",
+  "Multifunction  "        // multifunction (this should never happen)
+};
+
 char* IndicatorActionStrings[] = 
 {
   "MOX",
@@ -525,6 +565,8 @@ char* IndicatorActionStrings[] =
   "VFO A/B",
   "Comp Enabled",
   "PS Enabled",
+  "XIT On",
+  "VFO Sync On",
   "Encoder 2nd fn",
   "None"
 };
@@ -569,7 +611,12 @@ char* ButtonActionStrings[] =
   "PS 2 Tone Cal",
   "PS Single Cal",
   "MON Enable",
-  "Diversity Enable"  
+  "Diversity Enable",
+  "VFO Sync",
+  "ClearcRIT",
+  "Filter Up",
+  "Filter Down"
+
 };
 
 

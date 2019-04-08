@@ -30,6 +30,8 @@
 bool GCatStateTX = false;                                   // true if CAT has reported TX
 bool GCatStateTune = false;                                 // true if CAT has reported Tune
 bool GCatStateRIT = false;                                  // true if CAT reported RIT is on
+bool GCatStateXIT = false;                                  // true if CAT reported XIT is on
+bool GCatStateVFOSync = false;                              // true if CAT reported VFO Sync is on
 bool GCatStateALock = false;                                // true if VFO A lock is on
 bool GCatStateBLock = false;                                // true if VFO B lock is on
 bool GCatStateSplit = false;                                // true if SPLIT state set
@@ -71,6 +73,7 @@ int GCatCompThreshold;                                      // current compander
 
 int GVFOStepSize;                                           // current VFO step, in Hz
 int GDisplayThrottle;                                       // !=0 for a few ticks after a display frequency update
+int GCatStateFilter;                                        // IF filter number 0-11
 
 //
 // console requested settings
@@ -200,6 +203,14 @@ bool GDiversityStepFast = true;                    // true for fast steps
 int GCompThresholdTimeout;
 int GCompThresholdRecent;
 int GCompThresholdClicks;
+
+//
+// IF filter up/down
+//
+int GFilterUpDownTimeout;
+int GFilterUpDownRecent;
+int GFilterUpDownClicks;
+
 
 // lookup VFO step size from CAT msg parameter, in hz
 // this table must match the CAT definition for ZZAC!
@@ -393,6 +404,15 @@ void UpdateIndicators(void)
         if(GCatStatePuresignalEnable == true)
           NewState = true;
         break;
+
+      case eINXIT:
+        NewState = GCatStateXIT;
+        break;
+        
+      case eINVFOSync:
+        NewState = GCatStateVFOSync;
+        break;
+        
 
 //
 // encoders are numbered 0-1-2-3-4-5-6-7 for 1A-1B-2A-2B-3A-3B-4A-4B
@@ -720,6 +740,12 @@ void CheckTimeouts(void)
   if(GCompThresholdRecent != 0)                    // just decrement if non zero
     GCompThresholdRecent--;
 
+// filter up/down
+  if(GFilterUpDownTimeout != 0)                   // decrement IF filter number timeout if non zero
+    if (--GFilterUpDownTimeout == 0)              // if it times out, re-request
+      CATRequestFilterUpDown();
+  if(GFilterUpDownRecent != 0)                    // just decrement if non zero
+    GFilterUpDownRecent--;
 }
 
 
@@ -970,24 +996,46 @@ void CATHandlePushbutton(unsigned int Button, EButtonActions Action, bool IsPres
       }
       break;
       
-    case ePBRIT:
+    case ePBRIT:                                              // step between off, RIT, XIT
       if (IsPressed)
       {
-        if(GCatStateRIT)
+        if(GCatStateRIT)            // in RIT - select XIT
+        {
           MakeCATMessageBool(eZZRT, false);
-        else
+          MakeCATMessageBool(eZZXS, true);
+        }
+        else if(GCatStateXIT)       // in XIT - set both off
+        {
+          MakeCATMessageBool(eZZRT, false);
+          MakeCATMessageBool(eZZXS, false);
+        }
+        else                        // in neither - select RIT
+        {
           MakeCATMessageBool(eZZRT, true);
+          MakeCATMessageBool(eZZXS, false);
+        }
       }
       break;
       
-    case ePBRITPlus:
+    case ePBRITPlus:                      // RIT of XIT plus
       if (IsPressed)
-        MakeCATMessageNoParam(eZZRU);
+      {
+        if (GCatStateRIT)
+          MakeCATMessageNoParam(eZZRU);
+        else if (GCatStateXIT)
+          MakeCATMessageNoParam(eZZXU);
+      }
+      
       break;
       
-    case ePBRITMinus:
+    case ePBRITMinus:                     // RIT or XIT minus
       if (IsPressed)
-        MakeCATMessageNoParam(eZZRD);
+      {
+        if (GCatStateRIT)
+          MakeCATMessageNoParam(eZZRD);
+        else if (GCatStateXIT)
+          MakeCATMessageNoParam(eZZXD);
+      }
       break;
       
     case ePBAtoB:
@@ -1132,8 +1180,50 @@ void CATHandlePushbutton(unsigned int Button, EButtonActions Action, bool IsPres
         CATRequestDiversityOnOff();
       }
       break;
+
+    case ePBVFOSync:                                    // VFO sync - toggle the state, which is polled often  
+      if (IsPressed)
+      {
+        if(GCatStateVFOSync)
+          MakeCATMessageBool(eZZSY, false);
+        else
+          MakeCATMessageBool(eZZSY, true);
+      }
+      break;
+
+    case ePBClearRIT:
+      if (IsPressed)
+      {
+        MakeCATMessageNoParam(eZZXC);               // clear XIT
+        MakeCATMessageNoParam(eZZRC);               // clear RIT
+      }
+      break;
+
+    case ePBFilterUp:
+      if (IsPressed)
+      {
+        GFilterUpDownClicks += 1;               // set how many "unactioned" steps
+        if(GFilterUpDownRecent != 0)            // if recent current threshold exists, use it
+          SendFilterUpDownClicks();
+        else
+          CATRequestFilterUpDown();
+      }
+      break;
+  
+    case ePBFilterDown:
+      if (IsPressed)
+      {
+        GFilterUpDownClicks -= 1;               // set how many "unactioned" steps
+        if(GFilterUpDownRecent != 0)            // if recent current threshold exists, use it
+          SendFilterUpDownClicks();
+        else
+          CATRequestFilterUpDown();
+      }
+      break;
+
   }
 }
+
 
 
 
@@ -1145,6 +1235,7 @@ void CATHandlePushbutton(unsigned int Button, EButtonActions Action, bool IsPres
 //
 void CATHandleEncoder(unsigned int Encoder, int Clicks, EEncoderActions AssignedAction)
 {
+  int cntr;
 //
 // firstly re-map an A/B channel AF gain or step atten to the correct A/B handler
 //
@@ -1362,20 +1453,45 @@ void CATHandleEncoder(unsigned int Encoder, int Clicks, EEncoderActions Assigned
         CATRequestRX2AFGain();
       break;
       
-    case eENRX1StepAtten:                       // RX1 step atten (badged as RF gain)
-      GRX1StepAttenClicks -= Clicks;            // set how many "unactioned" steps. reversed direction to make it act as gain not atten
+    case eENRX1StepAtten:                       // RX1 step atten
+      GRX1StepAttenClicks += Clicks;            // set how many "unactioned" steps. 
       if(GRX1StepAttenRecent != 0)              // if recent current threshold exists, use it
         SendRX1StepAttenClicks();
       else
         CATRequestRX1StepAtten();
       break;
       
-    case eENRX2StepAtten:                       // RX2 step atten (badged as RF gain)
-      GRX2StepAttenClicks -= Clicks;            // set how many "unactioned" steps. reversed direction to make it act as gain not atten
+    case eENRX2StepAtten:                       // RX2 step atten
+      GRX2StepAttenClicks += Clicks;            // set how many "unactioned" steps.
       if(GRX2StepAttenRecent != 0)              // if recent current threshold exists, use it
         SendRX2StepAttenClicks();
       else
         CATRequestRX2StepAtten();
+      break;
+//
+// for RIT - simply add RIT step up or down commands
+// for either RIT or XIT
+//
+    case eENRIT:                                // RIT, XIT
+      if (GCatStateRIT)
+      {
+        if (Clicks > 0)
+          for (cntr=0; cntr < Clicks; cntr++)
+            MakeCATMessageNoParam(eZZRU);
+        else if (Clicks < 0)
+          for (cntr=0; cntr < -Clicks; cntr++)
+            MakeCATMessageNoParam(eZZRD);
+      }
+      else if (GCatStateXIT)
+      {
+        if (Clicks > 0)
+          for (cntr=0; cntr < Clicks; cntr++)
+            MakeCATMessageNoParam(eZZXU);
+        else if (Clicks < 0)
+          for (cntr=0; cntr < -Clicks; cntr++)
+            MakeCATMessageNoParam(eZZXD);
+      }
+      
       break;
   }
 }
@@ -2130,6 +2246,47 @@ void ResetIFFilters(int Tone)
 
 
 
+
+/////////////////////////////// FILTER UP/DOWN ///////////////////////////////////////
+//
+// request 
+// if recent data: send the recent data to the display
+// if no recent data: sends a request message and sets a timeout
+//
+
+void CATRequestFilterUpDown(void)
+{
+  if(GFilterUpDownTimeout == 0)
+  {
+    if (GConsoleVFOA == true)
+      MakeCATMessageNoParam(eZZFI);
+    else
+      MakeCATMessageNoParam(eZZFJ);
+    GFilterUpDownTimeout = VGETTIMEOUT;
+  }
+}
+
+
+//
+// deal with a filter up or down: a CAT message has arrived so now we need to update the param and send back to CAT
+// update & clip; send CAT; clear stored clicks; send to display
+//
+void SendFilterUpDownClicks(void)
+{
+  GCatStateFilter += GFilterUpDownClicks;         // update
+  GCatStateFilter = ClipParameter(GCatStateFilter, eZZFI);          // clip to limits
+  GFilterUpDownClicks = 0;                                            // clear the stored clicks
+  if (GConsoleVFOA == true)                                         // send the right message
+    MakeCATMessageNumeric(eZZFI, GCatStateFilter);
+  else
+    MakeCATMessageNumeric(eZZFJ, GCatStateFilter);
+  GFilterUpDownRecent = VRECENTTHRESHOLD;                             // set "recent"
+}
+
+
+
+
+
 /////////////////////////////// SQUELCH LEVEL ///////////////////////////////////////
 //
 // request 
@@ -2393,6 +2550,8 @@ void SendMicGainClicks(void)
 
 
 
+#define VVOXGAININCREMENT 10                                  // units per click
+#define VVOXDELAYINCREMENT 10                                 // units per click
 
 /////////////////////////////// VOX GAIN ///////////////////////////////////////
 //
@@ -2409,14 +2568,13 @@ void CATRequestVoxGain(void)
   }
 }
 
-
 //
 // deal with an encoder turn: a CAT message has arrived so now we need to update the param and send back to CAT
 // update & clip; send CAT; clear stored clicks; send to display
 //
 void SendVoxGainClicks(void)
 {
-  GCatVoxGain += GVoxGainClicks;                              // update
+  GCatVoxGain += (GVoxGainClicks * VVOXGAININCREMENT);        // update
   GCatVoxGain = ClipParameter(GCatVoxGain, eZZVG);            // clip to limits
   GVoxGainClicks = 0;                                         // clear the stored clicks
   MakeCATMessageNumeric(eZZVG, GCatVoxGain);
@@ -2449,7 +2607,7 @@ void CATRequestVoxDelay(void)
 //
 void SendVoxDelayClicks(void)
 {
-  GCatVoxDelay += GVoxDelayClicks;                              // update
+  GCatVoxDelay += (GVoxDelayClicks * VVOXDELAYINCREMENT);       // update
   GCatVoxDelay = ClipParameter(GCatVoxDelay, eZZXH);            // clip to limits
   GVoxDelayClicks = 0;                                          // clear the stored clicks
   MakeCATMessageNumeric(eZZXH, GCatVoxDelay);
@@ -2945,6 +3103,19 @@ void HandleCATCommandNumParam(ECATCommands MatchedCAT, int ParsedParam)
         DisplayShowMode(GCatStateMode);
       break;
       
+    case eZZFI:                          // RX1 filter
+    case eZZFJ:                          // RX2 filter
+      if(((GConsoleVFOA == true) && (MatchedCAT == eZZFI)) ||                     // respond to ZZFI if on VFO A, else ZZFJ
+         ((GConsoleVFOA == false) && (MatchedCAT == eZZFJ)))
+      {
+        GFilterUpDownTimeout = 0;                                                 // clear timeout
+        GCatStateFilter = ParsedParam;                                            // store locally
+        GFilterUpDownRecent = VRECENTTHRESHOLD;                                   // set recent
+        if (GFilterUpDownClicks != 0)                                             // we want to send a new update with increment or decrement
+          SendFilterUpDownClicks();
+      }
+      break;
+      
     case eZZSM:                         // display S meter (Special case parse - needs 0 or 1 digit inserting)
       if((GConsoleVFOA == true) && (ParsedParam < 1000))            // RX1
         DisplayShowSMeter(ParsedParam);
@@ -3022,14 +3193,16 @@ void HandleCATCommandNumParam(ECATCommands MatchedCAT, int ParsedParam)
     case eZZXV:                          // VFO combined status
       if (GLiveRequestVFOStatus)
       {
-        GCatStateTX =     ((ParsedParam & 0b01000000) != 0)?true:false;             // true if CAT has reported TX
-        GCatStateTune =   ((ParsedParam & 0b10000000) != 0)?true:false;             // true if CAT has reported Tune
-        GCatStateRIT =    ((ParsedParam & 0b00000001) != 0)?true:false;             // true if CAT reported RIT is on
-        GCatStateALock =  ((ParsedParam & 0b00000010) != 0)?true:false;             // true if VFO A lock is on
-        GCatStateBLock =  ((ParsedParam & 0b00000100) != 0)?true:false;             // true if VFO B lock is on
-        GCatStateSplit =  ((ParsedParam & 0b00001000) != 0)?true:false;             // true if SPLIT state set
-        GCatStateACTune = ((ParsedParam & 0b00010000) != 0)?true:false;             // true if VFO A CTUNE is on
-        GCatStateBCTune = ((ParsedParam & 0b00100000) != 0)?true:false;             // true if VFO B CTUNE is on
+        GCatStateTX =      ((ParsedParam & 0b0001000000) != 0)?true:false;             // true if CAT has reported TX
+        GCatStateTune =    ((ParsedParam & 0b0010000000) != 0)?true:false;             // true if CAT has reported Tune
+        GCatStateRIT =     ((ParsedParam & 0b0000000001) != 0)?true:false;             // true if CAT reported RIT is on
+        GCatStateALock =   ((ParsedParam & 0b0000000010) != 0)?true:false;             // true if VFO A lock is on
+        GCatStateBLock =   ((ParsedParam & 0b0000000100) != 0)?true:false;             // true if VFO B lock is on
+        GCatStateSplit =   ((ParsedParam & 0b0000001000) != 0)?true:false;             // true if SPLIT state set
+        GCatStateACTune =  ((ParsedParam & 0b0000010000) != 0)?true:false;             // true if VFO A CTUNE is on
+        GCatStateBCTune =  ((ParsedParam & 0b0000100000) != 0)?true:false;             // true if VFO B CTUNE is on
+        GCatStateXIT =     ((ParsedParam & 0b0100000000) != 0)?true:false;             // true if CAT reported XIT is on
+        GCatStateVFOSync = ((ParsedParam & 0b1000000000) != 0)?true:false;             // true if CAT reported VFO Sync is on
         DisplayShowTXState(GCatStateTX, GCatStateTune);
         DisplayShowSplit(GCatStateSplit);
         DisplayShowRITState(GCatStateRIT);
@@ -3117,6 +3290,8 @@ void HandleCATCommandBoolParam(ECATCommands MatchedCAT, bool ParsedParam)
     case eZZCO:                          // RX2 click tune (NO HANDLER - never "get" - polled using ZZXV)
     case eZZUX:                          // VFO A LOCK state (NO HANDLER - never "get" - polled using ZZXV)
     case eZZUY:                          // VFO B LOCK state (NO HANDLER - never "get" - polled using ZZXV)
+    case eZZXS:                          // XIT state (NO HANDLER - never "get" - polled using ZZXV)
+    case eZZSY:                          // VFO sync (NO HANDLER - never "get" - polled using ZZXV)
       break;
       
     case eZZNR:                          // RX1 NR mode (NO HANDLER - never "get" - polled using ZZXN)

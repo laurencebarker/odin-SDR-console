@@ -80,7 +80,7 @@ const EEncoderActions GFactoryEncoderActions[] =
   eENRX2AGCLevel,         // 6B: RX2 AGC
   eENCompanderThreshold,  // 7A: Compander
   eENMasterGain,          // 7B: master gain (also used for sidfetone level)
-  eENSquelch,             // 8A: squelch level
+  eENMulti,               // 8A: squelch level
   eENVOXGain              // 8B: unspecified, so VOX Gain used
 };
 
@@ -90,7 +90,8 @@ const EEncoderActions GFactoryEncoderActions[] =
 //
 const EIndicatorActions GFactoryIndicatorActions[] =
 {
-  eINLock,                    // 0: LOCK
+  eINVFOSync,                 // 0 debug
+//  eINLock,                    // 0: LOCK
   eINPuresignalEnabled,       // 1: Puresignal enabled
   eINMOX,                     // 2: TX/RX
   eINTune,                    // 3: TUNE enabled
@@ -136,7 +137,7 @@ const EButtonActions GFactoryButtonActions[] =
   ePBAtoB,                            // 24: SW6
   ePBRX2AFMute,                       // 25: encoder 6 click
   ePBCompanderEnable,                 // 26: encoder 7 click
-  ePBSquelch,                         // 27: encoder 8 click
+  ePBEncoderClick,                    // 27: encoder 8 click
   ePBSplit,                           // 28: SW8
   ePBBtoA,                            // 29: SW7
   ePBPuresignalEnable,                // 30: SW21

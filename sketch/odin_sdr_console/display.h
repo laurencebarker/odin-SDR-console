@@ -31,6 +31,12 @@ extern char* AttenStrings[];
 extern char* AGCStrings[];
 
 
+//
+// array reference for CAT strings for multifunction encoder setting
+//
+extern char* MultiEncoderCATStrings[];
+
+
 
 //
 // helper to redraw encoder strings

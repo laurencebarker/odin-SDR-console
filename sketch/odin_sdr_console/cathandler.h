@@ -174,6 +174,13 @@ void CATRequestRX2AGCThreshold(void);
 void SendRX1AGCThresholdClicks(void);
 void SendRX2AGCThresholdClicks(void);
 
+//
+// request filter number up/down;
+// filter up/down button clicks
+//
+void CATRequestFilterUpDown(void);
+void SendFilterUpDownClicks(void);
+
 
 //
 // request filter low;

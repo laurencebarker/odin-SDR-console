@@ -22,7 +22,7 @@
 #define VBUFLENGTH 128
 char GCATInputBuffer[VBUFLENGTH];
 char* GCATWritePtr;
-char Output[20];                                        // TX CAT msg buffer
+char Output[40];                                        // TX CAT msg buffer
 unsigned int GNumCommands;                              // number of commands in table
 
 //
@@ -66,7 +66,7 @@ SCATCommands GCATDebugCommands[VNUMDEBUGCATCMDS] =
 // array of records. This must exactly match the enum ECATCommands in tiger.h
 // and the number of commands defined here must be correct
 //
-#define VNUMCATCMDS 85
+#define VNUMCATCMDS 93
 
 SCATCommands GCATCommands[VNUMCATCMDS] = 
 {
@@ -94,7 +94,7 @@ SCATCommands GCATCommands[VNUMCATCMDS] =
   
   {"ZZBF", eNum, 0, 99, 2, false},                          // VFO B up n steps
   {"ZZVG", eNum, 0, 1000, 4, false},                        // VOX gain
-  {"ZZXH", eNum, 0, 4000, 4, false},                        // VOX delay
+  {"ZZXH", eNum, 0, 2000, 4, false},                        // VOX delay
   {"ZZVE", eBool, 0, 1, 1, false},                          // VOX on/off
   {"ZZCL", eNum, 200, 2250, 4, false},                      // CW sidetone
   {"ZZCS", eNum, 1, 60, 2, false},                          // CW speed
@@ -144,7 +144,7 @@ SCATCommands GCATCommands[VNUMCATCMDS] =
   {"ZZVS", eNone, 0, 2, 1, false},                          // VFO swap/copy
   {"ZZXN", eNum, 0, 8191, 4, false},                        // RX1 combined status
   {"ZZXO", eNum, 0, 8191, 4, false},                        // RX2 combined status
-  {"ZZXV", eNum, 0, 255, 3, false},                         // VFO combined status
+  {"ZZXV", eNum, 0, 1023, 4, false},                        // VFO combined status
   {"ZZAC", eNum, 0, 24, 2, false},                          // VFO step size
 
   {"ZZDB", eBool, 0, 1, 1, false},                          // diversity reference source
@@ -162,7 +162,16 @@ SCATCommands GCATCommands[VNUMCATCMDS] =
   {"ZZLI", eBool, 0, 1, 1, false},                          // puresignal on/off
   {"ZZUT", eBool, 0, 1, 1, false},                          // puresignal 2 tone test
   {"ZZUS", eNone, 0, 0, 0, false},                          // puresignal single cal
-  {"ZZMO", eBool, 0, 1, 1, false}                           // MON on/off
+  {"ZZMO", eBool, 0, 1, 1, false},                          // MON on/off
+  {"ZZXD", eNone, 0, 0, 0, false},                          // XIT step down (ignore "set RIT to NNNNN" variant)
+  {"ZZXU", eNone, 0, 0, 0, false},                          // XIT step up (ignore "set RIT to NNNNN" variant)
+  {"ZZXS", eBool, 0, 1, 1, false},                          // XIT on/off state
+  {"ZZXC", eNone, 0, 0, 0, false},                          // XIT clear
+  {"ZZRC", eNone, 0, 0, 0, false},                          // RIT clear
+
+  {"ZZSY", eBool, 0, 1, 1, false},                          // VFO Sync
+  {"ZZFI", eNum, 0, 11, 2, false},                          // RX1 filter select
+  {"ZZFJ", eNum, 0, 11, 2, false}                           // RX2 filter select
 };
 
 
@@ -723,4 +732,54 @@ void MakeCATMessageString(ECATCommands Cmd, char* Param)
 //
   strcat(Output, ";");                                // add the terminating semicolon
   SendCATMessage(Output);
+}
+
+
+#define VENCODERSTRINGLENGTH 15
+//
+// special function to make the CAT message that shows the current multifunction encoder action
+// parameter is the int action number; string looked up from a table
+//
+void MakeEncoderActionCAT(int MultiFunction)
+{
+  int ParamLength, ReqdLength;                        // string lengths
+  char EncoderText[30];                               // text we want to copy 
+  int Cntr;
+  char ch;
+  char DigitStr[5];
+
+//
+// first get the right string, and get to exactly correct length
+//
+  ReqdLength = VENCODERSTRINGLENGTH;                  // required length of parameter "nnnn" string not including semicolon
+  strcpy(EncoderText, MultiEncoderCATStrings[MultiFunction]);
+  ParamLength = strlen(EncoderText);                  // length of input string
+  
+  if(ParamLength > ReqdLength)                        // if string too long, truncate it
+    EncoderText[ReqdLength]=0; 
+//
+// now see if we need to pad
+//
+  if (ParamLength < ReqdLength)
+  for (Cntr=0; Cntr < (ReqdLength-ParamLength); Cntr++)
+    strcat(EncoderText, " ");
+//
+// we now have a string of the correct length. 
+// get each character to a string with the ascii value, minus 32
+//
+  strcpy(Output, "ZZMF");                             // copy the base message
+  for (Cntr=0; Cntr < ReqdLength; Cntr++)
+  {
+    ch = EncoderText[Cntr] - 32;
+    LongToString(ch, DigitStr, 2);
+    strcat(Output, DigitStr);
+  }
+//
+// finally terminate and send  
+//
+  strcat(Output, ";");                                // add the terminating semicolon
+  SendCATMessage(Output);
+
+
+  
 }

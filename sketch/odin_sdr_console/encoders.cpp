@@ -22,6 +22,7 @@
 #include "display.h"
 #include "configdata.h"
 #include "cathandler.h"
+#include "tiger.h"
 
 
 //
@@ -240,6 +241,7 @@ void EncoderSlowTick(void)
                   GMultiAction = (EEncoderActions)((int)GMultiAction - 1); 
               }
               DisplaySetEncoderAction(Cntr, GMultiAction, true);
+              MakeEncoderActionCAT(GMultiAction);
             }
             else
             {
