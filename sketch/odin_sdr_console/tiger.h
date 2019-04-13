@@ -132,7 +132,7 @@ enum ECATCommands
   eZZSY,                          // VFO Sync
   eZZFI,                          // RX1 Filter select
   eZZFJ,                          // RX2 Filter select
-  
+  eZZYR,                          // RX1/RX2 radio button toggle
   eNoCommand                      // this is an exception condition
 };
 

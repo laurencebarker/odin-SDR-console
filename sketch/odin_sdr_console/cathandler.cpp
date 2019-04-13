@@ -835,7 +835,10 @@ void CATHandlePushbutton(unsigned int Button, EButtonActions Action, bool IsPres
       
     case ePBABVfo:                            // change between A and B. Save the variable then set display.
       if (IsPressed)
+      {
         ToggleAB();
+        MakeCATMessageBool(eZZYR, !GConsoleVFOA);
+      }
       break;
       
     case ePBMox:

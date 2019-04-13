@@ -66,7 +66,7 @@ SCATCommands GCATDebugCommands[VNUMDEBUGCATCMDS] =
 // array of records. This must exactly match the enum ECATCommands in tiger.h
 // and the number of commands defined here must be correct
 //
-#define VNUMCATCMDS 93
+#define VNUMCATCMDS 94
 
 SCATCommands GCATCommands[VNUMCATCMDS] = 
 {
@@ -171,7 +171,8 @@ SCATCommands GCATCommands[VNUMCATCMDS] =
 
   {"ZZSY", eBool, 0, 1, 1, false},                          // VFO Sync
   {"ZZFI", eNum, 0, 11, 2, false},                          // RX1 filter select
-  {"ZZFJ", eNum, 0, 11, 2, false}                           // RX2 filter select
+  {"ZZFJ", eNum, 0, 11, 2, false},                          // RX2 filter select
+  {"ZZYR", eBool, 0, 1, 1, false}                           // RX1/RX2 radio button toggle
 };
 
 
