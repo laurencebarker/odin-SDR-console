@@ -477,6 +477,12 @@ char* EncoderActionStrings[] =
   "Diversity Phase",
   "Comp Threshold",
   "RIT",
+  "Display Pan",
+  "Display Zoom",
+  "Sub-RX AF Gain",
+  "Sub-RX Stereo Balance",
+  "RX1 Stereo Balance",
+  "RX2 Stereo Balance",
   "Multifunction"        // multifunction
 };
 
@@ -508,6 +514,12 @@ char* MultiEncoderActionStrings[] =
   "M:Div'ty Phase",
   "M:Comp",
   "M:RIT",
+  "M:Display Pan",
+  "M:Display Zoom",
+  "M:Sub-RX AF Gain",
+  "M:Sub-RX Stereo Balance",
+  "M:RX1 Stereo Balance",
+  "M:RX2 Stereo Balance",
   "M:Multi"                      // multifunction
 };
 
@@ -546,6 +558,12 @@ char* MultiEncoderCATStrings[] =
   "Diversity Phase",
   "Comp Threshold ",
   "RIT            ",
+  "Display Pan    ",
+  "Display Zoom   ",
+  "Sub-RX Gain    ",
+  "Sub-RX Stereo  ",
+  "RX1 Stereo Bal ",
+  "RX2 Stereo Bal ",
   "Multifunction  "        // multifunction (this should never happen)
 };
 
@@ -615,8 +633,10 @@ char* ButtonActionStrings[] =
   "VFO Sync",
   "ClearcRIT",
   "Filter Up",
-  "Filter Down"
-
+  "Filter Down",
+  "VAC 1",
+  "VAC 2",
+  "Centre Display"
 };
 
 

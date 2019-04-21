@@ -65,12 +65,12 @@ SCATCommands GCATDebugCommands[VNUMDEBUGCATCMDS] =
 //
 // array of records. This must exactly match the enum ECATCommands in tiger.h
 // and the number of commands defined here must be correct
-//
-#define VNUMCATCMDS 94
+// (not including the final eNoCommand)
+#define VNUMCATCMDS 103
 
 SCATCommands GCATCommands[VNUMCATCMDS] = 
 {
-  {"ZZAG", eNum, 0, 100, 3, false},                         // master AG gain
+  {"ZZAG", eNum, 0, 100, 3, false},                         // master AG gain                 1
   {"ZZLA", eNum, 0, 100, 3, false},                         // RX1 AF gain
   {"ZZLE", eNum, 0, 100, 3, false},                         // RX2 AF gain
   {"ZZPA", eNum, 0, 4, 1, false},                           // RX1 attenuation
@@ -81,7 +81,7 @@ SCATCommands GCATCommands[VNUMCATCMDS] =
   {"ZZGU", eNum, 0, 5, 1, false},                           // RX2 AGC speed
   {"ZZFL", eNum, -9999, 9999, 5, true},                     // RX1 filter low cut
   
-  {"ZZFS", eNum, -9999, 9999, 5, true},                     // RX2 filter low cut
+  {"ZZFS", eNum, -9999, 9999, 5, true},                     // RX2 filter low cut             11
   {"ZZFH", eNum, -9999, 9999, 5, true},                     // RX1 filter high cut
   {"ZZFR", eNum, -9999, 9999, 5, true},                     // RX2 filter high cut
   {"ZZPC", eNum, 0, 100, 3, false},                         // TX drive
@@ -92,7 +92,7 @@ SCATCommands GCATCommands[VNUMCATCMDS] =
   {"ZZAF", eNum, 0, 99, 2, false},                          // VFO A up n steps
   {"ZZBE", eNum, 0, 99, 2, false},                          // VFO B down n steps
   
-  {"ZZBF", eNum, 0, 99, 2, false},                          // VFO B up n steps
+  {"ZZBF", eNum, 0, 99, 2, false},                          // VFO B up n steps               21
   {"ZZVG", eNum, 0, 1000, 4, false},                        // VOX gain
   {"ZZXH", eNum, 0, 2000, 4, false},                        // VOX delay
   {"ZZVE", eBool, 0, 1, 1, false},                          // VOX on/off
@@ -103,7 +103,7 @@ SCATCommands GCATCommands[VNUMCATCMDS] =
   {"ZZBD", eNone, 0, 0, 0, false},                          // RX1 band down
   {"ZZBU", eNone, 0, 0, 0, false},                          // RX1 band up
   
-  {"ZZBS", eStr, 0, 999, 3, false},                         // RX1 set/read band (special case parse - transverter may include non numeric values)
+  {"ZZBS", eStr, 0, 999, 3, false},                         // RX1 set/read band (special case parse - transverter may include non numeric values)    31
   {"ZZBA", eNone, 0, 0, 0, false},                          // RX2 band down
   {"ZZBB", eNone, 0, 0, 0, false},                          // RX2 band up
   {"ZZBT", eStr, 0, 999, 3, false},                         // RX2 set/read band (special case parse- transverter may include non numeric values)
@@ -114,7 +114,7 @@ SCATCommands GCATCommands[VNUMCATCMDS] =
   {"ZZRD", eNone, 0, 0, 0, false},                          // RIT step down (ignore "set RIT to NNNNN" variant)
   {"ZZSP", eBool, 0, 1, 1, false},                          // SPLIT state
   
-  {"ZZCN", eBool, 0, 1, 1, false},                          // RX1 click tune
+  {"ZZCN", eBool, 0, 1, 1, false},                          // RX1 click tune                 41
   {"ZZCO", eBool, 0, 1, 1, false},                          // RX2 click tune
   {"ZZUX", eBool, 0, 1, 1, false},                          // VFO A LOCK state
   {"ZZUY", eBool, 0, 1, 1, false},                          // VFO B LOCK state
@@ -125,7 +125,7 @@ SCATCommands GCATCommands[VNUMCATCMDS] =
   {"ZZNV", eBool, 0, 1, 1, false},                          // RX2 NR mode
   {"ZZNW", eBool, 0, 1, 1, false},                          // RX2 enhanced NR mode
 
-  {"ZZNA", eBool, 0, 1, 1, false},                          // RX1 NB mode
+  {"ZZNA", eBool, 0, 1, 1, false},                          // RX1 NB mode                    51
   {"ZZNB", eBool, 0, 1, 1, false},                          // RX1 enhanced NB mode
   {"ZZNC", eBool, 0, 1, 1, false},                          // RX2 NB mode
   {"ZZND", eBool, 0, 1, 1, false},                          // RX2 enhanced NB mode
@@ -136,7 +136,7 @@ SCATCommands GCATCommands[VNUMCATCMDS] =
   {"ZZMA", eBool, 0, 1, 1, false},                          // RX1 mute
   {"ZZMB", eBool, 0, 1, 1, false},                          // RX2 mute
 
-  {"ZZPS", eBool, 0, 1, 1, false},                          // radio START
+  {"ZZPS", eBool, 0, 1, 1, false},                          // radio START                    61
   {"ZZSQ", eNum, 0, 160, 3, false},                         // RX1 squelch level
   {"ZZSX", eNum, 0, 160, 3, false},                         // RX2 squelch level
   {"ZZSO", eBool, 0, 1, 1, false},                          // RX1 squelch on/off
@@ -147,7 +147,7 @@ SCATCommands GCATCommands[VNUMCATCMDS] =
   {"ZZXV", eNum, 0, 1023, 4, false},                        // VFO combined status
   {"ZZAC", eNum, 0, 24, 2, false},                          // VFO step size
 
-  {"ZZDB", eBool, 0, 1, 1, false},                          // diversity reference source
+  {"ZZDB", eBool, 0, 1, 1, false},                          // diversity reference source     71
   {"ZZDC", eNum, 0, 5000, 4, false},                        // diversity RX2 gain
   {"ZZDD", eNum, -18000, 18000, 6, true},                   // diversity phase
   {"ZZDE", eBool, 0, 1, 1, false},                          // diversity enable
@@ -158,7 +158,7 @@ SCATCommands GCATCommands[VNUMCATCMDS] =
   {"ZZRY", eNum, 0, 31, 2, false},                          // RX2 step atten
   {"ZZCP", eBool, 0, 1, 1, false},                          // compander enable
 
-  {"ZZCT", eNum, 0, 20, 2, false},                          // compander threshold
+  {"ZZCT", eNum, 0, 20, 2, false},                          // compander threshold            81
   {"ZZLI", eBool, 0, 1, 1, false},                          // puresignal on/off
   {"ZZUT", eBool, 0, 1, 1, false},                          // puresignal 2 tone test
   {"ZZUS", eNone, 0, 0, 0, false},                          // puresignal single cal
@@ -169,10 +169,20 @@ SCATCommands GCATCommands[VNUMCATCMDS] =
   {"ZZXC", eNone, 0, 0, 0, false},                          // XIT clear
   {"ZZRC", eNone, 0, 0, 0, false},                          // RIT clear
 
-  {"ZZSY", eBool, 0, 1, 1, false},                          // VFO Sync
+  {"ZZSY", eBool, 0, 1, 1, false},                          // VFO Sync                       91
   {"ZZFI", eNum, 0, 11, 2, false},                          // RX1 filter select
   {"ZZFJ", eNum, 0, 11, 2, false},                          // RX2 filter select
-  {"ZZYR", eBool, 0, 1, 1, false}                           // RX1/RX2 radio button toggle
+  {"ZZYR", eBool, 0, 1, 1, false},                          // RX1/RX2 radio button toggle
+  {"ZZVA", eBool, 0, 1, 1, false},                          // VAC1 button toggle
+  {"ZZVK", eBool, 0, 1, 1, false},                          // VAC2 button toggle
+  {"ZZPD", eNone, 0, 0, 0, false},                          // display centre button
+  {"ZZPE", eNum, 0, 1000, 4, false},                        // display pan
+  {"ZZPY", eNum, 10, 240, 3, false},                        // display zoom
+  {"ZZLC", eNum, 0, 100, 3, false},                         // sub-RX AF gain
+  
+  {"ZZLD", eNum, 0, 100, 3, false},                         // sub-RX stereo balance          101
+  {"ZZLB", eNum, 0, 100, 3, false},                         // RX1 stereo balance
+  {"ZZLF", eNum, 0, 100, 3, false}                          // RX2 stereo balance
 };
 
 

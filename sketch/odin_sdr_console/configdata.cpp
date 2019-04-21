@@ -111,9 +111,9 @@ const EIndicatorActions GFactoryIndicatorActions[] =
 const EButtonActions GFactoryButtonActions[] =
 {
   ePBRITMinus,                        // 0: SW10
-  ePBNone,                            // 1: SW46 (unused menu button)
-  ePBNone,                            // 2: SW47 (unused menu button)
-  ePBNone,                            // 3: SW48 (unused menu button)
+  ePBVAC1OnOff,                       // 1: SW46 (unused menu button) (debug-was ePBNone)
+  ePBVAC2OnOff,                       // 2: SW47 (unused menu button) (debug-was ePBNone)
+  ePBDisplayCentre,                   // 3: SW48 (unused menu button) (debug-was ePBNone)
   ePBNone,                            // 4: SW49 (unused menu button)
   ePBNone,                            // 5: SW50 (unused menu button)
   ePBRX1AFMute,                       // 6: encoder 2 click

@@ -30,7 +30,7 @@ enum EDebugCATCommands
 // ordered as per documentation, not alphsabetically!
 enum ECATCommands
 {
-  eZZAG,                          // master AG gain
+  eZZAG,                          // master AG gain         1
   eZZLA,                          // RX1 AF gain
   eZZLE,                          // RX2 AF gain
   eZZPA,                          // RX1 attenuation
@@ -41,7 +41,7 @@ enum ECATCommands
   eZZGU,                          // RX2 AGC speed
   eZZFL,                          // RX1 filter low cut
   
-  eZZFS,                          // RX2 filter low cut
+  eZZFS,                          // RX2 filter low cut     11
   eZZFH,                          // RX1 filter high cut
   eZZFR,                          // RX2 filter high cut
   eZZPC,                          // TX drive
@@ -52,7 +52,7 @@ enum ECATCommands
   eZZAF,                          // VFO A up n steps
   eZZBE,                          // VFO B down n steps
   
-  eZZBF,                          // VFO B up n steps
+  eZZBF,                          // VFO B up n steps       21
   eZZVG,                          // VOX gain
   eZZXH,                          // VOX delay
   eZZVE,                          // VOX on/off
@@ -63,7 +63,7 @@ enum ECATCommands
   eZZBD,                          // RX1 band down
   eZZBU,                          // RX1 band up
   
-  eZZBS,                          // RX1 set/read band
+  eZZBS,                          // RX1 set/read band      31
   eZZBA,                          // RX2 band down
   eZZBB,                          // RX2 band up
   eZZBT,                          // RX2 set/read band
@@ -74,7 +74,7 @@ enum ECATCommands
   eZZRD,                          // RIT step down
   eZZSP,                          // SPLIT state
   
-  eZZCN,                          // RX1 click tune
+  eZZCN,                          // RX1 click tune         41
   eZZCO,                          // RX2 click tune
   eZZUX,                          // VFO A LOCK state
   eZZUY,                          // VFO B LOCK state
@@ -85,7 +85,7 @@ enum ECATCommands
   eZZNV,                          // RX2 NR mode
   eZZNW,                          // RX2 enhanced NR mode
 
-  eZZNA,                          // RX1 NB mode
+  eZZNA,                          // RX1 NB mode            51
   eZZNB,                          // RX1 enhanced NB mode
   eZZNC,                          // RX2 NB mode
   eZZND,                          // RX2 enhanced NB mode
@@ -96,7 +96,7 @@ enum ECATCommands
   eZZMA,                          // RX1 mute
   eZZMB,                          // RX2 mute
 
-  eZZPS,                          // radio START
+  eZZPS,                          // radio START            61
   eZZSQ,                          // RX1 squelch level
   eZZSX,                          // RX2 squelch level
   eZZSO,                          // RX1 squelch on/off
@@ -107,7 +107,7 @@ enum ECATCommands
   eZZXV,                          // combined VFO status
   eZZAC,                          // get VFO tuning step
 
-  eZZDB,                          // diversity reference source
+  eZZDB,                          // diversity reference source     71
   eZZDC,                          // diversity RX2 gain
   eZZDD,                          // diversity phase
   eZZDE,                          // diversity enable
@@ -118,7 +118,7 @@ enum ECATCommands
   eZZRY,                          // RX2 step atten
   eZZCP,                          // compander on/off
 
-  eZZCT,                          // compander threshold
+  eZZCT,                          // compander threshold            81
   eZZLI,                          // puresignal on/off
   eZZUT,                          // puresignal 2 tone
   eZZUS,                          // puresignal single cal
@@ -129,10 +129,20 @@ enum ECATCommands
   eZZXC,                          // XIT clear
   eZZRC,                          // RIT clear
 
-  eZZSY,                          // VFO Sync
+  eZZSY,                          // VFO Sync                       91
   eZZFI,                          // RX1 Filter select
   eZZFJ,                          // RX2 Filter select
   eZZYR,                          // RX1/RX2 radio button toggle
+  eZZVA,                          // VAC1 button toggle
+  eZZVK,                          // VAC2 button toggle
+  eZZPD,                          // display centre button
+  eZZPE,                          // display pan
+  eZZPY,                          // display zoom
+  eZZLC,                          // sub-RX AF gain
+  
+  eZZLD,                          // sub-RX stereo balance          101
+  eZZLB,                          // RX1 stereo balance
+  eZZLF,                          // RX2 stereo balance
   eNoCommand                      // this is an exception condition
 };
 

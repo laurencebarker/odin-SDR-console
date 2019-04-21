@@ -159,6 +159,27 @@ void CATRequestDiversityOnOff(void);
 //
 void CATSetDiversityOnOff(bool IsMute);
 
+//
+// request VAC1 on/off state
+// we don't use timeout as user can simply press again
+//
+void CATRequestVAC1OnOff(void);
+
+//
+// send VAC1 on/off request to CAT
+//
+void CATSetVAC1OnOff(bool IsOn);
+
+//
+// request VAC2 on/off state
+// we don't use timeout as user can simply press again
+//
+void CATRequestVAC2OnOff(void);
+
+//
+// send VAC2 on/off request to CAT
+//
+void CATSetVAC2OnOff(bool IsOn);
 
 //
 // request AGC threshold
@@ -313,6 +334,48 @@ void CATEncoderVFOABTune(int Clicks, bool IsA);
 //
 void CATRequestCompThreshold(void);
 void SendCompThresholdClicks(void);
+
+//
+// request display pan;
+// display pan encoder clicks
+//
+void CATRequestDisplayPan(void);
+void SendDisplayPanClicks(void);
+
+//
+// request display zoom;
+// display zoom encoder clicks
+//
+void CATRequestDisplayZoom(void);
+void SendDisplayZoomClicks(void);
+
+//
+// request sub-RX AF gain;
+// sub-RX AF gain encoder clicks
+//
+void CATRequestSubRXAFGain(void);
+void SendSubRXAFGainClicks(void);
+
+//
+// request sub-RX stereo balance;
+// sub-RX stereo balance encoder clicks
+//
+void CATRequestSubRXStereo(void);
+void SendSubRXStereoClicks(void);
+
+//
+// request RX1 stereo balance;
+// RX1 stereo balance encoder clicks
+//
+void CATRequestRX1Stereo(void);
+void SendRX1StereoClicks(void);
+
+//
+// request RX2 stereo balance;
+// RX2 stereo balance encoder clicks
+//
+void CATRequestRX2Stereo(void);
+void SendRX2StereoClicks(void);
 
 //
 // handlers for pushbutton:

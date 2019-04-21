@@ -70,7 +70,12 @@ long GCatDiversityPhase;                                    // current diversity
 int GCatDiversityGain;                                      // current diversity gain (0 to 5000, meaning 0.000 to 5.000)
 bool GCatDiversityRefSource;                                // current reference (true: RX1; false: RX2)
 int GCatCompThreshold;                                      // current compander threshold (0 to 20)
-
+int GCatSubRXAFGain;                                        // sub-receiver AF gain (0 to 100)
+int GCatSubRXStereo;                                        // sub-receiver stereo balance (0 to 100)
+int GCatRX1Stereo;                                          // RX1 stereo balance (0 to 100)
+int GCatRX2Stereo;                                          // RX2 stereo balance (0 to 100)
+int GCatDisplayPan;                                         // display pan (0 to 1000)
+int GCatDisplayZoom;                                        // display zoom (10 to 240)
 int GVFOStepSize;                                           // current VFO step, in Hz
 int GDisplayThrottle;                                       // !=0 for a few ticks after a display frequency update
 int GCatStateFilter;                                        // IF filter number 0-11
@@ -95,6 +100,8 @@ bool GTogglePuresignalOnOff;                        // true if to toggle Puresig
 bool GToggleTwoToneOnOff;                           // true if to toggle Puresignal two tone test on/off
 bool GToggleMonOnOff;                               // true if to toggle MON on/off
 bool GToggleDiversityOnOff;                         // true to initiate toggle Diversity on/off
+bool GToggleVAC1;                                   // true if to initiate toggle on VAC1
+bool GToggleVAC2;                                   // true if to initiate toggle on VAC1
 
 //
 #define GPERIODICREFRESHDELAY 10                    // 10ms ticks; initially 100ms/step for testing
@@ -211,6 +218,47 @@ int GFilterUpDownTimeout;
 int GFilterUpDownRecent;
 int GFilterUpDownClicks;
 
+//
+// sub RX gain
+//
+int GSubRXAFGainTimeout;
+int GSubRXAFGainRecent;
+int GSubRXAFGainClicks;
+
+//
+// sub RX stereo balance
+//
+int GSubRXStereoTimeout;
+int GSubRXStereoRecent;
+int GSubRXStereoClicks;
+
+//
+// RX1 stereo balance
+//
+int GRX1StereoTimeout;
+int GRX1StereoRecent;
+int GRX1StereoClicks;
+
+//
+// RX2 stereo balance
+//
+int GRX2StereoTimeout;
+int GRX2StereoRecent;
+int GRX2StereoClicks;
+
+//
+// display pan
+//
+int GDisplayPanTimeout;
+int GDisplayPanRecent;
+int GDisplayPanClicks;
+
+//
+// display zoom
+//
+int GDisplayZoomTimeout;
+int GDisplayZoomRecent;
+int GDisplayZoomClicks;
 
 // lookup VFO step size from CAT msg parameter, in hz
 // this table must match the CAT definition for ZZAC!
@@ -746,6 +794,48 @@ void CheckTimeouts(void)
       CATRequestFilterUpDown();
   if(GFilterUpDownRecent != 0)                    // just decrement if non zero
     GFilterUpDownRecent--;
+
+// display pan
+  if(GDisplayPanTimeout != 0)                   // decrement display pan timeout if non zero
+    if (--GDisplayPanTimeout == 0)              // if it times out, re-request
+      CATRequestDisplayPan();
+  if(GDisplayPanRecent != 0)                    // just decrement if non zero
+    GDisplayPanRecent--;
+
+// display zoom
+  if(GDisplayZoomTimeout != 0)                   // decrement display zoom timeout if non zero
+    if (--GDisplayZoomTimeout == 0)              // if it times out, re-request
+      CATRequestDisplayZoom();
+  if(GDisplayZoomRecent != 0)                    // just decrement if non zero
+    GDisplayZoomRecent--;
+
+// sub-RX AF gain
+  if(GSubRXAFGainTimeout != 0)                    // decrement sub-RX AF gain timeout if non zero
+    if (--GSubRXAFGainTimeout == 0)               // if it times out, re-request
+      CATRequestSubRXAFGain();
+  if(GSubRXAFGainRecent != 0)                     // just decrement if non zero
+    GSubRXAFGainRecent--;
+
+// sub-RX stereo balance
+  if(GSubRXStereoTimeout != 0)                    // decrement sub-RX stereo balance timeout if non zero
+    if (--GSubRXStereoTimeout == 0)               // if it times out, re-request
+      CATRequestSubRXStereo();
+  if(GSubRXStereoRecent != 0)                     // just decrement if non zero
+    GSubRXStereoRecent--;
+    
+// RX1 stereo balance
+  if(GRX1StereoTimeout != 0)                    // decrement RX1 stereo balance timeout if non zero
+    if (--GRX1StereoTimeout == 0)               // if it times out, re-request
+      CATRequestRX1Stereo();
+  if(GRX1StereoRecent != 0)                     // just decrement if non zero
+    GRX1StereoRecent--;
+    
+// RX2 stereo balance
+  if(GRX2StereoTimeout != 0)                    // decrement RX2 stereo balance timeout if non zero
+    if (--GRX2StereoTimeout == 0)               // if it times out, re-request
+      CATRequestRX2Stereo();
+  if(GRX2StereoRecent != 0)                     // just decrement if non zero
+    GRX2StereoRecent--;
 }
 
 
@@ -1224,6 +1314,29 @@ void CATHandlePushbutton(unsigned int Button, EButtonActions Action, bool IsPres
       }
       break;
 
+    case ePBVAC1OnOff:
+      if (IsPressed)
+      {
+        GToggleVAC1 = true;
+        CATRequestVAC1OnOff();
+      }
+      break;
+    
+    case ePBVAC2OnOff:
+      if (IsPressed)
+      {
+        GToggleVAC2 = true;
+        CATRequestVAC2OnOff();
+      }
+      break;
+    
+    case ePBDisplayCentre:
+      if (IsPressed)
+      {
+        MakeCATMessageNoParam(eZZPD);
+      }
+      break;
+
   }
 }
 
@@ -1495,6 +1608,56 @@ void CATHandleEncoder(unsigned int Encoder, int Clicks, EEncoderActions Assigned
             MakeCATMessageNoParam(eZZXD);
       }
       
+      break;
+
+#define VDISPLAYPANINCREMENT 10      
+    case eENDisplayPan:
+      GDisplayPanClicks += (Clicks * VDISPLAYPANINCREMENT);      // set how many "unactioned" steps
+      if(GDisplayPanRecent != 0)                 // if recent current threshold exists, use it
+        SendDisplayPanClicks();
+      else
+        CATRequestDisplayPan();
+      break;
+
+#define VDISPLAYZOOMINCREMENT 2      
+    case eENDisplayZoom:
+      GDisplayZoomClicks += (Clicks * VDISPLAYZOOMINCREMENT);    // set how many "unactioned" steps
+      if(GDisplayZoomRecent != 0)                 // if recent current threshold exists, use it
+        SendDisplayZoomClicks();
+      else
+        CATRequestDisplayZoom();
+      break;
+    
+    case eENRxMultiAFGain:
+      GSubRXAFGainClicks += Clicks;               // set how many "unactioned" steps
+      if(GSubRXAFGainRecent != 0)                 // if recent current threshold exists, use it
+        SendSubRXAFGainClicks();
+      else
+        CATRequestSubRXAFGain();
+      break;
+      
+    case eENRXMultiStereoBalance:
+      GSubRXStereoClicks += Clicks;               // set how many "unactioned" steps
+      if(GSubRXStereoRecent != 0)                 // if recent current threshold exists, use it
+        SendSubRXStereoClicks();
+      else
+        CATRequestSubRXStereo();
+      break;
+      
+    case eENRX1StereoBalance:
+      GRX1StereoClicks += Clicks;               // set how many "unactioned" steps
+      if(GRX1StereoRecent != 0)                 // if recent current threshold exists, use it
+        SendRX1StereoClicks();
+      else
+        CATRequestRX1Stereo();
+      break;
+      
+    case eENRX2StereoBalance:
+      GRX2StereoClicks += Clicks;               // set how many "unactioned" steps
+      if(GRX2StereoRecent != 0)                 // if recent current threshold exists, use it
+        SendRX2StereoClicks();
+      else
+        CATRequestRX2Stereo();
       break;
   }
 }
@@ -2001,9 +2164,41 @@ void CATSetDiversityOnOff(bool IsOn)
   MakeCATMessageBool(eZZDE, IsOn);
 }
 
+//
+// request VAC1 state
+// we don't use timeout as user can simply press again
+//
+void CATRequestVAC1OnOff(void)
+{
+  MakeCATMessageNoParam(eZZVA);
+}
 
+//
+// send VAC1 request to CAT
+//
+void CATSetVAC1OnOff(bool IsOn)
+{
+  MakeCATMessageBool(eZZVA, IsOn);
+}
 
+//
+// request VAC2 state
+// we don't use timeout as user can simply press again
+//
+void CATRequestVAC2OnOff(void)
+{
+  MakeCATMessageNoParam(eZZVK);
+}
 
+//
+// send VAC2 request to CAT
+//
+void CATSetVAC2OnOff(bool IsOn)
+{
+  MakeCATMessageBool(eZZVK, IsOn);
+}
+
+/////////////////////////////////// A or B AGC Threshold //////////////////////////////
 
 //
 // handle display set AGC threshold
@@ -2355,6 +2550,196 @@ void SendRX1AFGainClicks(void)
   GRX1AFGainClicks = 0;                                             // clear the stored clicks
   MakeCATMessageNumeric(eZZLA, GCatRX1AFGain);
   GRX1AFGainRecent = VRECENTTHRESHOLD;                              // set "recent"
+}
+
+
+
+/////////////////////////////// Sub-RX  CHANNEL AF GAIN ///////////////////////////////////////
+//
+// request 
+// if recent data: send the recent data to the display
+// if no recent data: sends a request message and sets a timeout
+//
+void CATRequestSubRXAFGain(void)
+{
+  if(GSubRXAFGainTimeout == 0)
+  {
+    MakeCATMessageNoParam(eZZLC);
+    GSubRXAFGainTimeout = VGETTIMEOUT;
+  }
+}
+
+
+//
+// deal with an encoder turn: a CAT message has arrived so now we need to update the param and send back to CAT
+// update & clip; send CAT; clear stored clicks; send to display
+//
+void SendSubRXAFGainClicks(void)
+{
+  GCatSubRXAFGain += GSubRXAFGainClicks;                                // update
+  GCatSubRXAFGain = ClipParameter(GCatSubRXAFGain, eZZLC);              // clip to limits
+  GSubRXAFGainClicks = 0;                                             // clear the stored clicks
+  MakeCATMessageNumeric(eZZLC, GCatSubRXAFGain);
+  GSubRXAFGainRecent = VRECENTTHRESHOLD;                              // set "recent"
+}
+
+
+
+/////////////////////////////// Sub-RX  CHANNEL Stereo Balance ///////////////////////////////////////
+//
+// request 
+// if recent data: send the recent data to the display
+// if no recent data: sends a request message and sets a timeout
+//
+void CATRequestSubRXStereo(void)
+{
+  if(GSubRXStereoTimeout == 0)
+  {
+    MakeCATMessageNoParam(eZZLD);
+    GSubRXStereoTimeout = VGETTIMEOUT;
+  }
+}
+
+
+//
+// deal with an encoder turn: a CAT message has arrived so now we need to update the param and send back to CAT
+// update & clip; send CAT; clear stored clicks; send to display
+//
+void SendSubRXStereoClicks(void)
+{
+  GCatSubRXStereo += GSubRXStereoClicks;                                // update
+  GCatSubRXStereo = ClipParameter(GCatSubRXStereo, eZZLD);              // clip to limits
+  GSubRXStereoClicks = 0;                                             // clear the stored clicks
+  MakeCATMessageNumeric(eZZLD, GCatSubRXStereo);
+  GSubRXStereoRecent = VRECENTTHRESHOLD;                              // set "recent"
+}
+
+
+
+
+/////////////////////////////// RX1  CHANNEL Stereo Balance ///////////////////////////////////////
+//
+// request 
+// if recent data: send the recent data to the display
+// if no recent data: sends a request message and sets a timeout
+//
+void CATRequestRX1Stereo(void)
+{
+  if(GRX1StereoTimeout == 0)
+  {
+    MakeCATMessageNoParam(eZZLB);
+    GRX1StereoTimeout = VGETTIMEOUT;
+  }
+}
+
+
+//
+// deal with an encoder turn: a CAT message has arrived so now we need to update the param and send back to CAT
+// update & clip; send CAT; clear stored clicks; send to display
+//
+void SendRX1StereoClicks(void)
+{
+  GCatRX1Stereo += GRX1StereoClicks;                                // update
+  GCatRX1Stereo = ClipParameter(GCatRX1Stereo, eZZLB);              // clip to limits
+  GRX1StereoClicks = 0;                                             // clear the stored clicks
+  MakeCATMessageNumeric(eZZLB, GCatRX1Stereo);
+  GRX1StereoRecent = VRECENTTHRESHOLD;                              // set "recent"
+}
+
+
+
+
+/////////////////////////////// RX2  CHANNEL Stereo Balance ///////////////////////////////////////
+//
+// request 
+// if recent data: send the recent data to the display
+// if no recent data: sends a request message and sets a timeout
+//
+void CATRequestRX2Stereo(void)
+{
+  if(GRX2StereoTimeout == 0)
+  {
+    MakeCATMessageNoParam(eZZLF);
+    GRX2StereoTimeout = VGETTIMEOUT;
+  }
+}
+
+
+//
+// deal with an encoder turn: a CAT message has arrived so now we need to update the param and send back to CAT
+// update & clip; send CAT; clear stored clicks; send to display
+//
+void SendRX2StereoClicks(void)
+{
+  GCatRX2Stereo += GRX2StereoClicks;                                // update
+  GCatRX2Stereo = ClipParameter(GCatRX2Stereo, eZZLF);              // clip to limits
+  GRX2StereoClicks = 0;                                             // clear the stored clicks
+  MakeCATMessageNumeric(eZZLF, GCatRX2Stereo);
+  GRX2StereoRecent = VRECENTTHRESHOLD;                              // set "recent"
+}
+
+
+
+
+/////////////////////////////// Display Pan ///////////////////////////////////////
+//
+// request 
+// if recent data: send the recent data to the display
+// if no recent data: sends a request message and sets a timeout
+//
+void CATRequestDisplayPan(void)
+{
+  if(GDisplayPanTimeout == 0)
+  {
+    MakeCATMessageNoParam(eZZPE);
+    GDisplayPanTimeout = VGETTIMEOUT;
+  }
+}
+
+
+//
+// deal with an encoder turn: a CAT message has arrived so now we need to update the param and send back to CAT
+// update & clip; send CAT; clear stored clicks; send to display
+//
+void SendDisplayPanClicks(void)
+{
+  GCatDisplayPan += GDisplayPanClicks;                                // update
+  GCatDisplayPan = ClipParameter(GCatDisplayPan, eZZPE);              // clip to limits
+  GDisplayPanClicks = 0;                                             // clear the stored clicks
+  MakeCATMessageNumeric(eZZPE, GCatDisplayPan);
+  GDisplayPanRecent = VRECENTTHRESHOLD;                              // set "recent"
+}
+
+
+
+
+/////////////////////////////// Display Zoom ///////////////////////////////////////
+//
+// request 
+// if recent data: send the recent data to the display
+// if no recent data: sends a request message and sets a timeout
+//
+void CATRequestDisplayZoom(void)
+{
+  if(GDisplayZoomTimeout == 0)
+  {
+    MakeCATMessageNoParam(eZZPY);
+    GDisplayZoomTimeout = VGETTIMEOUT;
+  }
+}
+
+
+//
+// deal with an encoder turn: a CAT message has arrived so now we need to update the param and send back to CAT
+// update & clip; send CAT; clear stored clicks; send to display
+//
+void SendDisplayZoomClicks(void)
+{
+  GCatDisplayZoom += GDisplayZoomClicks;                                // update
+  GCatDisplayZoom = ClipParameter(GCatDisplayZoom, eZZPY);              // clip to limits
+  GDisplayZoomClicks = 0;                                             // clear the stored clicks
+  MakeCATMessageNumeric(eZZPY, GCatDisplayZoom);
+  GDisplayZoomRecent = VRECENTTHRESHOLD;                              // set "recent"
 }
 
 
@@ -2874,6 +3259,20 @@ void CATSetAttenuation(EAtten AttenValue)
 
 
 
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////
+
+// final section handles received CAT messages. Each has a case statement. They are split into
+// 3 groups depending on the parameter types present.
+
+
+
+
+
+
+
 ////////////////////////////////// CAT HANDLER RX STRING   ////////////////////////////////////////
 //
 // handlers for received CAT commands
@@ -3264,7 +3663,54 @@ void HandleCATCommandNumParam(ECATCommands MatchedCAT, int ParsedParam)
       if (GCompThresholdClicks != 0)                                               // we want to send a new update with encoder clicks
         SendCompThresholdClicks();
       break;
+
+    case eZZPE:                                                       // display pan
+      GDisplayPanTimeout = 0;                                                   // clear timeout
+      GCatDisplayPan = ParsedParam;                                             // store locally
+      GDisplayPanRecent = VRECENTTHRESHOLD;                                     // set recent
+      if (GDisplayPanClicks != 0)                                               // we want to send a new update with encoder clicks
+        SendDisplayPanClicks();
+      break;
+      
+    case eZZPY:                                                       // display zoom
+      GDisplayZoomTimeout = 0;                                                   // clear timeout
+      GCatDisplayZoom = ParsedParam;                                             // store locally
+      GDisplayZoomRecent = VRECENTTHRESHOLD;                                     // set recent
+      if (GDisplayZoomClicks != 0)                                               // we want to send a new update with encoder clicks
+        SendDisplayZoomClicks();
+      break;
     
+    case eZZLC:                                                       // sub-RX AF gain
+      GSubRXAFGainTimeout = 0;                                                   // clear timeout
+      GCatSubRXAFGain = ParsedParam;                                             // store locally
+      GSubRXAFGainRecent = VRECENTTHRESHOLD;                                     // set recent
+      if (GSubRXAFGainClicks != 0)                                               // we want to send a new update with encoder clicks
+        SendSubRXAFGainClicks();
+      break;
+    
+    case eZZLD:                                                       // sub-RX stereo balance          101
+      GSubRXStereoTimeout = 0;                                                   // clear timeout
+      GCatSubRXStereo = ParsedParam;                                             // store locally
+      GSubRXStereoRecent = VRECENTTHRESHOLD;                                     // set recent
+      if (GSubRXStereoClicks != 0)                                               // we want to send a new update with encoder clicks
+        SendSubRXStereoClicks();
+      break;
+      
+    case eZZLB:                                                       // RX1 stereo balance
+      GRX1StereoTimeout = 0;                                                   // clear timeout
+      GCatRX1Stereo = ParsedParam;                                             // store locally
+      GRX1StereoRecent = VRECENTTHRESHOLD;                                     // set recent
+      if (GRX1StereoClicks != 0)                                               // we want to send a new update with encoder clicks
+        SendRX1StereoClicks();
+      break;
+    
+    case eZZLF:                                                       // RX2 stereo balance
+      GRX2StereoTimeout = 0;                                                   // clear timeout
+      GCatRX2Stereo = ParsedParam;                                             // store locally
+      GRX2StereoRecent = VRECENTTHRESHOLD;                                     // set recent
+      if (GRX2StereoClicks != 0)                                               // we want to send a new update with encoder clicks
+        SendRX2StereoClicks();
+      break;
   }
 }
 
@@ -3394,6 +3840,23 @@ void HandleCATCommandBoolParam(ECATCommands MatchedCAT, bool ParsedParam)
         GToggleMonOnOff = false;
       }
       break;
+      
+    case eZZVA:                         // VAC1 on/off
+      if (GToggleVAC1)
+      {
+        CATSetVAC1OnOff(!ParsedParam);
+        GToggleVAC1 = false;
+      }
+      break;
+      
+    case eZZVK:                         // VAC2 on/off
+      if (GToggleVAC2)
+      {
+        CATSetVAC2OnOff(!ParsedParam);
+        GToggleVAC2 = false;
+      }
+      break;
+      
   }      
 }
 
