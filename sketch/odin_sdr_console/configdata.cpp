@@ -79,9 +79,9 @@ const EEncoderActions GFactoryEncoderActions[] =
   eENRX2AFGain,           // 6A: RX2 AF gain
   eENRX2AGCLevel,         // 6B: RX2 AGC
   eENCompanderThreshold,  // 7A: Compander
-  eENMasterGain,          // 7B: master gain (also used for sidfetone level)
-  eENMulti,               // 8A: squelch level
-  eENVOXGain              // 8B: unspecified, so VOX Gain used
+  eENMasterGain,          // 7B: master gain (also used for sidetone level)
+  eENMulti,               // 8A: multifunction
+  eENSquelch              // 8B: squelch
 };
 
 
@@ -90,8 +90,7 @@ const EEncoderActions GFactoryEncoderActions[] =
 //
 const EIndicatorActions GFactoryIndicatorActions[] =
 {
-  eINVFOSync,                 // 0 debug
-//  eINLock,                    // 0: LOCK
+  eINLock,                    // 0: LOCK
   eINPuresignalEnabled,       // 1: Puresignal enabled
   eINMOX,                     // 2: TX/RX
   eINTune,                    // 3: TUNE enabled
@@ -111,9 +110,9 @@ const EIndicatorActions GFactoryIndicatorActions[] =
 const EButtonActions GFactoryButtonActions[] =
 {
   ePBRITMinus,                        // 0: SW10
-  ePBVAC1OnOff,                       // 1: SW46 (unused menu button) (debug-was ePBNone)
-  ePBVAC2OnOff,                       // 2: SW47 (unused menu button) (debug-was ePBNone)
-  ePBDisplayCentre,                   // 3: SW48 (unused menu button) (debug-was ePBNone)
+  ePBNone,                            // 1: SW46 (unused menu button)
+  ePBNone,                            // 2: SW47 (unused menu button)
+  ePBNone,                            // 3: SW48 (unused menu button)
   ePBNone,                            // 4: SW49 (unused menu button)
   ePBNone,                            // 5: SW50 (unused menu button)
   ePBRX1AFMute,                       // 6: encoder 2 click
