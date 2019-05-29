@@ -14,7 +14,13 @@
 //
 // define the numbers of controls available
 //
-#ifdef V2HARDWARE                   // Andromeda prototype
+#ifdef V3HARDWARE                   // Andromeda 2nd prototype
+#define VMAXINDICATORS 12
+#define VMAXENCODERS 10             // configurable, not including VFO
+#define VMAXGPIOBUTTONS 20          // attached to I/O pins
+#define VMAXBUTTONS 36
+
+#elif defined V2HARDWARE
 #define VMAXINDICATORS 9
 #define VMAXENCODERS 14             // configurable, not including VFO
 #define VMAXGPIOBUTTONS 18          // attached to I/O pins

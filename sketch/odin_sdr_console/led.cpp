@@ -20,7 +20,25 @@
 //
 // array of I/O pins
 //
-#ifdef V2HARDWARE
+#ifdef V3HARDWARE               // andromeda 2nd prototype
+int LEDPinList[] = 
+{
+  VPININDICATOR1,
+  VPININDICATOR2,
+  VPININDICATOR3,
+  VPININDICATOR4,
+  VPININDICATOR5,
+  VPININDICATOR6,
+  VPININDICATOR7,
+  VPININDICATOR8,
+  VPININDICATOR9,
+  VPININDICATOR10,
+  VPININDICATOR11,
+  VPININDICATOR12
+};
+
+
+#elif defined V2HARDWARE        // andromeda 1st prototype
 int LEDPinList[] = 
 {
   VPININDICATOR1,

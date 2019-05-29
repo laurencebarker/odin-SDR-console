@@ -61,7 +61,92 @@ DueFlashStorage dueFlashStorage;                 // instance of flash reader
 
 
 
-#ifdef V2HARDWARE                             // Andromeda prototype
+#ifdef V3HARDWARE                             // Andromeda 2nd prototype
+//
+// array of Andromeda factory encoder settings. User can reconfigure from this.
+//
+const EEncoderActions GFactoryEncoderActions[] =
+{
+  eENRX1AFGain,           // 2A: RX1 AF gain
+  eENRX1AGCLevel,         // 2B: RX1 AGC
+  eENFilterHigh,          // 3A: filter cut
+  eENFilterLow,           // 3B: filter cut
+  eENDiversityGain,       // 4A: diversity gain
+  eENDiversityPhase,      // 4B: diversity phase
+  eENRX2AFGain,           // 6A: RX2 AF gain
+  eENRX2AGCLevel,         // 6B: RX2 AGC
+  eENMulti,               // 5A: multifunction
+  eENRIT                  // 7A: mic gain
+};
+
+
+//
+// array of Andromeda factory indicator settings. User can reconfigure from this.
+//
+const EIndicatorActions GFactoryIndicatorActions[] =
+{
+  eINLock,                    // 0: LOCK
+  eINPuresignalEnabled,       // 1: Puresignal enabled
+  eINMOX,                     // 2: TX/RX
+  eINTune,                    // 3: TUNE enabled
+  eINCTune,                   // 4: Click Tune enabled
+  eINVFOSync,                 // 5: VFO Sync enabled
+  eINNB,                      // 6: NB
+  eINRIT,                     // 7: RIT on
+  eINTune,                    // 8: TUNE (this should be ATU ready, but not a PowerSDR function)
+  eINNR,                      // 9: NR
+  eINSNB,                     // 10: SNB
+  eINXIT                      // 11: XIT
+};
+
+
+
+//
+// array of Andromeda factory pushbutton settings. User can reconfigure from this.
+//
+const EButtonActions GFactoryButtonActions[] =
+{
+  ePBRIT,                             // 0: encoder 7 click
+  ePBNone,                            // 1: SW58 (unused F1 menu button)
+  ePBNone,                            // 2: SW59 (unused F2 menu button)
+  ePBNone,                            // 3: SW63 (unused F3 menu button)
+  ePBNone,                            // 4: SW50 (unused F4 menu button)
+  ePBNone,                            // 5: SW46 (unused F5 menu button)
+  ePBRX1AFMute,                       // 6: encoder 2 click
+  ePBNRStep,                          // 7: SW17
+  ePBDiversityFastSlow,               // 8: encoder 4 click
+  ePBEncoderClick,                    // 9: encoder 5 click
+  ePBRITPlus,                         // 10: SW11
+  ePBBandDown,                        // 11: SW12
+  ePBModeDown,                        // 12: SW13
+  ePBStartStop,                       // 13: SW14
+  ePBBandUp,                          // 14: SW15
+  ePBModeUp,                          // 15: SW16
+  ePBNBStep,                          // 16: SW18
+  ePBFilterReset,                     // 17: encoder 3 click
+  ePBFilterDown,                      // 18: SW49
+  ePBFilterUp,                        // 19: SW48
+  ePBRIT,                             // 20: SW9
+  ePBABVfo,                           // 21: SW1
+  ePBMox,                             // 22: SW2
+  ePBTune,                            // 23: SW3
+  ePBCTune,                           // 24: SW4
+  ePBLock,                            // 25: SW5
+  ePBAtoB,                            // 26: SW6
+  ePBRX2AFMute,                       // 27: encoder 6 click
+  ePBVFOSync,                         // 28: SW56
+  ePBRITPlus,                         // 29: SW10
+  ePBSplit,                           // 30: SW8
+  ePBBtoA,                            // 31: SW7
+  ePBPuresignalEnable,                // 32: SW21
+  ePBNone,                            // 33: now unused
+  ePBPuresignal2Tone,                 // 34: SW20
+  ePBSNB                              // 35: SW22
+};
+
+
+
+#elif defined V2HARDWARE                      // Andromed 1st prototype
 
 //
 // array of Andromeda factory encoder settings. User can reconfigure from this.

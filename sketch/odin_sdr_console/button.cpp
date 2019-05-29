@@ -22,6 +22,10 @@
 #define V23017INPUTS 16
 #endif
 
+#ifdef V3HARDWARE
+#define V23017INPUTS 16
+#endif
+
 //
 // note switch and encoder numbering for original Odin:
 // in the software switches are numbered 0-20, and encoders 0-7. The VFO encoder is treated separately.
@@ -65,7 +69,32 @@ bool GButtonPressed[VMAXBUTTONS+1];                 // true when button debounce
 // 1-16 are pushbuttons 1-16; 17-23 are the 7 "normal" encoder clicks
 // (and on Kjell's PCB, 3 of those are used for normal pushbuttons)
 //
-#ifdef V2HARDWARE                                   // Andromeda prototype hardware
+#ifdef V3HARDWARE                                   // Andromeda 2nd prototype hardware
+byte GButtonPinNumbers[VMAXGPIOBUTTONS] =
+{
+  VPINBUTTON1,
+  VPINBUTTON2,
+  VPINBUTTON3,
+  VPINBUTTON4,
+  VPINBUTTON5,
+  VPINBUTTON6,
+  VPINBUTTON7,
+  VPINBUTTON8,
+  VPINBUTTON9,
+  VPINBUTTON10,
+  VPINBUTTON11,
+  VPINBUTTON12,
+  VPINBUTTON13,
+  VPINBUTTON14,
+  VPINBUTTON15,
+  VPINBUTTON16,
+  VPINBUTTON17,
+  VPINBUTTON18,
+  VPINBUTTON19,
+  VPINBUTTON20
+};
+
+#elif defined V2HARDWARE
 byte GButtonPinNumbers[VMAXGPIOBUTTONS] =
 {
   VPINBUTTON1,
@@ -120,9 +149,10 @@ byte GButtonPinNumbers[VMAXGPIOBUTTONS] =
 // these are simply the last 8 samples of the pin, starting in the LSB
 //
 byte GInputDebounce[VMAXBUTTONS];
-#ifdef V2HARDWARE
+#if defined(V2HARDWARE)  || defined(V3HARDWARE)
 byte GInput23017Debounce[V23017INPUTS];
 #endif
+
 
 //
 // initialise
@@ -134,7 +164,7 @@ void GButtonInitialise(void)
 
   for (Cntr=0; Cntr < VMAXGPIOBUTTONS; Cntr++)
     GInputDebounce[Cntr] = 0xFF;
-#ifdef V2HARDWARE
+#if defined(V2HARDWARE) || defined(V3HARDWARE)
   for (Cntr=0; Cntr < V23017INPUTS; Cntr++)
     GInput23017Debounce[Cntr] = 0xFF;
   Wire.begin();
@@ -286,7 +316,7 @@ void ButtonTick(void)
   }
   else                                                    // reserved to poll V2 hardware extra inputs
   {
-#ifdef V2HARDWARE    
+#if defined(V2HARDWARE) || defined (V3HARDWARE) 
     Wire.beginTransmission(0x20);
     Wire.write(0x12);                                     // point to GPIOA
     Wire.endTransmission();
