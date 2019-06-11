@@ -18,13 +18,6 @@
 #include "encoders.h"
 #include "Wire.h"                             // for Andromeda h/w
 
-#ifdef V2HARDWARE
-#define V23017INPUTS 16
-#endif
-
-#ifdef V3HARDWARE
-#define V23017INPUTS 16
-#endif
 
 //
 // note switch and encoder numbering for original Odin:
@@ -69,54 +62,6 @@ bool GButtonPressed[VMAXBUTTONS+1];                 // true when button debounce
 // 1-16 are pushbuttons 1-16; 17-23 are the 7 "normal" encoder clicks
 // (and on Kjell's PCB, 3 of those are used for normal pushbuttons)
 //
-#ifdef V3HARDWARE                                   // Andromeda 2nd prototype hardware
-byte GButtonPinNumbers[VMAXGPIOBUTTONS] =
-{
-  VPINBUTTON1,
-  VPINBUTTON2,
-  VPINBUTTON3,
-  VPINBUTTON4,
-  VPINBUTTON5,
-  VPINBUTTON6,
-  VPINBUTTON7,
-  VPINBUTTON8,
-  VPINBUTTON9,
-  VPINBUTTON10,
-  VPINBUTTON11,
-  VPINBUTTON12,
-  VPINBUTTON13,
-  VPINBUTTON14,
-  VPINBUTTON15,
-  VPINBUTTON16,
-  VPINBUTTON17,
-  VPINBUTTON18,
-  VPINBUTTON19,
-  VPINBUTTON20
-};
-
-#elif defined V2HARDWARE
-byte GButtonPinNumbers[VMAXGPIOBUTTONS] =
-{
-  VPINBUTTON1,
-  VPINBUTTON2,
-  VPINBUTTON3,
-  VPINBUTTON4,
-  VPINBUTTON5,
-  VPINBUTTON6,
-  VPINBUTTON7,
-  VPINBUTTON8,
-  VPINBUTTON9,
-  VPINBUTTON10,
-  VPINBUTTON11,
-  VPINBUTTON12,
-  VPINBUTTON13,
-  VPINBUTTON14,
-  VPINBUTTON15,
-  VPINBUTTON16,
-  VPINBUTTON17,
-  VPINBUTTON18
-};
-#else                                           // original Odin hardware
 byte GButtonPinNumbers[VMAXGPIOBUTTONS] =
 {
   VPINBUTTON1,
@@ -142,16 +87,12 @@ byte GButtonPinNumbers[VMAXGPIOBUTTONS] =
   VPINENCODER7SW,
   VPINEXTMOXIN
 };
-#endif
 
 //
 // array of debounce states
 // these are simply the last 8 samples of the pin, starting in the LSB
 //
 byte GInputDebounce[VMAXBUTTONS];
-#if defined(V2HARDWARE)  || defined(V3HARDWARE)
-byte GInput23017Debounce[V23017INPUTS];
-#endif
 
 
 //
@@ -164,11 +105,6 @@ void GButtonInitialise(void)
 
   for (Cntr=0; Cntr < VMAXGPIOBUTTONS; Cntr++)
     GInputDebounce[Cntr] = 0xFF;
-#if defined(V2HARDWARE) || defined(V3HARDWARE)
-  for (Cntr=0; Cntr < V23017INPUTS; Cntr++)
-    GInput23017Debounce[Cntr] = 0xFF;
-  Wire.begin();
-#endif
 }
 
 
@@ -313,38 +249,5 @@ void ButtonTick(void)
           ButtonReleased(Cntr);
       }
     }
-  }
-  else                                                    // reserved to poll V2 hardware extra inputs
-  {
-#if defined(V2HARDWARE) || defined (V3HARDWARE) 
-    Wire.beginTransmission(0x20);
-    Wire.write(0x12);                                     // point to GPIOA
-    Wire.endTransmission();
-    Wire.requestFrom(0x20, 2);                            // read 2 bytes
-    Input=Wire.read();                                    // GPIOA
-    Input2 = Wire.read();                                 // GPIOB
-    Input23017 = (Input << 8) | Input2;                   // bit0 = dig54
-//
-// now process the 16 bits, one at a time
-//
-    for(Cntr=0; Cntr < V23017INPUTS; Cntr++)
-    {
-      Input = GInputDebounce[Cntr + VMAXGPIOBUTTONS] << 1;          // move it left
-      if ((Input23017 & 1) == HIGH)
-        Input |= 1;                               // set bottom bit if input was high
-      GInputDebounce[Cntr + VMAXGPIOBUTTONS] = Input;               // write it back
-      Input23017 = Input23017 >> 1;
-      if (!GButtonPressed[Cntr + VMAXGPIOBUTTONS])
-      {
-        if ((Input & VEDGEMASK) == VPRESSPATTERN)
-          ButtonPressed(Cntr + VMAXGPIOBUTTONS);
-      }
-      else      // button is already pressed
-      {
-        if ((Input & VEDGEMASK) == VRELEASEPATTERN)
-          ButtonReleased(Cntr + VMAXGPIOBUTTONS);
-      }
-    }
-#endif    
   }
 }

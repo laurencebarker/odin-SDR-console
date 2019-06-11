@@ -539,13 +539,7 @@ void ParseDebugCATCmd(void)
         break;
 
       case eIdent:                           // identify h/w
-#ifdef V3HARDWARE
-        Serial.println("ODIN Console, Andromeda 2nd prototype hardware");
-#elif defined V2HARDWARE
-        Serial.println("ODIN Console, Andromeda 1st prototype hardware");
-#else
         Serial.println("ODIN Console, original hardware");
-#endif      
         break;
     }
   }

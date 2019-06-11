@@ -14,24 +14,10 @@
 //
 // define the numbers of controls available
 //
-#ifdef V3HARDWARE                   // Andromeda 2nd prototype
-#define VMAXINDICATORS 12
-#define VMAXENCODERS 10             // configurable, not including VFO
-#define VMAXGPIOBUTTONS 20          // attached to I/O pins
-#define VMAXBUTTONS 36
-
-#elif defined V2HARDWARE
-#define VMAXINDICATORS 9
-#define VMAXENCODERS 14             // configurable, not including VFO
-#define VMAXGPIOBUTTONS 18          // attached to I/O pins
-#define VMAXBUTTONS 34
-
-#else                               // original Odin
 #define VMAXINDICATORS 7
 #define VMAXENCODERS 8              // configurable, not including VFO
 #define VMAXBUTTONS 21
 #define VMAXGPIOBUTTONS 22          // attached to I/O pins
-#endif
 //
 // this type enumerates the Nextion display pages:
 //

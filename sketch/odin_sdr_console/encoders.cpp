@@ -120,50 +120,6 @@ void InitEncoders(void)
 
 
 
-#ifdef V3HARDWARE                                     // Andromeda 2nd prototype hardware
-  if (GetEncoderReversed(8))
-    EncoderList[8].Ptr = new NoClickEncoder(VPINENCODER9B, VPINENCODER9A, GEncoderDivisor, true);
-  else
-    EncoderList[8].Ptr = new NoClickEncoder(VPINENCODER9A, VPINENCODER9B, GEncoderDivisor, true);
-
-  if (GetEncoderReversed(9))
-    EncoderList[9].Ptr = new NoClickEncoder(VPINENCODER10B, VPINENCODER10A, GEncoderDivisor, true);
-  else
-    EncoderList[9].Ptr = new NoClickEncoder(VPINENCODER10A, VPINENCODER10B, GEncoderDivisor, true);
-
-
-
-#elif defined V2HARDWARE                              // Andromeda 1st prototype hardware
-  if (GetEncoderReversed(8))
-    EncoderList[8].Ptr = new NoClickEncoder(VPINENCODER9B, VPINENCODER9A, GEncoderDivisor, true);
-  else
-    EncoderList[8].Ptr = new NoClickEncoder(VPINENCODER9A, VPINENCODER9B, GEncoderDivisor, true);
-
-  if (GetEncoderReversed(9))
-    EncoderList[9].Ptr = new NoClickEncoder(VPINENCODER10B, VPINENCODER10A, GEncoderDivisor, true);
-  else
-    EncoderList[9].Ptr = new NoClickEncoder(VPINENCODER10A, VPINENCODER10B, GEncoderDivisor, true);
-
-  if (GetEncoderReversed(10))
-    EncoderList[10].Ptr = new NoClickEncoder(VPINENCODER11B, VPINENCODER11A, GEncoderDivisor, true);
-  else
-    EncoderList[10].Ptr = new NoClickEncoder(VPINENCODER11A, VPINENCODER11B, GEncoderDivisor, true);
-
-  if (GetEncoderReversed(11))
-    EncoderList[11].Ptr = new NoClickEncoder(VPINENCODER12B, VPINENCODER12A, GEncoderDivisor, true);
-  else
-    EncoderList[11].Ptr = new NoClickEncoder(VPINENCODER12A, VPINENCODER12B, GEncoderDivisor, true);
-
-  if (GetEncoderReversed(12))
-    EncoderList[12].Ptr = new NoClickEncoder(VPINENCODER13B, VPINENCODER13A, GEncoderDivisor, true);
-  else
-    EncoderList[12].Ptr = new NoClickEncoder(VPINENCODER13A, VPINENCODER13B, GEncoderDivisor, true);
-
-  if (GetEncoderReversed(13))
-    EncoderList[13].Ptr = new NoClickEncoder(VPINENCODER14B, VPINENCODER14A, GEncoderDivisor, true);
-  else
-    EncoderList[13].Ptr = new NoClickEncoder(VPINENCODER14A, VPINENCODER14B, GEncoderDivisor, true);
-#endif
 }
 
 
@@ -183,17 +139,6 @@ void EncoderFastTick(void)
   EncoderList[5].Ptr->service();
   EncoderList[6].Ptr->service();
   EncoderList[7].Ptr->service();
-#ifdef V3HARDWARE
-  EncoderList[8].Ptr->service();
-  EncoderList[9].Ptr->service();
-#elif defined V2HARDWARE
-  EncoderList[8].Ptr->service();
-  EncoderList[9].Ptr->service();
-  EncoderList[10].Ptr->service();
-  EncoderList[11].Ptr->service();
-  EncoderList[12].Ptr->service();
-  EncoderList[13].Ptr->service();
-#endif
 }
 
 
@@ -330,85 +275,6 @@ long ct = (VFOEncoder.read())/GVFOEncoderDivisor;
 // lookup encoder number of switch number
 // value stored = 0xFF if not an encoder button
 //
-#ifdef V3HARDWARE                         // Andromeda 2nd prototype
-byte GLookupEncoderNumber[] = 
-{
-  0x09, //    enc7               0
-  0xFF, //    SW58               1
-  0xFF, //    SW59               2
-  0xFF, //    SW63               3
-  0xFF, //    SW50               4
-  0xFF, //    SW46               5
-  0x0,  //    enc 2              6
-  0xFF, //    SW17               7
-  0x4,  //    enc 4              8
-  0x8,  //    enc 5              9
-  0xFF, //    SW11               10
-  0xFF, //    SW12               11
-  0xFF, //    SW13               12
-  0xFF, //    SW14               13
-  0xFF, //    SW15               14
-  0xFF, //    SW16               15
-  0xFF, //    SW18               16
-  0x2,  //    enc 3              17
-  0xFF, //    SW49               18
-  0xFF, //    SW48               19
-  0xFF, //    SW9                20
-  0xFF, //    SW1                21
-  0xFF, //    SW2                22
-  0xFF, //    SW3                23
-  0xFF, //    SW4                24
-  0xFF, //    SW5                25
-  0xFF, //    SW6                26
-  0x6,  //    enc 6              27
-  0xFF, //    SW56               28
-  0xFF, //    SW10               29
-  0xFF, //    SW8                30
-  0xFF, //    SW7                31
-  0xFF, //    SW21               32
-  0xFF, //    unused             33
-  0xFF, //    SW20               34
-  0xFF  //    SW22               35
-};
-#elif defined V2HARDWARE                  // Andromeda 1st prototype
-byte GLookupEncoderNumber[] = 
-{
-  0xFF, //    SW10               0
-  0xFF, //    SW46               1
-  0xFF, //    SW47               2
-  0xFF, //    SW48               3
-  0xFF, //    SW49               4
-  0xFF, //    SW50               5
-  0x0,  //    enc 2              6
-  0xFF, //    SW17               7
-  0x4,  //    enc 4              8
-  0x6,  //    enc 5              9
-  0xFF, //    SW11               10
-  0xFF, //    SW12               11
-  0xFF, //    SW13               12
-  0xFF, //    SW14               13
-  0xFF, //    SW15               14
-  0xFF, //    SW16               15
-  0xFF, //    SW18               16
-  0x2,  //    enc 3              17
-  0xFF, //    SW9                18
-  0xFF, //    SW1                19
-  0xFF, //    SW2                20
-  0xFF, //    SW3                21
-  0xFF, //    SW4                22
-  0xFF, //    SW5                23
-  0xFF, //    SW6                24
-  0x8,  //    enc 6              25
-  0xA,  //    enc 7              26
-  0xC,  //    enc 8              27
-  0xFF, //    SW8                28
-  0xFF, //    SW7                29
-  0xFF, //    SW21               30
-  0xFF, //    SW19               31
-  0xFF, //    SW20               32
-  0xFF, //    SW22               33
-};
-#else                                     // Odin
 byte GLookupEncoderNumber[] = 
 {
   0xFF, //    SW1                 0
@@ -433,7 +299,6 @@ byte GLookupEncoderNumber[] =
   4,    //    encoder 4 push     19
   6     //    encoder 5 push     20
 };
-#endif
 
 
 //
