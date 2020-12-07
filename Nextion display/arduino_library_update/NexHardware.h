@@ -28,7 +28,7 @@
  * 
  * @return true if success, false for failure. 
  */
-bool nexInit(int Speed = 9600);
+bool nexInit(long Speed = 9600);
 
 /**
  * Listen touch event and calling callbacks attached before.

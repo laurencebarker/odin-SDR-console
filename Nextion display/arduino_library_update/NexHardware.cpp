@@ -217,7 +217,7 @@ bool recvRetCommandFinished(uint32_t timeout)
 }
 
 
-bool nexInit(int Speed)
+bool nexInit(long Speed)
 {
     bool ret1 = false;
     bool ret2 = false;
